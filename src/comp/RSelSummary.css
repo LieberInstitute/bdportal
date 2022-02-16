@@ -1,0 +1,67 @@
+.sel-total {
+    display:inline-block;
+    text-align:center;
+    font-size:1rem;   
+    font-weight:bold;
+    color: #ed1848;
+    /* border: 1px solid #ed184860; */
+    background-color:#fff;
+    padding: 0.2rem;
+    width:5rem;
+ }
+ .sel-summary {
+    padding:1rem;
+    /* border: 1px solid green; */
+ }
+
+ .subjtable {
+   border: 1px solid #ddd;
+   font-size:90%;
+ }
+ .subjtable th, td {
+   padding: 0px 4px;
+   border-bottom: 1px solid #ddd;
+ }
+
+ .checkout-area {
+  padding: 1rem;
+  background-color:#ddd;
+  /* margin: 1rem auto 0.2rem; */
+  /* box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3), 0 2px 4px 0 rgba(0, 0, 0, 0.2); */
+  box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.checkout-btn {
+  background-color:#e8e8e8;
+  /*padding:0.3rem;
+  box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.2); */
+}
+.checkout-btn:hover {
+  background-color:#fafafa;
+  /* margin-left:2px;
+  margin-top:2px; */
+  box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+.btn-download  {
+  padding-right:2.4rem;
+  background-image: url('/assets/download.svg');
+  background-size: 22px 28px;
+  background-repeat: no-repeat;
+  background-position: 90% center;
+}
+
+.btn-xplore  {
+  padding-right:2.2rem;
+  background-image: url('/assets/explore.svg');
+  background-size: 24px 28px;
+  background-repeat: no-repeat;
+  background-position: 90% center;
+}
+.bi::before {
+  display: inline-block;
+  content: "";
+  vertical-align: -.125em;
+  background-image: url("data:image/svg+xml,<svg viewBox='0 0 16 16' fill='%23333' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z' clip-rule='evenodd'/></svg>");
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+}

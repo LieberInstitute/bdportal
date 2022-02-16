@@ -1,0 +1,244 @@
+.lg-panel {
+  position:relative;
+  background-color: #fff;
+  width: 18rem;
+  overflow: hidden;
+  padding:0;
+  margin: 1rem auto 0.2rem;
+  /* box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3), 0 2px 4px 0 rgba(0, 0, 0, 0.2); */
+  box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.lg-title {
+cursor: pointer;
+position:relative;
+color: #666;
+background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
+background-color: #f2f2f4;
+line-height:1.19rem;
+font-size: 1em;
+font-weight: bold;
+padding:2px;
+text-align:left;
+border-bottom:1px solid #e2e2e4;
+}
+
+.lg-title .coll-glyph {
+  position:relative;
+  color:#888;
+  width:14px;
+  display:inline-block !important;
+  top:-2px !important;
+}
+
+.lg-b-shadow {
+  -moz-box-shadow: 0 8px 8px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 8px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 8px rgba(0, 0, 0, 0.4);
+}
+
+.lg-in-shadow {
+  -moz-box-shadow: inset 0 -8px 8px -8px #000;
+  -webkit-box-shadow: inset 0 -8px 8px -10px #000;
+  box-shadow: inset 0 -11px 10px -10px rgba(0, 0, 0, 0.8);
+}
+
+.lg-bottomshade, .lg-topshade {
+  position: absolute;
+  display: none;
+  right: 0px;
+  left: 0;
+  height: 10px;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.lg-topshade {
+  top: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.2), 30%, transparent);
+}
+
+.lg-bottomshade {
+  padding-bottom: 0;
+  bottom: 0;
+  background: linear-gradient(transparent, 70%, rgba(0, 0, 0, 0.2));
+}
+
+.lg-scroller {
+  position: relative;
+  /* margin: 0px auto; */
+  padding: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+  min-width: 10rem; 
+  /* max-height: 8.6rem; */
+  background-color:#fff;
+  overflow-y: auto;
+}
+
+.lg-lst {
+  position:relative;
+  padding: 0;
+  margin: 0;
+  /* margin: 0 6px; */
+  line-height:1.1rem;
+  background-color:  #fff;
+}
+
+.lg-toggler {
+  position:relative;
+  background-color: #fff;
+  z-index:10;
+  padding:2px;
+  margin:0;
+  overflow-wrap: normal;
+  /* border-top: 1px solid green; */
+}
+
+.lg-item {
+font-size: 95%;
+line-height:1.1rem;
+cursor: pointer;
+padding: 0 6px 1px;
+border: 0;
+margin: 2px 2px;
+border-radius: 4px;
+}
+
+.lg-item-h {
+  display:inline-block !important;
+}
+
+
+.lg-item-pub {
+  padding-left:20px;
+}
+
+.lg-item-lock {
+  padding-left:20px;
+  background-image: url('lock-solid.svg');
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  background-position: left center;
+  color:#7d1848;
+}
+
+.lg-item:hover {
+  background-color: #eae6e6;
+}
+
+.lg-item.lg-sel {
+  font-weight:bold;
+  background-color: #ffe2e6;
+}
+
+.lg-toggler .lg-item {
+  min-width: 4rem;
+  display: inline-block;
+}
+
+.lg-toggler .lg-item.lg-sel {
+  margin: 2px 2px;
+  color: white;
+  background-color: #ed1848;
+  border-radius: 6px;
+}
+
+.lg-count {
+margin-top: 2px;
+font-size: 85%;
+font-weight: bold;
+padding: 0 2px !important;
+/* border: 1px solid #bbb; */
+background: none;
+color: inherit;
+/* background-color: #ed1848; */
+}
+
+.lg-count-0 {
+  color: #ddd !important;
+}
+
+.lg-only {
+  position:relative;
+  background-color: #f2f2f4;
+  z-index:10;
+  padding:2px;
+  display:none;
+  margin:0;
+  text-align:left;
+  overflow-wrap: normal;
+  /* border-top: 1px solid #eee; */
+}
+
+.lg-only-lb {
+  font-size: 0px;
+  text-align:center;
+  display:inline-block;
+  width: 32px;
+  height: 22px;
+  font-weight: bold;
+  color: #ed1848;
+  cursor: pointer;
+  margin: 0 1px;
+  padding: 0 1px 0 1px;
+}
+.lg-only-lb::after { 
+  font-size:14px;
+}
+
+.lg-only-lb::after {
+  content: "only";
+}
+.lg-only-lb:hover {
+  /* border:1px solid #e2e4e6;*/
+  background-color: #fff;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);  
+}
+.lg-only-lb:hover::after {
+  background-color: #fff;
+  content: "\2715"; 
+}
+
+.lg-only-item {
+  display:inline-block;
+  pointer-events: auto;
+  font-size: 90%;
+  font-weight: bold;
+  cursor: default;
+  padding: 0 3px 1px;
+  border: 0;
+  margin: 2px 2px;
+  color: white;
+  background-color: #ed1848;
+  border-radius: 6px;
+}
+
+.lg-apply {
+  position:relative;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  display:inline;
+  top:-2px;
+  height:20px;
+  margin: 0 8px 1px 2px;
+  padding: 0 2px 1px 2px;
+  /*color: #bd0019;*/
+  color: #ed1848;
+  background-color: #fff;
+  border:1px solid #e2e4e6;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  /* border:1px solid #fac7cb;  */
+  border-radius: 2px;
+}
+
+.lg-apply:hover {
+  background-color: #ffffff;
+  color: #ad1848;
+  /* box-shadow: 2px 2px 1px grey; */
+}
+

@@ -1,0 +1,42 @@
+html, body {
+	height: 100%;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	background-color: #eee !important;
+	font-family: 'Helvetica Neue', arial, sans-serif;
+	font-weight: 400;
+	color: #444;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+#app {
+	text-align: center;
+	color:#555;
+}
+
+.page {
+	position:absolute;
+	min-width: 100%;
+	display: inline-flex;
+	flex-direction: column;
+	background-color: #ddd;
+	font-size:16px;
+}
+
+.content {
+  /* same as the borders of .navtab.selected  */
+  border: 1px solid #fdd;
+  border-bottom: none;
+  background-color: #eee;
+}
+
+/* .content {
+	padding: 3rem 20px 8px;
+	min-height: 100%;
+	width: 100%;
+	background-color: #eee;
+} */

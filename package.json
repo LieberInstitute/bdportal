@@ -1,0 +1,27 @@
+{
+  "name": "vpreact",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^0.26.0",
+    "bootstrap": "^4.6.1",
+    "fflate": "^0.7.1",
+    "jquery": "^3.5.1",
+    "jszip": "^3.7.1",
+    "popper.js": "^1.16.1",
+    "preact": "^10.5.15",
+    "react-bootstrap-slider": "^3.0.0",
+    "reactstrap": "^8.10.1",
+    "swr": "^1.2.1",
+    "wouter-preact": "^2.8.0-alpha.2"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.1.5",
+    "vite": "^2.8.0"
+  }
+}

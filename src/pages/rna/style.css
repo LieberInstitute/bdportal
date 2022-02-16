@@ -1,0 +1,27 @@
+.bordred {
+    border: 1px solid red;
+}
+.tbl {
+  text-align:left;
+}
+.tbldsets {
+  text-align:left;
+}
+
+.tbl tr:nth-child(even) { 
+     background-color: #f2f2f2;
+}
+.tbldsets tr td:nth-child(1), td:nth-child(3),  td:nth-child(4), td:nth-child(5) {   
+  font-size:90%;
+}
+
+.dt-wrapper {
+    margin:4px;
+}
+.tbl thead {
+    font-weight:bold;
+    color: #888;
+}
+.tbl td:first-child {
+  text-align:right;
+}
