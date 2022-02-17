@@ -1,4 +1,5 @@
-import {useEffect, useState} from "preact/hooks";
+import { h } from 'preact'
+import {useEffect, useState} from "preact/hooks"
 import './header.css';
 //import { route } from 'preact-router';
 //import { Link } from 'preact-router/match';

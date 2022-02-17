@@ -1,7 +1,5 @@
-import "jquery"
-import 'bootstrap'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { h } from 'preact'
+import $ from 'jquery'
+import { h, render } from 'preact'
 import {useEffect, useState, useRef} from "preact/hooks"
 import './app.css'
 //import 'bootstrap-slider/dist/css/bootstrap-slider.min.css';
@@ -9,6 +7,9 @@ import {Header, navRoutes} from './comp/header';
 import { Container } from 'reactstrap';
 import {rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
 // Code-splitting is automated for `routes` directory
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
+
 import MetPages from './pages/met/met';
 import RnaPages from './pages/rna/rna';
 import GenoPages from './pages/geno/geno';
@@ -37,7 +38,7 @@ function Redirect(props) {
 }
 */
 
-export function App() {
+function App() {
 	//const [page, setPage]=useState(null);
     const [page, setLocation] = useLocation();
 
@@ -76,3 +77,5 @@ export function App() {
    		</Container>
 	</div>)
 }
+
+render(<App />, document.getElementById('app'))

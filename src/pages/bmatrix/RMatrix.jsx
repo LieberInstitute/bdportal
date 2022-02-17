@@ -1,9 +1,9 @@
+import $ from 'jquery'
 import React, { useEffect, useRef } from 'react';
 import { useRData, rGlobs, dtaNames, dtaSelTypes,  
          useFltCtx,useFltCtxUpdate, applyFilterData, useFirstRender, dtXCounts, dtBrCounts,
          dtFilters, dtaBrains  } from '../../comp/RDataCtx';
 import { useMxSelUpdate } from './mxSelCtx';
-import $ from 'jquery'
 import './RMatrix.css';
 import * as gu from '../../comp/gutils'
 
