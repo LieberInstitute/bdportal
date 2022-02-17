@@ -6,7 +6,7 @@
   text-align:left;
 }
 .rowfh {
-   height: calc(100%- 180px) !important;
+   height: calc(100% - 180px) !important;
 }
 .tbl tr:nth-child(even) { 
      background-color: #f2f2f2;

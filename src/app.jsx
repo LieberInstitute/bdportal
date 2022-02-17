@@ -1,11 +1,10 @@
-import $ from 'jquery';
-import Popper from 'popper.js';
-import { h } from 'preact';
-import 'bootstrap';
-import {useEffect, useState, useRef} from "preact/hooks";
-import './app.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-slider/dist/css/bootstrap-slider.min.css';
+import "jquery"
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import { h } from 'preact'
+import {useEffect, useState, useRef} from "preact/hooks"
+import './app.css'
+//import 'bootstrap-slider/dist/css/bootstrap-slider.min.css';
 import {Header, navRoutes} from './comp/header';
 import { Container } from 'reactstrap';
 import {rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
