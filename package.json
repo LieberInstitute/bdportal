@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "start" : "parcel index.html",
+    "start": "parcel index.html",
     "build": "parcel build src/index.html"
   },
   "dependencies": {
@@ -17,7 +17,7 @@
     "react-bootstrap-slider": "^3.0.0",
     "reactstrap": "^8.10.1",
     "swr": "^1.2.1",
-    "wouter-preact": "^2.8.0-alpha.2"
+    "wouter-preact": "^2.7.5"
   },
   "devDependencies": {
     "parcel": "^2.3.1",
