@@ -46,7 +46,7 @@ function TrPanel( ) {
 		   </ul>
 		*/
 	}
-	return (<Row class="m-0 mt-3 ml-2 mr-2 trinfo justify-content-center" 
+	return (<Row className="m-0 mt-3 ml-2 mr-2 trinfo justify-content-center" 
 	       style="width:20rem;font-size:85%;color:#e68">
 		{nhregs ? <> {nhregs} highlighted regions <br /> 
 		        Only subjects having {expType} samples in <br /> these brain regions
@@ -55,16 +55,15 @@ function TrPanel( ) {
          
 	</Row>)
 }
-const BrMatrix = ({  tab, selData , style }) => {
+const BrMatrix = ({  tab, style }) => {
 	//if (tab!=='exp' && tab!=='rep') tab='sel'
 	const [, , , dataLoaded] = useRData()    
 	const notifyUpdate = useFltCtxUpdate(); 
     const [showZero, setShowZero] = useState(false);
 	const [forceUpdate, setForceUpdate] = useState(false);
     const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
-	console.log(" BrMatrix dataLoaded status: ", dataLoaded)
+	//console.log(" BrMatrix dataLoaded status: ", dataLoaded)
 	if (!dataLoaded) return <h3>Loading..</h3> 
-	console.log(" BrMatrix page rendering.. ")
 
 	// data loaded, we are safe to show the pages for this data type
     //changeXType(0); //update counts etc.
@@ -92,33 +91,33 @@ const BrMatrix = ({  tab, selData , style }) => {
 			<br /><br />
     */
 	return (<div style={style}>
-  	<Row class="flex-nowrap">
+  	<Row className="flex-nowrap">
  	   <Col xs="3">
-		<Row class="d-flex pl-4 mt-2 pt-2 justify-content-end">
-				   <div class="float-left ckzerotoggle">
-				      <span class="ckbleftlabel">Show not sequenced</span>
-					  <label class="custom-control custom-checkbox">
-					  <Input type="checkBox" class="custom-control-input" onChange={toggleZeroCounts} />
-					   <span class="custom-control-label"> </span>
+		<Row className="d-flex pl-4 mt-2 pt-2 justify-content-end">
+				   <div className="float-left ckzerotoggle">
+				      <span className="ckbleftlabel">Show not sequenced</span>
+					  <label className="custom-control custom-checkbox">
+					  <Input type="checkBox" className="custom-control-input" onChange={toggleZeroCounts} />
+					   <span className="custom-control-label"> </span>
 					 </label>
 					</div>
 		 </Row>
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
              <FltMList id="sex" type="htoggle" width="12rem" showZero={showZero} />
 			</div>
          </Row>
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
             <FltMList id="age" width="12rem" showZero={showZero} />
 			</div>
          </Row> 
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
 			<FltMList id="race"  height="12rem" width="12rem" showZero={showZero} />
 		   </div>
 	    </Row>
-		<Row class="d-flex justify-content-end pt-4 mt-3">
+		<Row className="d-flex justify-content-end pt-4 mt-3">
 			 <Button outline color="danger"  onClick={resetFilters}
 			 style="line-height:80%;font-size:90%">Clear selection</Button>
    	   </Row>
@@ -126,26 +125,26 @@ const BrMatrix = ({  tab, selData , style }) => {
 
 	  </Col>
 	  <MxSelProvider>
-	  <Col xs="5" class="matrixCol">
-		<Row class="mt-2">
-                <Col class="col-4 matrixWrap">
+	  <Col xs="5" className="matrixCol">
+		<Row className="mt-2">
+                <Col className="col-4 matrixWrap">
                   <RMatrix />
                 </Col>    
 		</Row>
 	  </Col>
 	  <Col xs="4" style={{ minWidth: "26rem"}}>
-	    <Row class="mt-0 p-0 d-flex justify-content-start flex-nowrap">
-		   <Col class="float-left">
+	    <Row className="mt-0 p-0 d-flex justify-content-start flex-nowrap">
+		   <Col className="float-left">
 			 <TrPanel />
-			 <Row class="d-flex pt-0 mt-0 justify-content-start"> 
-			 <div class="float-left" style="width:24rem"> 
+			 <Row className="d-flex pt-0 mt-0 justify-content-start"> 
+			 <div className="float-left" style="width:24rem"> 
 			  <FltMList id="dx" width="13rem" showZero={showZero} /> 
 			  </div>
 			 </Row>
 		   </Col>
          </Row>
-	     <Row class="d-flex justify-content-start">
-		    <div class="float-left" style="width:24rem">
+	     <Row className="d-flex justify-content-start">
+		    <div className="float-left" style="width:24rem">
   			 <RSelSummary />
 			</div>
          </Row>

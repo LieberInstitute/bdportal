@@ -62,8 +62,8 @@ function RSelSummary() {
      <Button onClick={downloadCSV}>Import list</Button>
 
     */
-    return (<Row class="d-flex w-100 flex-nowrap justify-content-center">
-    <Button class="btn-light checkout-btn btn-download" onClick={toggleModal}>
+    return (<Row className="d-flex w-100 flex-nowrap justify-content-center">
+    <Button className="btn-light checkout-btn btn-download" onClick={toggleModal}>
     <b>Download TSV</b></Button>
      <DlgSaveFile fdata={getSaveData} fext="tsv" isShowing={isModalShowing}  hide={toggleModal} />      
    </Row>)
@@ -115,21 +115,21 @@ function RSelSummary() {
   */
   function subjTable() {    
     return(<>
-      <Col><table class="subjtbl" ><tbody>
+      <Col><table className="subjtbl" ><tbody>
       { brCountData.dx[xt].map(  (e,i) => {
            if (i>0 && e>0) return (<tr key={i}> 
               <td align="right"> {e} </td> <td align="left">{ dtaNames.dx[i] } </td>
       </tr>) } ) }
       </tbody></table>
       </Col>
-      <Col><table class="subjtbl" ><tbody>
+      <Col><table className="subjtbl" ><tbody>
       { brCountData.race.map(  (e,i) => {
            if (i>0 && e>0) return (<tr key={i}> 
               <td align="right"> {e} </td> <td align="left">{ dtaNames.race[i] } </td>
       </tr>) } ) }
       </tbody></table>
       </Col>
-      <Col><table class="subjtbl" ><tbody>
+      <Col><table className="subjtbl" ><tbody>
       { brCountData.sex.map(  (e,i) => {
            if (i>0 && e>0) return (<tr key={i}> 
               <td align="right"> {e} </td> <td align="left">{ dtaNames.sex[i] } </td>
@@ -140,12 +140,12 @@ function RSelSummary() {
   }
   
   function regTable() {    
-    return( <Row class="flex-nowrap justify-content-center p-1">
-    <Col class="v100" style="color:#888">
+    return( <Row className="flex-nowrap justify-content-center p-1">
+    <Col className="v100" style="color:#888">
       Regions:
     </Col>
     <Col>
-      <table class="subjtbl" ><tbody>
+      <table className="subjtbl" ><tbody>
       { countData.reg[xt].map(  (e,i) => {
            if (i>0 && e>0) return (<tr key={i}> 
               <td align="right"> {e} </td> <td align="left">{ dtaNames.reg[i] } </td>
@@ -156,7 +156,7 @@ function RSelSummary() {
       
   }
 
-  return (<Col class="mx-auto sel-summary">
+  return (<Col className="mx-auto sel-summary">
         <div style="color: #777">
           { selXType ? <>Available: <b>{smpBrTotals[selXType-1][0]}</b> samples from <b>{smpBrTotals[selXType-1][1]}</b> subjects</>
                        :  <><b>{XBrs.size}</b> sequenced brains (out of <b>{dtaBrains.length}</b> total)</>
@@ -175,29 +175,29 @@ function RSelSummary() {
         
         { (selXType && showsel && regflt) ?  regTable()  : null } 
 
-        { selXType ? <Row class="p-2 d-flex justify-content-center" style={{fontSize:"1rem"}}> Selected subjects: &nbsp; 
+        { selXType ? <Row className="p-2 d-flex justify-content-center" style={{fontSize:"1rem"}}> Selected subjects: &nbsp; 
            <span style="color:#923"><b>{showsel ? numbr : 0} </b></span> </Row> : null }
-        <Row class="flex-nowrap">
+        <Row className="flex-nowrap">
           {showsel && subjTable() } 
         </Row>
         { showsel && <Row style={{paddingTop: "1em" }} >
              { showDlButton ? <>
-                <Row class="p-2 m-2">
+                <Row className="p-2 m-2">
                     { mixprotos.length>1 && <WarnProto key={Date.now()} prlist={mixprotos} /> }
                 </Row>
-                <Row class="d-flex w-100 flex-nowrap justify-content-center">
-                 <Col class="d-flex justify-content-center">  
-                     <Button class="btn-light checkout-btn btn-download" onClick={toggleModal}>
+                <Row className="d-flex w-100 flex-nowrap justify-content-center">
+                 <Col className="d-flex justify-content-center">  
+                     <Button className="btn-light checkout-btn btn-download" onClick={toggleModal}>
                        <b>Download</b></Button>
                     { restrictedDatasets.length ? 
                       <DlgRequest datasets={restrictedDatasets} isShowing={isModalShowing}  hide={toggleModal} /> :                    
                       <DlgDownload isShowing={isModalShowing}  hide={toggleModal} /> }
                  </Col>
-                  <Col class="d-flex justify-content-center">
-                     <Button class="btn-light checkout-btn btn-xplore"><b>Explore</b></Button>
+                  <Col className="d-flex justify-content-center">
+                     <Button className="btn-light checkout-btn btn-xplore"><b>Explore</b></Button>
                  </Col>
                </Row>
-              </> : <> {selXType ? <div class="mx-auto" style="font-size:0.8rem;color:red"> 
+              </> : <> {selXType ? <div className="mx-auto" style="font-size:0.8rem;color:red"> 
                           <span>Please selected a dataset. </span> 
                        </div> : <> {brSaveDialog()} </>
                        

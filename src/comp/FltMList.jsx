@@ -100,7 +100,7 @@ function FltMList( props ) {
       //fltNames.slice(1).forEach( ()  => onlyStates[0] += '0' );
       for (let i=0;i<idMap.length;i++) { onlyStates[0] += '0' }
       appliedStates[0]=onlyStates[0]; //states as last applied
-      console.log(`FltMList ${fid} creation..`);
+      //console.log(`FltMList ${fid} creation..`);
     } 
   }
 
@@ -121,7 +121,7 @@ function FltMList( props ) {
       //TODO: showAppliedSelection(); -- does not really work if the applied items are no longer present!
     }
     if (!jqCreated[0]) {
-      console.log(`FltMList ${fid} creating with filter size: ${dtFilters[fid].size}`);
+      //console.log(`FltMList ${fid} creating with filter size: ${dtFilters[fid].size}`);
       let jc=jqRender(fid, fltData, isToggle, isHoriz, noCollapse) //, notifyUpdate);
       jqCreated[0]=true;
       if (isToggle) {

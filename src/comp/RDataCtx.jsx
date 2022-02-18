@@ -592,7 +592,7 @@ export function getFilterData(fid, showZero) {
   The list should have only items with itemOrigCounts > 0 
   Note that itemBadgeValue is taken from dtXCounts so self-filtering is avoided
 */
-  console.log(`getFilterData for ${fid} called`);
+  //console.log(`getFilterData for ${fid} called`);
   if (!rGlobs.dataLoaded) return [];
 
   const rdata=[]; //returning data here a list of items data
@@ -724,7 +724,7 @@ export function updateCounts() {
       selXTypeChanged=true;
       rGlobs.prevSelXType=selXType;
   }
-  console.log('[updateCounts] with selXType=',selXType, '  and selChanged=', selXTypeChanged);
+  //console.log('[updateCounts] with selXType=',selXType, '  and selChanged=', selXTypeChanged);
 
   //reset multi-dimensional counts, set length and zero-fill: 
   ["dx", "reg"].forEach( (e)=>{
@@ -1139,14 +1139,14 @@ export function RDataProvider( {children} ) {
   const fetchZjson = async (url) => {
     const jres =  await fetch(url, { mode: 'cors'})
     const ctype=jres.headers.get('Content-Type')
-    console.log(" content type : ", ctype)
+    //console.log(" content type : ", ctype)
     if (ctype=="application/json") {
         return JSON.parse(await jres.text());
     }
     let compr = new Uint8Array(await jres.arrayBuffer())
-    console.log("Compressed len: ", compr.byteLength);
+    //console.log("Compressed len: ", compr.byteLength);
     const decompr = decompressSync(compr);
-    console.log("Decompressed len: ", decompr.byteLength);
+    //console.log("Decompressed len: ", decompr.byteLength);
     const str = strFromU8(decompr);
     //console.log("str=", str.substr(0,200))
     return JSON.parse(str);

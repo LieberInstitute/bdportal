@@ -27,7 +27,7 @@ const TableDSets = ( props ) => {
 	if (!data) return <div><h4> loading table.. </h4></div>
 	// render the table here
 	// header is the first 
-	return (<table class="tbl tbldsets"><thead>
+	return (<table className="tbl tbldsets"><thead>
 		<tr key="t0">
         { data[0].map( (c,j)=> <td key={j}>{c}</td> ) }
 		</tr>
@@ -112,14 +112,14 @@ function DTable( props ) {
 	   }
 	})
   
-   return ( <div class=".dt-wrapper">
+   return ( <div className=".dt-wrapper">
          <table ref="main"> 
 		 </table>
    </div>)
 
 }
 */
-const RnaReports = ({ selData, style }) => {
+const RnaReports = ({ style }) => {
 	const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
     function onBtnClick(e) {
         const id=e.target.id;
@@ -134,9 +134,9 @@ const RnaReports = ({ selData, style }) => {
 	
 	return (<div style={style}>
 	 <Row />
-	 <Row class="pt-2"> <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Datasets</Button> </Row>
-	 <Row class="justify-content-center mx-auto p-1">
-	{/*	 <Col class="col-auto"><TableDSets tnum={tbl} /></Col> */}
+	 <Row className="pt-2"> <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Datasets</Button> </Row>
+	 <Row className="justify-content-center mx-auto p-1">
+	{/*	 <Col className="col-auto"><TableDSets tnum={tbl} /></Col> */}
 	</Row>
 	</div>);
 }

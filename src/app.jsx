@@ -3,12 +3,12 @@ import { h, render } from 'preact'
 import {useEffect, useState, useRef} from "preact/hooks"
 import './app.css'
 //import 'bootstrap-slider/dist/css/bootstrap-slider.min.css';
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
 import {Header, navRoutes} from './comp/header';
 import { Container } from 'reactstrap';
 import {rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
 // Code-splitting is automated for `routes` directory
-import 'bootstrap'
-import 'bootstrap/dist/css/bootstrap.min.css'
 
 import MetPages from './pages/met/met';
 import RnaPages from './pages/rna/rna';
@@ -41,37 +41,25 @@ function Redirect(props) {
 function App() {
 	//const [page, setPage]=useState(null);
     const [page, setLocation] = useLocation();
-
-    //async function routeChange(e) {
-	//   console.log('route changed to:', e.url);
-	//   setPage(e.url);
-       /*switch (e.url) {
-		case '/profile':
-		  const isAuthed = await this.isAuthenticated();
-		  if (!isAuthed) route('/', true);
-		  break;
-	  }*/
-	//}
-	//<Router onChange={routeChange}>
-	return(<div id="app" class="page">
+	return(<div id="app" className="page">
         <Header page={page} />
 		<Container fluid className="content"> 
 		<FltCtxProvider>
            <RDataProvider>
-			<Router>
-				<Route path="/brsel/:tab" component={BrSelPages}/>
-				<Route path="/rnaseq/:tab" component={RnaPages}/>
-				<Route path="/methyl" component={MetPages}/>
-				<Route path="/longrna" component={LongRnaPages}/>
-				<Route path="/scrna"  component={ScRnaPages}/>
+			<Switch>
+				<Route path="/brsel/:tab" component={BrSelPages} />
+				<Route path="/rnaseq/:tab" component={RnaPages} />
+				<Route path="/methyl" component={MetPages} />
+				<Route path="/longrna" component={LongRnaPages} />
+				<Route path="/scrna"  component={ScRnaPages} />
 				{/*
 				<GenoPages path="/genotyp" />
 				<EqtlPages path="/eqtl" /> 
 				*/}
-				<Route path="/rnaseq" component={RnaPages}/>
-				<Route path="/brsel" component={BrSelPages}/>
-				<Route path="/" component={BrSelPages} />
-			</Router>
+				<Route path="/rnaseq"> <Redirect to="/rnaseq/sel" /> </Route>
+				<Route path="/brsel"> <Redirect to="/brsel/matrix" /> </Route>
+				<Route path="/"> <Redirect to="/brsel/matrix" /> </Route>
+			</Switch>
 		  </RDataProvider>
           </FltCtxProvider>
    		</Container>

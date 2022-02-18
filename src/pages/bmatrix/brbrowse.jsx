@@ -81,7 +81,7 @@ const BrTable = ( props ) => {
 	   }) }
     </tbody></table>);
 	*/
-	return (<table class="tbl tbldsets"><thead>
+	return (<table className="tbl tbldsets"><thead>
 		<tr key="t0">
         { //dtaBrains[0].map( (b,i)=> <td key={j}>{c}</td> ) 
 		  columns.map(  (e,i)=> <td key={i}>{e}</td>)
@@ -96,7 +96,7 @@ const BrTable = ( props ) => {
 }
 
 // Note: `user` comes from the URL, courtesy of our router
-const BrBrowse = ({ selData }) => {
+const BrBrowse = ( ) => {
     /*
  	useEffect(() => {
 		let timer = setInterval(() => setTime(Date.now()), 1000);
@@ -117,9 +117,9 @@ const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 	
 	return (<div>
 	 <Row />
-	 <Row class="pt-2"> <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Brain table</Button> </Row>
-	 <Row class="justify-content-center mx-auto p-1 vh-100 overflow-auto rowfh" >
-		 <Col class="col-auto"><BrTable tnum={tbl} /></Col></Row>
+	 <Row className="pt-2"> <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Brain table</Button> </Row>
+	 <Row className="justify-content-center mx-auto p-1 vh-100 overflow-auto rowfh" >
+		 <Col className="col-auto"><BrTable tnum={tbl} /></Col></Row>
 	</div>);
 }
 

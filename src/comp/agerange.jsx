@@ -110,14 +110,14 @@ function AgeRangeEntry( { enabled, min, max, vmin, vmax, onChange } ) {
     const disabled=state[0] ? "no" : "disabled";
     const range= state[0] ? [ state[1], state[2] ] : [ min, max ];
 	console.log("..rendering with range:", range[0], range[1], " disabled=",disabled);
-	return (<div class="age-panel">
-		<div class="age-title">Age range
-           <label class="custom-control custom-checkbox">
-               <Input type="checkBox" class="custom-control-input" onChange={toggleEnable} />
-           <span class="custom-control-label"> </span>
+	return (<div className="age-panel">
+		<div className="age-title">Age range
+           <label className="custom-control custom-checkbox">
+               <Input type="checkBox" className="custom-control-input" onChange={toggleEnable} />
+           <span className="custom-control-label"> </span>
            </label>
         </div>
-        <div class="age-padder">
+        <div className="age-padder">
 		<ReactBootstrapSlider id="ageSlider"
                 slideStop={onSlideStop}
 				value={range}
@@ -128,10 +128,10 @@ function AgeRangeEntry( { enabled, min, max, vmin, vmax, onChange } ) {
                 disabled={disabled}
                 />
         </div>
-        <div class="age-padder">
+        <div className="age-padder">
 			<input id="ageMin" type="number" size="4" pattern="^-?[1-9]\d*$" 
 			  onChange={updateVMin} onBlur={resetMin} min={min} max={max} value={range[0]} />
-			<span class="age-spacer"> .. </span>
+			<span className="age-spacer"> .. </span>
 			<input id="ageMax" type="number" size="4" pattern="^-?[1-9]\d*$" 
 			  onChange={updateVMax} onBlur={resetMax} min={min} max={max} value={range[1]} />
 		</div>		

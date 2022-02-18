@@ -1,5 +1,6 @@
 import $ from 'jquery'
-import React, { useEffect, useRef } from 'react';
+import { h } from 'preact'
+import {useEffect, useRef} from "preact/hooks"
 import { useRData, rGlobs, dtaNames, dtaSelTypes,  
          useFltCtx,useFltCtxUpdate, applyFilterData, useFirstRender, dtXCounts, dtBrCounts,
          dtFilters, dtaBrains  } from '../../comp/RDataCtx';
@@ -80,7 +81,7 @@ function RMatrix( props ) { //
               selcol[0]=0;
               selregs.length=0;
               const regcounts=dtXCounts.reg;
-              console.log(`...   Rebuilding RMatrix....`);
+              //console.log(`...   Rebuilding RMatrix....`);
               for (let i=1;i<dtaNames.reg.length;i++) {
                  selregs.push(0);
               }          
@@ -369,7 +370,7 @@ function RMatrix( props ) { //
         <div className="col mx-auto">
           <div className="mxTitleBox">
               <h5>Brain regions</h5>
-              <div class="mxApply"><span className="lg-apply">Apply</span> </div>
+              <div className="mxApply"><span className="lg-apply">Apply</span> </div>
           </div>
           <table id="rxMatrix">
             <thead>              

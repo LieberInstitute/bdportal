@@ -1,6 +1,6 @@
 {
-  "name": "xpreact",
-  "short_name": "xpreact",
+  "name": "bdportal",
+  "short_name": "bdportal",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

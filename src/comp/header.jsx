@@ -67,8 +67,6 @@ export function Header( {page} ) {
      }
   );
 
-
-
 	function dtaXSelClick(lnk) {
     //console.log("---------- lnk clicked: ", lnk)
     let lnkitems=splitRoute(lnk);
@@ -140,11 +138,11 @@ export function Header( {page} ) {
     //console.log("rendering Nav header...")
 
 	return (
-		<Nav class='bg-light d-flex align-items-center navheader flex-nowrap'>
+		<Nav className='bg-light d-flex align-items-center navheader flex-nowrap'>
 		<a href='http://www.libd.org'><img alt="logo" src="/assets/logo.svg" style={{ height: "2rem"}} /></a>
 		<span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
-		<UncontrolledDropdown nav inNavbar class="p-0 m-0 ddtsel">
-           <DropdownToggle class="navdbtsel v-100 m-2" nav caret>
+		<UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
+           <DropdownToggle className="navdbtsel v-100 m-2" nav caret>
              {selTitle}
            </DropdownToggle>
            <DropdownMenu style={{marginTop: "-0.4rem", left:"0.5rem"}}>
@@ -159,10 +157,10 @@ export function Header( {page} ) {
 
          </UncontrolledDropdown>
  
-        <div class="navtab-box flex-nowrap">
+        <div className="navtab-box flex-nowrap">
                <ServerStatus />
                { subtabs && subtabs.map((t) => (
-                   <NavItem class="navtab" key={t[3]} id={t[3]}> 
+                   <NavItem className="navtab" key={t[3]} id={t[3]}> 
 				             <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link>
                    </NavItem>
                ) ) }
@@ -176,11 +174,11 @@ export function Header( {page} ) {
             <img alt="bands" src="/assets/bands.png" className="navimgbands" /> Data Portal&nbsp;
             <img alt="bands_r" src="/assets/bands_r.png" className="navimgbands" />
 		</NavItem> */}
-       <NavItem class="ml-auto nav-right">
-		   <img alt="bands" src="/assets/bands.png" class="navimgbands" /> 
-		   <span class="navtitle">Data Portal</span>
-           <img alt="bands_r" src="/assets/bands_r.png" class="navimgbands" />
-           <span class="navlogin">Login</span>
+       <NavItem className="ml-auto nav-right">
+		   <img alt="bands" src="/assets/bands.png" className="navimgbands" /> 
+		   <span className="navtitle">Data Portal</span>
+           <img alt="bands_r" src="/assets/bands_r.png" className="navimgbands" />
+           <span className="navlogin">Login</span>
            <img alt="brainlogo" src="/assets/brain_encircled.svg" style={{ height: "2rem", paddingRight:"0.5rem" }} />
          </NavItem>
 		</Nav>

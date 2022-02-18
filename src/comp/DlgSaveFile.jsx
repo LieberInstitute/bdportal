@@ -35,19 +35,19 @@ export function DlgSaveFile( props ) { //props.hide() must exist
   }
 
   return (<DlgModal { ...props} title="Save file" >
-        <Row class="form-group d-flex justify-content-center flex-nowrap">
-           <Col xs="6" class="d-flex justify-content-end mr-0 pr-2"> 
-              <Label class="pt-2 float-right">Please enter file name:</Label> </Col>
-           <Col xs="6" class="ml-0 pl-0 d-flex justify-content-start"> 
+        <Row className="form-group d-flex justify-content-center flex-nowrap">
+           <Col xs="6" className="d-flex justify-content-end mr-0 pr-2"> 
+              <Label className="pt-2 float-right">Please enter file name:</Label> </Col>
+           <Col xs="6" className="ml-0 pl-0 d-flex justify-content-start"> 
            <Input id="fname" onChange={fnameChange} placeholder="Enter file name here" />
            </Col>
         </Row>
-        <Row class="d-flex w-100 flex-nowrap justify-content-center">
-           <Col class="d-flex justify-content-center">  
-             <Button class="btn btn-light" onClick={onSave} disabled={fileName.length===0}>Save</Button>
+        <Row className="d-flex w-100 flex-nowrap justify-content-center">
+           <Col className="d-flex justify-content-center">  
+             <Button className="btn btn-light" onClick={onSave} disabled={fileName.length===0}>Save</Button>
 
              <div style="width:3rem" />
-             <Button class="btn btn-light" 
+             <Button className="btn btn-light" 
                  style="line-height:80%;font-size:80%" 
                  onClick={props.hide}>Cancel</Button>
            </Col>

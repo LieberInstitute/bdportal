@@ -9,7 +9,7 @@ import FltMList from '../../comp/FltMList';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Row, Col, Button, Label} from 'reactstrap';
 import RSelSummary from '../../comp/RSelSummary';
 
-const RnaSelect = ({ selData, style }) => {
+const RnaSelect = ({ style }) => {
 	const notifyUpdate = useFltCtxUpdate(); 
 	const [forceUpdate, setForceUpdate] = useState(false);
 
@@ -32,22 +32,22 @@ const RnaSelect = ({ selData, style }) => {
 	return (<div style={style}>
   	<Row>
  	   <Col xs="3">
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
              <FltMList id="sex" type="htoggle" width="12rem"  /> 
 			</div>
          </Row>
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
             <FltMList id="age" width="12rem" />
 			</div>
          </Row> 
-         <Row class="d-flex justify-content-end">
-		    <div class="float-right">
+         <Row className="d-flex justify-content-end">
+		    <div className="float-right">
            <FltMList id="race"  height="12rem" width="12rem" />
 		   </div>
 	    </Row>
-		<Row class="d-flex justify-content-end pt-4 mt-3">
+		<Row className="d-flex justify-content-end pt-4 mt-3">
 			 <Button outline color="danger"  onClick={resetFilters}
 			 style="line-height:80%;font-size:90%">Clear selection</Button>
    	   </Row>
@@ -64,18 +64,18 @@ const RnaSelect = ({ selData, style }) => {
 		    </Row>
 		  </Col>
 		</Row>
- 		<Row class="m-0 p-0 justify-content-left flex-nowrap">
-			 <Col class="m-1 p-1 float-right">
+ 		<Row className="m-0 p-0 justify-content-left flex-nowrap">
+			 <Col className="m-1 p-1 float-right">
              <FltMList id="dx" width="11rem" /> 
 		   </Col>
-		   <Col class="m-1 p-1 justify-content-left">
+		   <Col className="m-1 p-1 justify-content-left">
               <FltMList id="reg" width="11rem" />
 		   </Col>
         </Row>
 	  </Col>
 	  <Col >
-	  <Row class="d-flex justify-content-start">
-		    <div class="float-left">
+	  <Row className="d-flex justify-content-start">
+		    <div className="float-left">
   			<RSelSummary />
 			</div>
          </Row>
