@@ -1,0 +1,45 @@
+npm install --save jszip
+npm install --save datatables.net-bs4
+npm install --save datatables.net-buttons-bs4
+npm install --save datatables.net-fixedcolumns-bs4
+npm install --save datatables.net-fixedheader-bs4
+npm install --save datatables.net-rowgroup-bs4
+npm install --save datatables.net-scroller-bs4
+npm install --save datatables.net-searchbuilder-bs4
+npm install --save datatables.net-searchpanes-bs4
+npm install --save datatables.net-select-bs4
+npm install --save datatables.net-staterestore-bs4
+
+#-- in one cmd line:
+
+npm i jszip datatables.net-bs4
+npm i datatables.net-buttons-bs4 datatables.net-fixedcolumns-bs4
+npm i datatables.net-fixedheader-bs4 datatables.net-rowgroup-bs4
+npm i datatables.net-scroller-bs4 datatables.net-searchbuilder-bs4
+npm i datatables.net-searchpanes-bs4 datatables.net-select-bs4
+#npm i datatables.net-staterestore-bs4 #-- this one gives an error
+
+##-- module require notes:
+require( 'jszip' );
+require( 'datatables.net-bs4' )();
+require( 'datatables.net-buttons-bs4' )();
+require( 'datatables.net-buttons/js/buttons.colVis.js' )(); //column visibility toggle
+require( 'datatables.net-buttons/js/buttons.html5.js' )();
+require( 'datatables.net-buttons/js/buttons.print.js' )();
+require( 'datatables.net-fixedcolumns-bs4' )();
+require( 'datatables.net-fixedheader-bs4' )();
+require( 'datatables.net-rowgroup-bs4' )();
+require( 'datatables.net-scroller-bs4' )();
+require( 'datatables.net-searchbuilder-bs4' )();
+require( 'datatables.net-searchpanes-bs4' )();
+require( 'datatables.net-select-bs4' )();
+#require( 'datatables.net-staterestore-bs4' )();
+
+When used with CommonJS, the DataTables packages all export a factory function that can be executed with two optional arguments (shown without above):
+
+  * The window object to use (this is require as jQuery in a headless CommonJS environment can require a window with a document attached). If no parameter is given, or it is falsy, window will be used.
+  * The jQuery object that DataTables should be attached to. If no parameter is given, the package will do its own require('jquery') to include jQuery.
+
+For example if you wish to use your own `window` and `jQuery` parameters:
+   var $  = require( 'jquery' );
+   var dt = require( 'datatables.net' )( window, $ );

@@ -1,0 +1,7 @@
+{ 
+  "dbserver":"gdebsrv",
+  "dbuser":"wquser",
+  "dbpasswd" : "libDbPortal21",
+  "dbname" : "rse",
+  "r_filedir" : "\\\\gdebsrv\\ssdata\\postgresql\\r_staging\\"
+}

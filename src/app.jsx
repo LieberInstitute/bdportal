@@ -78,4 +78,4 @@ function App() {
 	</div>)
 }
 
-render(<App />, document.getElementById('app'))
+export default App;
