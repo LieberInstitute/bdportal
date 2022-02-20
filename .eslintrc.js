@@ -5,6 +5,7 @@ module.exports = {
     },
     "extends": [
         "eslint:recommended",
+        "preact"
     ],
     "parserOptions": {
         "ecmaVersion": 2018,
@@ -13,18 +14,10 @@ module.exports = {
         },
         "sourceType": "module"
     },
-    "plugins": [
-        "babel",
-        "react"
-    ],
     "settings": {
-        "react": {
-          "pragma": "h",
-          "version": "preact"
-        }
+        "jest": { "version": 27 }
       },
     "rules": {
-        "no-mixed-spaces-and-tabs": "off",
-        "react-in-jsx-scope":"off"
+        "no-mixed-spaces-and-tabs": 0
     }
 };
