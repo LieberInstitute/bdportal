@@ -1,4 +1,5 @@
 import { h } from 'preact'
+import $ from "jquery"
 import {useEffect, useState} from "preact/hooks"
 import './header.css';
 //import { route } from 'preact-router';
@@ -6,8 +7,6 @@ import './header.css';
 import {useLocation, Link } from 'wouter-preact';
 import axios from 'axios';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem} from 'reactstrap';
-
-import $ from "jquery";
 
    //these are "router" paths (longer), not pages dirs
    // navRoutes are also used as 
@@ -19,7 +18,6 @@ export const navRoutes= {
     genotyp : [5, "Genotype data"],
    longrna : [6, "long RNAseq data"] 
  }
-
 
 function ServerStatus( ) {
   const [status, setStatus]=useState('checking status..')
