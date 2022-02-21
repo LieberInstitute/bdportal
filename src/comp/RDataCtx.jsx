@@ -1,13 +1,11 @@
 import { useContext, useState, useRef, useEffect } from "preact/hooks";
 import {  createContext } from "preact";
-import { strFromU8, decompressSync } from "fflate";
+import { strFromU8, decompressSync } from "fflate"
+import {APP_BASE_URL} from '../appcfg'
 
 //---------- this module holds a lot of global data for the RNAseq part of the app --------
-
 //same with loaded dtypes entries appended to ["rnaseq", "dnam" ] so far..
 export const dtaDTypes=[] //to be populated with the loaded data allData.dtypes content - 0 based
-
-
 
 // this should match, from 1 on, the wordy description of the dtaDTypes entries (at least) -- to be used in the dropdown menu!
 export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNA-seq', 'DNA methylation', 'WGS', 'scRNAseq', 'long RNAseq', 'microRNA']
@@ -1123,12 +1121,12 @@ export function RDataProvider( {children} ) {
   const [rcData, setRData] = useState([ dtXsel, dtCounts, dtBrCounts, rGlobs.dataLoaded ]);
   // const [query, setQuery] = useState('all_rnaseq.meta.json.gz');
   //-------------- client-side fetch is built in the browser
-  // the /assets/ bundled url is for development only
+  // the assets/ bundled url is for development only
   // normally data should be fetched using axios => useSWR() from the node server
   //TODO: fetch this from the NODE server instead of the bundled data
  
-  //const [datasrc, setDataSrc] = useState('/assets/rnaseq_samples.json.gz');
-  const [datasrc, setDataSrc] = useState('/assets/multi_dta.json.gz');
+  //const [datasrc, setDataSrc] = useState('assets/rnaseq_samples.json.gz');
+  const [datasrc, setDataSrc] = useState(APP_BASE_URL+'/assets/multi_dta.json.gz');
 
   function updateRData(durl, dta) { 
       console('>>>> [RDataProvider.updateRData] called!')
@@ -1139,7 +1137,7 @@ export function RDataProvider( {children} ) {
   const fetchZjson = async (url) => {
     const jres =  await fetch(url, { mode: 'cors'})
     const ctype=jres.headers.get('Content-Type')
-    //console.log(" content type : ", ctype)
+    console.log("[",APP_BASE_URL,"] url=",url," content type : ", ctype)
     if (ctype=="application/json") {
         return JSON.parse(await jres.text());
     }

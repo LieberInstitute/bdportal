@@ -7,7 +7,7 @@ import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import {Header, navRoutes} from './comp/header';
 import { Container } from 'reactstrap';
-import {rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
+import {rGlobs, cfg, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
 // Code-splitting is automated for `routes` directory
 
 import MetPages from './pages/met/met';
@@ -17,6 +17,7 @@ import LongRnaPages from './pages/lrna/lrna';
 import ScRnaPages from './pages/scrna/scrna';
 import EqtlPages from './pages/eqtl/eqtl';
 import BrSelPages from './pages/bmatrix/mx';
+import {APP_BASE_URL, fixBasePath} from './appcfg'
 import { useRoute, Route, Router, Switch, Redirect, useLocation } from 'wouter-preact';
 
 // this is like a useEffect hook that only executes the first render
@@ -37,16 +38,18 @@ function Redirect(props) {
 	return null; 
 }
 */
-
 function App() {
 	//const [page, setPage]=useState(null);
-    const [page, setLocation] = useLocation();
+    const [abspage, setLocation] = useLocation();
+    const page=fixBasePath(abspage)
+
 	return(<div id="app" className="page">
         <Header page={page} />
 		<Container fluid className="content"> 
 		<FltCtxProvider>
            <RDataProvider>
-			<Switch>
+			<Router base={`${APP_BASE_URL}`} >
+			 <Switch>
 				<Route path="/brsel/:tab" component={BrSelPages} />
 				<Route path="/rnaseq/:tab" component={RnaPages} />
 				<Route path="/methyl" component={MetPages} />
@@ -59,7 +62,8 @@ function App() {
 				<Route path="/rnaseq"> <Redirect to="/rnaseq/sel" /> </Route>
 				<Route path="/brsel"> <Redirect to="/brsel/matrix" /> </Route>
 				<Route path="/"> <Redirect to="/brsel/matrix" /> </Route>
-			</Switch>
+			 </Switch>
+			</Router>
 		  </RDataProvider>
           </FltCtxProvider>
    		</Container>

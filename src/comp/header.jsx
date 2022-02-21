@@ -4,9 +4,11 @@ import {useEffect, useState} from "preact/hooks"
 import './header.css';
 //import { route } from 'preact-router';
 //import { Link } from 'preact-router/match';
-import {useLocation, Link } from 'wouter-preact';
-import axios from 'axios';
-import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem} from 'reactstrap';
+import {useLocation, Link } from 'wouter-preact'
+import {APP_BASE_URL, fixBasePath} from '../appcfg'
+import axios from 'axios'
+import {DropdownMenu, DropdownToggle, DropdownItem, 
+                  UncontrolledDropdown, Nav, NavItem} from 'reactstrap';
 
    //these are "router" paths (longer), not pages dirs
    // navRoutes are also used as 
@@ -48,10 +50,11 @@ function ServerStatus( ) {
   </div>)
 }
 
-//-- routing for the Link elements is in: app.js
-export function Header( {page} ) {
-  const [location, setLocation] = useLocation();
 
+export function Header( {page} ) {
+  const [absloc, setLocation] = useLocation();
+  const location=fixBasePath(absloc)
+	console.log("location is: ", location, "  page is:", page)
 	useEffect( () => {
         function updateTabs() {
           $('.navtab').addClass('enabled').removeClass('selected');
@@ -70,10 +73,10 @@ export function Header( {page} ) {
     let lnkitems=splitRoute(lnk);
     let pt=splitRoute(page);
     if (pt[0]===lnkitems[0]) return;
-    //console.log(`Routing to page: ${lnk}`);
+    console.log(`Routing to page: ${lnk}`);
     // limit for now:
      //route(`/${lnk}`);
-    setLocation(`/${lnk}`);
+    setLocation(`${APP_BASE_URL}/${lnk}`);
 		//setPage(lnk)
 		//history.push("/"+lnk)
 	  }
@@ -137,7 +140,7 @@ export function Header( {page} ) {
 
 	return (
 		<Nav className='bg-light d-flex align-items-center navheader flex-nowrap'>
-		<a href='http://www.libd.org'><img alt="logo" src="/assets/logo.svg" style={{ height: "2rem"}} /></a>
+		<a href='http://www.libd.org'><img alt="logo" src={`${APP_BASE_URL}/assets/logo.svg`} style={{ height: "2rem"}} /></a>
 		<span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
 		<UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
            <DropdownToggle className="navdbtsel v-100 m-2" nav caret>
@@ -159,7 +162,7 @@ export function Header( {page} ) {
                <ServerStatus />
                { subtabs && subtabs.map((t) => (
                    <NavItem className="navtab" key={t[3]} id={t[3]}> 
-				             <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link>
+				             <Link activeClassName="active" href={`${APP_BASE_URL}/${t[0]}`}>{t[1]}</Link>
                    </NavItem>
                ) ) }
         </div>
@@ -169,15 +172,16 @@ export function Header( {page} ) {
 		  <Link activeClassName="active" href="/genotyp">Genotypes</Link> */}
 
          {/* <NavItem className="ml-auto nav-right navtitle">
-            <img alt="bands" src="/assets/bands.png" className="navimgbands" /> Data Portal&nbsp;
-            <img alt="bands_r" src="/assets/bands_r.png" className="navimgbands" />
+            <img alt="bands" src="../assets/bands.png" className="navimgbands" /> Data Portal&nbsp;
+            <img alt="bands_r" src="../assets/bands_r.png" className="navimgbands" />
 		</NavItem> */}
        <NavItem className="ml-auto nav-right">
-		   <img alt="bands" src="/assets/bands.png" className="navimgbands" /> 
+		   <img alt="bands" src={`${APP_BASE_URL}/assets/bands.png`} className="navimgbands" /> 
 		   <span className="navtitle">Data Portal</span>
-           <img alt="bands_r" src="/assets/bands_r.png" className="navimgbands" />
+           <img alt="bands_r" src={`${APP_BASE_URL}/assets/bands_r.png`} className="navimgbands" />
            <span className="navlogin">Login</span>
-           <img alt="brainlogo" src="/assets/brain_encircled.svg" style={{ height: "2rem", paddingRight:"0.5rem" }} />
+           <img alt="brainlogo" src={`${APP_BASE_URL}/assets/brain_encircled.svg`} 
+                               style={{ height: "2rem", paddingRight:"0.5rem" }} />
          </NavItem>
 		</Nav>
      )

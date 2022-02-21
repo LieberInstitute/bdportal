@@ -44,7 +44,7 @@
 }
 .btn-download  {
   padding-right:2.4rem;
-  background-image: url('/assets/download.svg');
+  background-image: url('download.svg');
   background-size: 22px 28px;
   background-repeat: no-repeat;
   background-position: 90% center;
@@ -52,7 +52,7 @@
 
 .btn-xplore  {
   padding-right:2.2rem;
-  background-image: url('/assets/explore.svg');
+  background-image: url('explore.svg');
   background-size: 24px 28px;
   background-repeat: no-repeat;
   background-position: 90% center;

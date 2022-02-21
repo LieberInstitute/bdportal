@@ -1,5 +1,5 @@
 import { createPortal } from 'preact/compat';
-import Close from "/assets/close.svg";
+import Close from "../assets/close.svg";
 
 import './DlgModal.css';
 /*
