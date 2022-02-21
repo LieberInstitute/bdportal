@@ -35,7 +35,7 @@ function strPut(s, i, c) {
   return r;
 }
 
-function RMatrix( props ) { //
+function RMatrix( props ) {
     //const [selXType, xdata, counts, brcounts] = useRData(); //[rGlobs.selXType, dtXs, dtCounts, dtBrCounts]
     //const [xdata, scounts, counts, data_loaded]=useRData();    //dtXsel, dtCounts, dtBrCounts, rGlobs.dataLoaded
     const [xdata, scounts, bcounts, data_loaded]=useRData();
