@@ -109,7 +109,7 @@ function FltMList( props ) {
       //   else console.log("FltMList useEffect with fltData empty");
     //if (jqCreated) 
     if (fltData.length===0) {
-      console.log(`}}} fltData uninitialized`);
+      //console.log(`}}} fltData uninitialized`);
       return;
     }
     if (jqCreated[0] && (itemsChanged || dtFilters[fid].size==0)) {
