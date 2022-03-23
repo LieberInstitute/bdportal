@@ -10,21 +10,25 @@
 }
 
 .lg-title {
-cursor: pointer;
-position:relative;
-color: #666;
-background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
-background-color: #f2f2f4;
-line-height:1.19rem;
-font-size: 1em;
-font-weight: bold;
-padding:2px;
-text-align:left;
-border-bottom:1px solid #e2e2e4;
+  cursor:default;
+  position:relative;
+  color: #666;
+  background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
+  background-color: #f2f2f4;
+  line-height:1.19rem;
+  font-size: 1em;
+  font-weight: bold;
+  padding:2px;
+  text-align:left;
+  border-bottom:1px solid #e2e2e4;
 }
 
+.lg-panel .lg-clickable {
+  cursor:pointer;
+}
 .lg-title .coll-glyph {
   position:relative;
+  cursor:pointer;
   color:#888;
   width:14px;
   display:inline-block !important;
@@ -222,7 +226,8 @@ color: inherit;
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  display:inline;
+  /* display:inline; */
+  display: none;
   top:-2px;
   height:20px;
   margin: 0 8px 1px 2px;

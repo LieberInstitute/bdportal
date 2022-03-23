@@ -124,6 +124,7 @@ function FltMList( props ) {
       //console.log(`FltMList ${fid} creating with filter size: ${dtFilters[fid].size}`);
       let jc=jqRender(fid, fltData, isToggle, isHoriz, noCollapse) //, notifyUpdate);
       jqCreated[0]=true;
+      btnApply[0] = jc.find('.lg-apply');
       if (isToggle) {
         //console.log(`FltMList toggle ${fid} creating with counts: ${fltData[1]}`);
         addToggleHandlers(jc); //also adds the Apply button
@@ -133,7 +134,7 @@ function FltMList( props ) {
         if (dtFilters[fid].size===0) unCollapse(jc);
         let li=jc.find('.lg-item').last();
         flDt.current.lHeight=Math.floor(li.position().top+li.outerHeight(true));
-        addApplyButton(jc);
+        //addApplyButton(jc);
         addHandlers(jc, flDt.current.lHeight); 
       }
       if (dtFilters[fid].size) 
@@ -222,14 +223,14 @@ function FltMList( props ) {
      });
      appliedStates[0]=onlyStates[0];
      if (onlyData.length) {
-       const p = lgscroller.parents('.lg-panel').find('.lg-only');
+       const p = lgscroller.closest('.lg-panel').find('.lg-only');
        p.show();
        let to=p.append('<span class="lg-only-lb">only</span>');
-       to.children().on('click', function() {
+       to.children().on('click', ()=> {
          //click on the 'only' clears the filter!
           deselectAll();
        } );
-       onlyData.forEach( function(oid) {
+       onlyData.forEach( (oid)=> {
         //o is the dtaNames index, we need to display the item having idx o
         p.append('<span class="lg-only-item">'+fltData[idMap[oid]][0]+'</span>') 
       });  
@@ -290,7 +291,7 @@ function FltMList( props ) {
  }
 
  function addOnlyItem(t) {
-    let p = t.parents('.lg-panel').find('.lg-only');
+    let p = t.closest('.lg-panel').find('.lg-only');
     let id = parseInt(t[0].id); //1-based dtaNames index, not matching list index
     //actual display list index is: t.index()
     onlyData.push(id); 
@@ -315,7 +316,7 @@ function FltMList( props ) {
   }
   
  function removeOnlyItem(t) {
-    let p = t.parents('.lg-panel').find('.lg-only');
+    let p = t.closest('.lg-panel').find('.lg-only');
     let id = parseInt(t[0].id, 10); //1-based index
     //remove item with value i from onlyData
     let ix=onlyData.indexOf(id);
@@ -337,31 +338,49 @@ function unCollapse(jc) {
     t.find('.coll-glyph').html(arrowLeft)
     }
 }
-
+ 
+function onApply(e) {
+      //actually apply the changes
+      const btn=$(e.target)
+      const jc=btn.closest('.lg-panel')
+      btn.hide()
+      applyFilter() //onlyStates string is applied
+      e.stopPropagation()
+      if (isToggle) return
+      if (onlyData.length>0) {
+           //collapse it automatically if there is anything selected!
+           let t=jc.find('.lg-title');
+           jc.find('.lg-lst').collapse('hide');
+           t.addClass('lg-collapsed');
+           t.find('.coll-glyph').html(arrowDown);
+        } else {
+          let t=jc.find('.lg-title');
+          jc.find('.lg-lst').collapse('show');
+          t.removeClass('lg-collapsed');
+          //scrollShader(p, lh);
+          t.find('.coll-glyph').html(arrowLeft)
+        }
+ }
+ /*
  function addApplyButton(jc) {
     btnApply[0] = jc.find('.lg-apply');
-    btnApply[0].on('click', function(e) {
-      //actually apply the changes
-       $(this).hide();
-       applyFilter(); //onlyStates string is applied
-       if (!isToggle) {
-          if (onlyData.length>0) {
-            //collapse it automatically if there is anything selected!
-            let t=jc.find('.lg-title');
-            jc.find('.lg-lst').collapse('hide');
-            t.addClass('lg-collapsed');
-            t.find('.coll-glyph').html(arrowDown);
-         } else {
-           let t=jc.find('.lg-title');
-           jc.find('.lg-lst').collapse('show');
-           t.removeClass('lg-collapsed');
-           //scrollShader(p, lh);
-           t.find('.coll-glyph').html(arrowLeft)
-         }
-       }
-       e.stopPropagation();
-    });
-    btnApply[0].hide();
+
+ }
+ */
+
+ function toggleCollapse(e) {
+  const t=$(e.target).closest('.lg-title') 
+  const p = t.closest('.lg-panel').find('.lg-lst')
+  if(!t.hasClass('lg-collapsed')) {
+    p.collapse('hide');
+    t.addClass('lg-collapsed');
+    t.find('.coll-glyph').html(arrowDown);
+  } else { //un-collapse
+    p.collapse('show');
+    t.removeClass('lg-collapsed');
+    scrollShader(p, flDt.current.lHeight);
+    t.find('.coll-glyph').html(arrowLeft)
+  }
  }
 
  function addHandlers(jc, lh) {
@@ -369,25 +388,6 @@ function unCollapse(jc) {
     scrollShader(jscroller, lh);
     jscroller.on('scroll', (e) => scrollShader($(e.target), lh) );
     if (noCollapse) return;
-    jc.on('click', '.lg-title', function(e) {
-      let t = $(this);
-      let p = t.parents('.lg-panel').find('.lg-lst');
-      if(!t.hasClass('lg-collapsed')) {
-        p.collapse('hide');
-        t.addClass('lg-collapsed');
-        //t.removeClass('lg-b-shadow');
-        //t.find('.coll-glyph').html("&#x25BD;")
-        t.find('.coll-glyph').html(arrowDown);
-        //$this.find('b').removeClass('bi-chevron-up').addClass('bi-chevron-down');
-      } else { //un-collapse
-        p.collapse('show');
-        t.removeClass('lg-collapsed');
-        scrollShader(p, lh);
-        //t.find('.coll-glyph').html("&#x25B3;")
-        t.find('.coll-glyph').html(arrowLeft)
-        //$this.find('b').removeClass('bi-chevron-down').addClass('bi-chevron-up');
-      }
-    });
     
     jc.on('click', '.lg-item', function(e) { 
       let t = $(this);
@@ -416,6 +416,7 @@ function unCollapse(jc) {
       //$this.find('b').removeClass('bi-chevron-down').addClass('bi-chevron-up');
     }
   });
+  /*
   btnApply[0] = jc.find('.lg-apply');
   btnApply[0].on('click', function(e) {
     //actually apply the changes
@@ -424,16 +425,20 @@ function unCollapse(jc) {
      e.stopPropagation();
   });
   btnApply[0].hide();
+  */
 
  }
   // --- render FltMList ---
   let addclass=props.class ? `lg-panel ${props.class}` : "lg-panel";
   return (
        <div className={addclass} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
-        <div className="lg-title">{id2name[props.id]}
+        <div className="lg-title"><span onClick={noCollapse ? null : toggleCollapse} class={noCollapse ? "" : "lg-clickable" }>
+          {id2name[props.id]}</span>
            <span className="float-right">
-             <span className="lg-apply">Apply</span>
-             <span className="coll-glyph"> </span>
+             <span className="lg-apply" onClick={onApply}>Apply</span>
+             { !noCollapse &&
+                 <span className="coll-glyph" onClick={noCollapse ? null : toggleCollapse}> </span>
+             }
            </span>
         </div>
           { isToggle ? <ul className="lg-toggler">  </ul> 
@@ -481,7 +486,7 @@ function populateList(id, dta, isToggle, isHoriz) {
     let st='lg-item';
     if (isHoriz) st+=' lg-item-h';
     $('#'+id+' .lg-toggler').append(
-      $.map(dta, function(d,i) { 
+      $.map(dta, (d,i) => { 
          return '<li class="d-flex justify-content-between '+st+'" id="'+d[3]+'">'+d[0]+
            ' <span class="badge-primary badge-pill lg-count">'+d[1]+'</span>'+
            "</li>\n";
@@ -489,7 +494,7 @@ function populateList(id, dta, isToggle, isHoriz) {
     return
   }
   $('#'+id+' .lg-scroller').append(
-    $.map(dta, function(d,i) { 
+    $.map(dta, (d,i) => { 
        return '<li class="d-flex justify-content-between lg-item'+ckPubStatus(d[2])+
        '" id="'+d[3]+'">'+d[0]+
         ' <span class="badge-primary badge-pill lg-count">'+d[1]+'</span>'+
@@ -498,6 +503,7 @@ function populateList(id, dta, isToggle, isHoriz) {
 }
 
 function jqRender(id, dta, isToggle, isHoriz, noCollapse) {
+  
   populateList(id, dta, isToggle, isHoriz, noCollapse);
   let jc=$(`#${id}`);
   if (!isToggle) 
@@ -529,7 +535,7 @@ function jqRender(id, dta, isToggle, isHoriz, noCollapse) {
 function scrollShader(t, lh) {
   var y = t.scrollTop();
   //var p = t.parents('.lg-panel').find('.lg-title');
-  var l = t.parents('.lg-panel').find('.lg-lst');
+  var l = t.closest('.lg-panel').find('.lg-lst');
   if (y>2) {
      //p.addClass('lg-b-shadow');
      l.find('.lg-topshade').show();
