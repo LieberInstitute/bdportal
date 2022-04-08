@@ -3,7 +3,7 @@ import {DlgModal} from './DlgModal';
 
 export function DlgRequest(props) {
   let {datasets, ...oProps} = props
-  return (<DlgModal { ...oProps} title="Restricted data" justClose="1" >
+  return (<DlgModal { ...oProps} title="Restricted data" >
         <p><br />
         The following datasets are restricted. Please enter access keys for each datasets or 
         press the <b>Request Access</b> button below to request access to them. 

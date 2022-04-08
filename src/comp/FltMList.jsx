@@ -354,7 +354,7 @@ export function FltMList( props ) {
     }
 
     if (fid==='dset') {
-      dom.find('.lg-title').css("text-align","center");
+      dom.find('.lg-clickable').css({"text-align":"center", width:"100%"});
       dom.find('.lg-title').css("color","#dd1848");
     }
 

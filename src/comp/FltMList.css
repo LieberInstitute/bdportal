@@ -164,12 +164,12 @@ border-radius: 4px;
   height: 1rem;
 }
 .lg-item-bar {
-  width: 6rem;
+  width: 4rem;
 }
 
 .lg-item-bar-v {
   float:right;
-  background-color: #f0ecec;
+  background-color: #f2e8ec;
   margin:0 auto;
 }
 

@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import {useEffect, useState, useReducer} from "preact/hooks";
 import './style.css';
+import '../../comp/ui.css';
 //import AgeRangeEntry from '../../comp/agerange';
 import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters, 
 	     useFltCtx, useFltCtxUpdate, useRData, getFilterData, filterSet, applyFilterSet, clearFilters} from '../../comp/RDataCtx';
@@ -133,7 +134,7 @@ const BrMatrix = ({  tab, style }) => {
 			<FltMList id="race"  height="12rem" width="12rem" data={dtaRace} filter={filterSet} onApply={applyFilter} updateFilter />
 		   </div>
 	    </Row>
-		<Row className="d-flex justify-content-end pt-4 mt-3">
+		<Row className="d-flex justify-content-end pt-4 mt-3 pr-3 mr-2">
 			 <Button outline color="danger"  onClick={resetFilters}
 			 style="line-height:80%;font-size:90%">Clear selection</Button>
    	   </Row>
