@@ -645,6 +645,19 @@ export function getFilterData(fid, showZero) {
   return rdata;
 }
 
+export function filterSet(fid) {
+  const fltSet=dtFilters[fid] //this MUST be a Set !
+  if (fltSet==null)
+     throw new Error(`Error: cannot get filter set for "${fid}"`)
+  return fltSet
+}
+
+export function applyFilterSet(fid) {
+  //should be called by onApply() of FltMList
+  if (fid==='reg') dtFilters.brXtX.clear()
+  updateCounts();
+}
+
 export function applyFilterData(fid, fArr, xtx) { 
   const fltSet=dtFilters[fid];
   if (fltSet==null)
@@ -656,6 +669,7 @@ export function applyFilterData(fid, fArr, xtx) {
   // where it is the currently selected column (experiment type: 1-based)
   
   if (fid==='reg') dtFilters.brXtX.clear()
+  // --- only the Brain matrix uses this code:
   if (xtx) { //in the future this could be an array of values
     // we could use Array.isArray(xtMain) here to check
     // for now it must be a 1-based xtype index
@@ -722,7 +736,7 @@ export function updateCounts() {
       selXTypeChanged=true;
       rGlobs.prevSelXType=selXType;
   }
-  //console.log('[updateCounts] with selXType=',selXType, '  and selChanged=', selXTypeChanged);
+ console.log('**** [updateCounts] with selXType=',selXType, '  and selChanged=', selXTypeChanged);
 
   //reset multi-dimensional counts, set length and zero-fill: 
   ["dx", "reg"].forEach( (e)=>{

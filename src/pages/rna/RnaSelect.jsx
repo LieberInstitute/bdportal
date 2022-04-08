@@ -1,11 +1,11 @@
 import { h } from 'preact';
 import {useEffect, useState} from "preact/hooks";
 import './style.css';
-import AgeRangeEntry from '../../comp/agerange';
+//import AgeRangeEntry from '../../comp/agerange';
 import {RDataProvider, FltCtxProvider, useFltCtxUpdate, useRData, clearFilters,
    } from '../../comp/RDataCtx';
 
-import FltMList from '../../comp/FltMList';
+import {FltMList} from '../../comp/FltMList';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Row, Col, Button, Label} from 'reactstrap';
 import RSelSummary from '../../comp/RSelSummary';
 
@@ -13,11 +13,11 @@ const RnaSelect = ({ style }) => {
 	const notifyUpdate = useFltCtxUpdate(); 
 	const [forceUpdate, setForceUpdate] = useState(false);
 
-    const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
+    /* const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
     function ageRangeChange(v) {
 		   console.log(" RNASelect.ageRangeChange called with v = ", v);
            setAgeRangeState(v);
-	}
+	} */
 
 	function resetFilters() {
 		clearFilters();

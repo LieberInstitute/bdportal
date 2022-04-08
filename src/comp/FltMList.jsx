@@ -26,7 +26,7 @@ const id2name = { dx : "Diagnosis", age: "Age", race: "Ancestry",
 
 
 //filtering multi-select list component
-//props = { id, type, width, height, horiz, showZero, nocollapse, data, filter, onApply}
+//props = { id, type, width, height, horiz, nocollapse, data, filter, onApply}
 
 /* props.getData should be or return an array of
    [ itemLabel, itemBadgeValue, lockStatus, item_index, itemOrigCounts, tooltip_fullname ]
@@ -84,18 +84,18 @@ export function FltMList( props ) {
   */
   const fid=props.id; // id must be one of the recognized ones in id2name !
   const isToggle=(props.type==='toggle' || props.type==='htoggle');
-  const showZero=props.showZero;
 
   // if a filter was given, it's the parent responsibility to keep it updated after onApply!
   // when dtFilter, the object will render selection according to this filter
-  const dtFilter=props.filter /* ? props.filter : new Set()
-  m.fltSet=dtFilter */
+  const dtFilter= (typeof props.filter === 'function' ) ? props.filter(fid) : props.filter 
+    /* ? props.filter : new Set()
+    m.fltSet=dtFilter */
   const isHoriz=(props.type==='htoggle' || props.horiz==='1')
   const noCollapse=(isToggle || typeof props.nocollapse != "undefined" || 
           typeof props.noCollapse != "undefined") // toggle styles are never collapsible
   //WARN: when props.data is a function, that is going to be called by EVERY UPDATE
   // better make it an object updated by the parent only when needed
-  const gotFltData=props.data ? ( (typeof props.data === 'function') ? props.data(fid, showZero) :
+  const gotFltData=props.data ? ( (typeof props.data === 'function') ? props.data(fid) :
         props.data)  :    [ ['Item-one' , 101, 2, 15, 1000, 'This is item-1'],
                             ['Item-two'  , 202, 1, 42, 2000, 'This is item-2'],
                             ['Item-three', 303, 2, 33, 3000, 'This is item-3'],
@@ -112,10 +112,12 @@ export function FltMList( props ) {
       let maxv=0;
       gotFltData.forEach( (d,i)=>{
              //fltData.push(e);
-             m.fltData[i]=d;; //dtaNames index (id)-1 -> fltData index
+             m.fltData[i]=d; //dtaNames index (id)-1 -> fltData index
              if (d[1]>maxv) maxv=d[1];
       })
-      m.fltData.sort( (a, b)=> b[1]-a[1])
+      if (props.sort) { //sort by 
+         m.fltData.sort( (a, b)=> b[1]-a[1])
+      }
       m.fltData.forEach( (d,i)=>{ 
         m.idMap[d[3]]=i
         d[6]=Math.round(d[1]*100/maxv)  
@@ -127,6 +129,7 @@ export function FltMList( props ) {
       // in order to avoid this, any re-render should ONLY happen after
       // onApplyClick() updated the filter data backend (props.filter and props.data)
       //console.log(" -- dtFilter given:", dtFilter, ", overriding selection", m.onlyStates)
+      
       m.applyRender=false
       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
       dtFilter.forEach( e => m.onlyStates[e]=1 )
@@ -180,14 +183,16 @@ export function FltMList( props ) {
         m.onlyStates={}
     }
     m.appliedStates=Object.assign({}, m.onlyStates)
+    if (dtFilter && props.updateFilter) { //auto-update of filter Set requested
+      dtFilter.clear()
+      Object.keys(m.onlyStates).map(Number).forEach( k => dtFilter.add(k) )
+    }
+    //note that the onApply() callback is called AFTER the filter was updated
     if (props.onApply) {
       props.onApply(m.onlyStates, fid)
     }
-    if (props.filter && props.updateFilter) { //auto-update of filter Set requested
-      const fSet=props.filter
-      fSet.clear()
-      Object.keys(m.onlyStates).map(Number).forEach( k => fSet.add(k) )
-    }
+
+
     if (noupdate) return
     forceUpdate() //trigger an update
     //notifyUpdate(fid); //broadcast the new counts update to other components
@@ -258,15 +263,19 @@ export function FltMList( props ) {
 
   function selectItem(t, id) {
     t.addClass('lg-sel')
+    if (isToggle) {  //deselect all!
+      m.onlyStates={}
+      forceUpdate()
+    }
     m.onlyStates[id]=1
-    showOnlyItems()
+    if (!isToggle) showOnlyItems()
     showApplyButton()
   }
 
   function unselectItem(t, id) {
    t.removeClass('lg-sel')
    delete m.onlyStates[id]
-   showOnlyItems()
+   if (!isToggle) showOnlyItems()
    showApplyButton()
   }
 
@@ -285,6 +294,7 @@ export function FltMList( props ) {
 
 
   function unCollapse() {
+    if (isToggle) return
     const jc=$(refDom.current)
     const t=jc.find('.lg-title');
     if (t) {
@@ -298,6 +308,7 @@ export function FltMList( props ) {
   }
 
   function collapse() {
+    if (isToggle) return
     const jc=$(refDom.current)
     const t=jc.find('.lg-title');
     jc.find('.lg-lst').collapse('hide');
@@ -330,17 +341,16 @@ export function FltMList( props ) {
     //first time rendering
     if (!isToggle)
       dom.find('.coll-glyph').html(arrowLeft);
-    /* if (id==='sex') {
-      jc.css("line-height","1rem");
-      jc.find('.lg-title').css("line-height","1rem");
-      jc.css("font-size","90%");
-    } */
+    if (fid==='sex') {
+      dom.css({ "font-size":"90%", "line-height":"1.2rem"})
+      dom.find('.lg-apply').css({"font-size":"8px", height:"18px"})
+      //dom.css("line-height","90%");
+      //dom.find('.lg-title').css("line-height","1.2rem");
+      //dom.find('.lg-toggler').css( {"font-size":"95%", "line-height":"95%"});
+    } 
     if (fid==='proto') {
-      dom.css("font-size","84%");
-      dom.css("line-height","1rem");
-      let jt=dom.find('.lg-title');
-      jt.css("line-height","1.2rem");
-      jt.css("font-size", "110%")
+      dom.css({ "font-size":"85%", "line-height":"1.2rem"})
+      //dom.find('.lg-title').css({ "line-height":"1.2rem", "font-size":"110%"})
     }
 
     if (fid==='dset') {
@@ -383,12 +393,13 @@ export function FltMList( props ) {
   }
 
   function renderItems() {
-    const showBars = typeof props.noBars == 'undefined' || 
-                  typeof props.nobars == 'undefined'
+    const showBars = !isHoriz && (typeof props.noBars == 'undefined' || 
+                  typeof props.nobars == 'undefined')
     return (m.fltData.map( (d)=>{
-      return (<li class={`d-flex justify-content-between lg-item ${isSel(d[3])}`}
+      return (<li class={`d-flex justify-content-between lg-item ${isHoriz?'lg-item-h':''} ${isSel(d[3])}`}
         id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
       <span class="lg-item-th">{lockStatus(d[2])}{d[0]}</span>
+      { isHoriz && <span class="lg-spacer"> </span>}
       <span class="lg-item-counts" >
         { showBars &&  <span class="lg-item-bar"> <span class="lg-item-bar-v"
              style={ {width: `${d[6]}%` }} > </span> </span>
@@ -404,7 +415,7 @@ export function FltMList( props ) {
   const showApply=filterChanged()
   const showSelUndo=(showApply && Object.keys(m.appliedStates).length>0)
   // --- render FltMList ---
-  //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates),
+  //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates), " isToggle:",isToggle, ", showOnly:", showOnly)
   //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
 
   // ################## rendering component here:
@@ -414,7 +425,7 @@ export function FltMList( props ) {
           {id2name[props.id] || props.id}</span>
            <span className="float-right">
              <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)} style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
-             <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)} style={ showApply ? { display:"inline-block"} : { display: "none"}}>
+             <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)} style={ showApply ? { display:"inline"} : { display: "none"}}>
                  Apply</span>
              { !noCollapse &&
                  <span className="coll-glyph" onClick={toggleCollapse}> </span>

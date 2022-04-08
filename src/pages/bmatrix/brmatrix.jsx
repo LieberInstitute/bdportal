@@ -1,11 +1,11 @@
 import { h } from 'preact';
-import {useEffect, useState} from "preact/hooks";
+import {useEffect, useState, useReducer} from "preact/hooks";
 import './style.css';
-import AgeRangeEntry from '../../comp/agerange';
+//import AgeRangeEntry from '../../comp/agerange';
 import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters, 
-	     useFltCtx, useFltCtxUpdate, useRData, clearFilters} from '../../comp/RDataCtx';
+	     useFltCtx, useFltCtxUpdate, useRData, getFilterData, filterSet, applyFilterSet, clearFilters} from '../../comp/RDataCtx';
 
-import FltMList from '../../comp/FltMList';
+import {FltMList} from '../../comp/FltMList';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
      Row, Col, Input, Button, Label} from 'reactstrap';
 import RSelSummary from '../../comp/RSelSummary';
@@ -46,7 +46,7 @@ function TrPanel( ) {
 		   </ul>
 		*/
 	}
-	return (<Row className="m-0 mt-3 ml-2 mr-2 trinfo justify-content-center" 
+	return (<Row className="m-0 mt-3 ml-3 mr-2 trinfo justify-content-center" 
 	       style="width:20rem;font-size:85%;color:#e68">
 		{nhregs ? <> {nhregs} highlighted regions <br /> 
 		        Only subjects having {expType} samples in <br /> these brain regions
@@ -60,24 +60,24 @@ const BrMatrix = ({  tab, style }) => {
 	const [, , , dataLoaded] = useRData()    
 	const notifyUpdate = useFltCtxUpdate(); 
     const [showZero, setShowZero] = useState(false);
-	const [forceUpdate, setForceUpdate] = useState(false);
-    const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
+	const [, forceUpdate] = useReducer((x) => x + 1, 0);
+    //const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
 	//console.log(" BrMatrix dataLoaded status: ", dataLoaded)
 	if (!dataLoaded) return <h3>Loading..</h3> 
 
 	// data loaded, we are safe to show the pages for this data type
     //changeXType(0); //update counts etc.
     //rGlobs.rebuildRMatrix=true;
-
+/*
     function ageRangeChange(v) {
 		   //console.log(" BrainSelect.ageRangeChange called with v = ", v);
            setAgeRangeState(v);
 	}
-    
+  */  
    function resetFilters() {
-	   clearFilters();
-	   setForceUpdate(!forceUpdate);
-	   notifyUpdate('clear');
+	   clearFilters()
+	   forceUpdate()
+	   notifyUpdate('clear')
    }
 
     function toggleZeroCounts(e) {
@@ -85,7 +85,23 @@ const BrMatrix = ({  tab, style }) => {
         setShowZero(v);
 		notifyUpdate('zero');
     }
-    //console.log(">> rendering RnaSelect parent with ageRangeState :", ageRangeState);
+
+
+   function applyFilter(fid) {
+	   applyFilterSet(fid)
+	   notifyUpdate(fid)
+   }
+
+    console.log(">>------------- rendering brmatrix page!")
+
+  
+
+    const dtaSex=getFilterData('sex', showZero)
+	const dtaAge=getFilterData('age', showZero)
+	const dtaDx=getFilterData('dx', showZero)
+	const dtaRace=getFilterData('race', showZero)
+
+
 	/*
 		  <AgeRangeEntry min={-1} max={110} enabled={ageRangeState[0]} vmin={ageRangeState[1]} vmax={ageRangeState[2]} onChange={ageRangeChange} />
 			<br /><br />
@@ -104,17 +120,17 @@ const BrMatrix = ({  tab, style }) => {
 		 </Row>
          <Row className="d-flex justify-content-end">
 		    <div className="float-right">
-             <FltMList id="sex" type="htoggle" width="12rem" showZero={showZero} />
+             <FltMList id="sex" type="htoggle" width="12rem" data={dtaSex} filter={filterSet} onApply={applyFilter} updateFilter />
 			</div>
          </Row>
          <Row className="d-flex justify-content-end">
 		    <div className="float-right">
-            <FltMList id="age" width="12rem" showZero={showZero} />
+            <FltMList id="age" width="12rem" data={dtaAge} filter={filterSet} onApply={applyFilter} updateFilter />
 			</div>
          </Row> 
          <Row className="d-flex justify-content-end">
 		    <div className="float-right">
-			<FltMList id="race"  height="12rem" width="12rem" showZero={showZero} />
+			<FltMList id="race"  height="12rem" width="12rem" data={dtaRace} filter={filterSet} onApply={applyFilter} updateFilter />
 		   </div>
 	    </Row>
 		<Row className="d-flex justify-content-end pt-4 mt-3">
@@ -132,13 +148,13 @@ const BrMatrix = ({  tab, style }) => {
                 </Col>    
 		</Row>
 	  </Col>
-	  <Col xs="4" style={{ minWidth: "26rem"}}>
+	  <Col xs="4" class="pl-3" style={{ minWidth: "26rem"}}>
 	    <Row className="mt-0 p-0 d-flex justify-content-start flex-nowrap">
 		   <Col className="float-left">
 			 <TrPanel />
 			 <Row className="d-flex pt-0 mt-0 justify-content-start"> 
 			 <div className="float-left" style="width:24rem"> 
-			  <FltMList id="dx" width="13rem" showZero={showZero} /> 
+			  <FltMList id="dx" width="13rem" data={dtaDx} filter={filterSet} onApply={applyFilter} sort updateFilter /> 
 			  </div>
 			 </Row>
 		   </Col>
