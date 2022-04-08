@@ -1,557 +1,442 @@
-import $, { map } from 'jquery'
-import {useEffect, useRef, useState } from 'preact/hooks'
+import $ from 'jquery'
+import {useEffect, useRef, useState, useReducer } from 'preact/hooks'
+import './ui.css'
+import {arrowLeft, arrowDown, lockIcon} from './ui.jsx'
 import './FltMList.css'
-import {  rGlobs, useRData, getFilterData, applyFilterData,
-          useFltCtx, useFltCtxUpdate, dtFilters } from './RDataCtx';
+/* Core functionality props:
+   data = function or object that provides the items with ids and counts
+          ATTN: every re-render will reload these data
+   filter = reference to a Set() holding selected item indexes
+          ATTN: when provided, every re-render will override internal selection state
+   onApply= event handler to notify parent when a new filter is applied
+        params: ( selIdxArray, [ fid ] )
+        ATTN: this also triggers a re-render so if props.filter was given,
+              is should be updated with the applied selection!
+   updateFilter="yes/1/true" -- updates the Set given at props.filter when user selection
+                         is applied
+ Esthetics:
+   noBars : if provided, will disable display of bars for each item
 
-//import Popper from 'popper.js';
+*/
 
-const id2name = { dx : "Diagnosis", age: "Age", race: "Ancestry", reg : "Brain region",
-          sex: "Sex" , dset: " D a t a s e t s", proto : "Protocol", pub : "Public" };
+// add more elements here if needed:
+const id2name = { dx : "Diagnosis", age: "Age", race: "Ancestry",
+    reg : "Brain region", sex: "Sex" , dset: " D a t a s e t s",
+    proto : "Protocol", pub : "Public" };
 
-//return a string obtained by changing character at position i in s with c
-function strPut(s, i, c) {
-  i=parseInt(i,10);
-  if (i>s.length-1 || i<0) return s;
-  let r=s.substring(0, i).concat(c, s.substring(i+1));
-  return r;
-}
-//caret-left-fill icon
-const arrowLeft=`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
-<path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
-</svg>`;
-//carret-down-fill
-const arrowDown=`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16">
-  <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-</svg>`;
-//caret-up (empty)
-const arrowUp=`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
-<path d="M3.204 11h9.592L8 5.519 3.204 11zm-.753-.659l4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659z"/>
-</svg>`;
-const lockIcon=`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-<path d="M6 8v-2c0-3.313 2.687-6 6-6 3.312 0 6 2.687 6 6v2h-2v-2c0-2.206-1.795-4-4-4s-4 1.794-4 4v2h-2zm-3 2v14h18v-14h-18z"/>
-</svg>`;
 
-function oriCountsDiffer(a, b) { //returns true if any a[i][4]!==b[i][4]
-  if (a.length!==b.length) return true;
-  //  0       1       2           3         4
-  //label, xcount, public(1/2), nameIdx, oriCount, fullname
-  a.forEach( (e,i)=>{
-    if (e[4]!==b[i][4]) return true;
-  })
-  return false;
+//filtering multi-select list component
+//props = { id, type, width, height, horiz, showZero, nocollapse, data, filter, onApply}
+
+/* props.getData should be or return an array of
+   [ itemLabel, itemBadgeValue, lockStatus, item_index, itemOrigCounts, tooltip_fullname ]
+  is 2nd param is given to , the list should have only items with itemOrigCounts > 0
+*/
+
+//------------ utility functions which should be in a commonly sourced file
+// (works for array equality as well)
+function objEq(a, b) {
+  if (Object.keys(a).length!==Object.keys(b).length) return false
+  for (let k in a)
+    if (a[k]!==b[k]) return false
+  return true
 }
 
+function objEqSet(o, set) { // set MUST be a Set() object
+  if (Object.keys(o).length!==set.size) return false
+  for (let k in o)
+    if (!set.has(k)) return false
+  return true
+}
 
-//filtering multi-select list component 
-//props = { id, type, width, height, horis, showZero, nocollapse}
-function FltMList( props ) {
+// NOTE: Object.keys() ALWAYS returns a string array
+// convert keys() object to a numeric array SORTED increasingly
+function keysToNumArr(o) {
+    return Object.keys(o).map(Number).sort( (a,b) => a-b )
+}
+
+export function FltMList( props ) {
   // these should persist between re-renders
-  const flDt = useRef({
-    onlyDt:[], //onlyData
-    onlySt:[''], //onlyStates
-    appSt:[''], //appliedStates
-    fltDta:[], //list of [label, xcount, public(1/2), nameIdx, oriCount, fullname]
-    idMap:[], //mapping a dtaNames index to its list index in fltDta array
-    jqCr: [false],
-    btnApp: [null],
+  const refDom = useRef(null) //reference to container DOM
+  const refData = useRef({           //    0       1         2          3         4         5
+    fltData:[], //list data: array of [label, xcount, public(1/2), origIdx, oriCount, fullname]
+    onlyStates:{}, //hash set with only selected item indexes (selected origIdx )
+    appliedStates:{}, //appliedStates - string map last applied
+    idMap:{}, //mapping origIdx to its row index in current fltData
+    jqCreated: false,
+    applyRender:false, // transitional state, set only for the render after Apply
+    btnApply: null,
+    btnUndo: null,
     lHeight: 0 //calculated list height
+    //fltSet: null //internal copy of the filter set
   });
-  const onlyData=flDt.current.onlyDt; //array with only selected indexes
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  //const [selStates, setSelStates]=useState('') //mirrors onlyStates
+  const m=refData.current
+  /*
+  const onlyData=flDt.current.onlyDt; //array with only selected item indexes
   const onlyStates=flDt.current.onlySt; //changing/current selected states
   const appliedStates=flDt.current.appSt; // selected set as last applied
   const jqCreated=flDt.current.jqCr;
   const btnApply=flDt.current.btnApp;
-  const idMap=flDt.current.idMap; //mapping original index to list display index
+  const idMap=flDt.current.idMap; //mapping original dtNames index to fltDta index
   const fltData=flDt.current.fltDta;
-                                        //     0        1         2
-  const [xdata, countData, brCountData, dataLoaded] = useRData();
-
-  //const [itemsChanged, setItemsChanged] = useState(false);
-
-   //callback to use to inform other consumers of an applied filter:
-  const notifyUpdate = useFltCtxUpdate(); 
-  const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
-  //if (!rGlobs.dataLoaded) return;
-  const fid=props.id;
+  */
+  const fid=props.id; // id must be one of the recognized ones in id2name !
   const isToggle=(props.type==='toggle' || props.type==='htoggle');
   const showZero=props.showZero;
-  const isHoriz=(props.type==='htoggle' || props.horiz==='1');
-  const noCollapse=(isToggle || props.nocollapse==="1"); // toggle styles are never collapsible
-  //const lockData=props.lockData; //array of boolean values, showing locked items
-  //const isFirstRender=useFirstRender();
-  //const dataLoaded=rGlobs.dataLoaded;
-  //const [fltNames, fltCounts, fltXCounts, fltPubStatus] = dataLoaded ? getFilterData(fid) : [null, null, null, null, null]; 
-  const gotFltData=dataLoaded ? getFilterData(fid, showZero) : [];
-  //   [ itemLabel, itemBadgeValue, lockStatus, dtaNames[fid] index, itemOrigCounts, tooltip_fullname ]
-  const itemsChanged = (fltData.length && oriCountsDiffer(gotFltData, fltData));
-  //    setItemsChanged(true)
-  //if (fltNames) {  
-  if (gotFltData.length>0) {
-       // update fltData after each call obviously:
-       fltData.length=gotFltData.length;
-       gotFltData.forEach( (e,i)=>{
-             //fltData.push(e);
-             fltData[i]=e;
-             idMap[e[3]]=i; //dtaNames index (id) -> fltData index
-  });
 
-  if (onlyStates[0].length===0) { //creation time 
-      //fltNames.slice(1).forEach( ()  => onlyStates[0] += '0' );
-      for (let i=0;i<idMap.length;i++) { onlyStates[0] += '0' }
-      appliedStates[0]=onlyStates[0]; //states as last applied
-      //console.log(`FltMList ${fid} creation..`);
-    } 
+  // if a filter was given, it's the parent responsibility to keep it updated after onApply!
+  // when dtFilter, the object will render selection according to this filter
+  const dtFilter=props.filter /* ? props.filter : new Set()
+  m.fltSet=dtFilter */
+  const isHoriz=(props.type==='htoggle' || props.horiz==='1')
+  const noCollapse=(isToggle || typeof props.nocollapse != "undefined" || 
+          typeof props.noCollapse != "undefined") // toggle styles are never collapsible
+  //WARN: when props.data is a function, that is going to be called by EVERY UPDATE
+  // better make it an object updated by the parent only when needed
+  const gotFltData=props.data ? ( (typeof props.data === 'function') ? props.data(fid, showZero) :
+        props.data)  :    [ ['Item-one' , 101, 2, 15, 1000, 'This is item-1'],
+                            ['Item-two'  , 202, 1, 42, 2000, 'This is item-2'],
+                            ['Item-three', 303, 2, 33, 3000, 'This is item-3'],
+                            ['Item-four' , 404, 2, 14, 4000, 'This is item-4'],
+                            ['Item-five' , 508, 2, 52, 5000, 'This is item-5'],
+                            ['Item-six',   803, 1, 83, 3000, 'This is item-6'],
+                            ['Item-seven', 704, 2, 74, 4000, 'This is item-7'],
+                            ['Item-eight', 608, 2, 62, 5000, 'This is item-8']
+                                                      ];
+  //const itemsChanged = (m.fltData.length && oriCountsDiffer(gotFltData, m.fltData));
+  if (gotFltData.length>0) { // make an internal copy for every render?
+       // update fltData for each render:
+      m.fltData.length=gotFltData.length;
+      let maxv=0;
+      gotFltData.forEach( (d,i)=>{
+             //fltData.push(e);
+             m.fltData[i]=d;; //dtaNames index (id)-1 -> fltData index
+             if (d[1]>maxv) maxv=d[1];
+      })
+      m.fltData.sort( (a, b)=> b[1]-a[1])
+      m.fltData.forEach( (d,i)=>{ 
+        m.idMap[d[3]]=i
+        d[6]=Math.round(d[1]*100/maxv)  
+      })
+  }
+
+  if (dtFilter && m.applyRender) { // && dtFilter.size>0 ?
+      // when props.filter is given, this will override the current onlyStates and appliedStates!
+      // in order to avoid this, any re-render should ONLY happen after
+      // onApplyClick() updated the filter data backend (props.filter and props.data)
+      //console.log(" -- dtFilter given:", dtFilter, ", overriding selection", m.onlyStates)
+      m.applyRender=false
+      m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
+      dtFilter.forEach( e => m.onlyStates[e]=1 )
+      m.appliedStates=Object.assign({}, m.onlyStates)
+      //now this update should take care of showing the right filter selection
   }
 
   useEffect(()=> {
-      //if (fltData && fltData.length>0) console.log(`FltMList useEffect with fltData[0][1]=${fltData[0][1]}, already created=${jqCreated}`);
-      //   else console.log("FltMList useEffect with fltData empty");
-    //if (jqCreated) 
-    if (fltData.length===0) {
-      //console.log(`}}} fltData uninitialized`);
-      return;
-    }
-    if (jqCreated[0] && (itemsChanged || dtFilters[fid].size==0)) {
-      //remove all items, recreate the list, re-apply selection!
-      deselectAll(true);
-      clearList(fid, isToggle);
-      jqCreated[0]=false;     
-      appliedStates[0]=onlyStates[0];
-      //TODO: showAppliedSelection(); -- does not really work if the applied items are no longer present!
-    }
-    if (!jqCreated[0]) {
-      //console.log(`FltMList ${fid} creating with filter size: ${dtFilters[fid].size}`);
-      let jc=jqRender(fid, fltData, isToggle, isHoriz, noCollapse) //, notifyUpdate);
-      jqCreated[0]=true;
-      btnApply[0] = jc.find('.lg-apply');
-      if (isToggle) {
-        //console.log(`FltMList toggle ${fid} creating with counts: ${fltData[1]}`);
-        addToggleHandlers(jc); //also adds the Apply button
-      } else {
-        // ---- regular, non-toggle multi-select list:
+      if (m.fltData.length===0) {
+        return;
+      }
+      const dom=$(refDom.current)
+      if (!m.jqCreated) {
+        firstRender(dom) //, notifyUpdate);
+        m.jqCreated=true;
+      }
+      m.btnApply = dom.find('.lg-apply')
+      m.btnUndo = dom.find('.btn-undo')
+      //console.log(`FltMList ${fid} creating with filter size: ${dtFilter.size}`);
+      //dom.find('.coll-glyph').html(arrowLeft)
+      if (!isToggle) {
         // add scrolling, collapse and apply click handlers
-        if (dtFilters[fid].size===0) unCollapse(jc);
-        let li=jc.find('.lg-item').last();
-        flDt.current.lHeight=Math.floor(li.position().top+li.outerHeight(true));
-        //addApplyButton(jc);
-        addHandlers(jc, flDt.current.lHeight); 
+        //if (dtFilter.size===0) unCollapse(dom);
+        const li=dom.find('.lg-item').last();
+        // after every render:
+        if (li && li.position) {
+          m.lHeight=Math.floor(li.position().top+li.outerHeight(true));
+          const jscroller=dom.find(' .lg-scroller');
+          scrollShader(jscroller, m.lHeight);
+          jscroller.off('scroll')
+          jscroller.on('scroll', (e) => scrollShader($(e.target), m.lHeight) );
+          //if (noCollapse) return;
+        }
+        showOnlyItems()
       }
-      if (dtFilters[fid].size) 
-        showAppliedFilter();
-    }
-    /*
-    return() => {
-      //cleanup -- remove the component
-      console.log("Unmounting -- cleaning up !", fid);
-      let jc=$(`#${fid}`);
-      jc.remove();
-    }
-    */
-  } );
 
-  useEffect( () =>  {
-    if (fltData.length===0) return;
-    function jqUpdate() { 
-      //if (fltData.length===0 || fltData[1].length<=1) return;
-      if (isToggle) {
-        $('#'+fid+' .lg-toggler').children().each( 
-           (i, li) => {
-            let el= $(li).find('.lg-count');
-            // // el.toggleClass(fltData[1][i+1]===0, 'lg-count-0');
-            //el.html(fltData[1][i+1]);
-            el.html(fltData[i][1]); //update count badge
-         });
-        return;
-      }
-      $(`#${fid} .lg-scroller`).children().each( 
-        (i, li) => {
-          let el= $(li).find('.lg-count');
-          el.html(fltData[i][1]);
-          //if (fltData[1][i+1]===0 || fltData[1][i+1]==='0') 
-          //   el.addClass('lg-count-0')
-          //   else el.removeClass('lg-count-0')
-          el.toggleClass('lg-count-0', fltData[i][1]===0);
-       });              
-       
-    }
-    //if (isFirstRender) return;
-    //-- no need to update if the update was due to self
-    //if (fid===fltUpdId) return; //self-inflicted update, don't change the counts?
-   
-    jqUpdate();  //update counts only  
-  }, [fltFlip, fid, fltUpdId, fltData, itemsChanged, isToggle] );
- 
+  }) // useEffect after every render
 
-  function showAppliedFilter() {
-    if (fid==='reg') {
-      //special case when not in Brain Matrix but a region filter was set in Brain Matrix
-      const selXType=rGlobs.selXType;
-      if (dtFilters.brXtX.size && dtFilters.brXtX.values().next().value!==selXType-1)
-      return; //do not show the filters set in Brain Matrix for another data type!
-    }
-    const fltSet=dtFilters[fid];
-     if (isToggle) {
-        const lgtoggler=$('#'+fid+' .lg-toggler');
-        lgtoggler.children().each( 
-           (i, t) => {
-            const sid=t.id;
-            if (sid) { 
-              let id=parseInt(sid, 10);
-              if (fltSet.has(id)) {
-                 onlyData.push(id);
-                 onlyStates[0]=strPut(onlyStates[0], id-1 , '1');
-                 $(t).addClass('lg-sel');
-              }
-            }       
-       });
-      appliedStates[0]=onlyStates[0];
-      return;
-     }  
-    const lgscroller=$(`#${fid} .lg-scroller`);
-    lgscroller.children().each( 
-        (i, t) => {
-       const sid=t.id;
-       if (sid) { 
-         let id=parseInt(sid, 10);
-         if (fltSet.has(id)) {
-            onlyData.push(id);
-            onlyStates[0]=strPut(onlyStates[0], id-1 , '1');
-            $(t).addClass('lg-sel');
-         }
-       }
-     });
-     appliedStates[0]=onlyStates[0];
-     if (onlyData.length) {
-       const p = lgscroller.closest('.lg-panel').find('.lg-only');
-       p.show();
-       let to=p.append('<span class="lg-only-lb">only</span>');
-       to.children().on('click', ()=> {
-         //click on the 'only' clears the filter!
-          deselectAll();
-       } );
-       onlyData.forEach( (oid)=> {
-        //o is the dtaNames index, we need to display the item having idx o
-        p.append('<span class="lg-only-item">'+fltData[idMap[oid]][0]+'</span>') 
-      });  
+   function updateFromFilter() { //this should not be needed
+     if (dtFilter) {
+       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
+       dtFilter.forEach( e => m.onlyStates[e]=1 )
+       m.appliedStates=Object.assign({}, m.onlyStates)
+       forceUpdate()
      }
-  }
+   }
 
-  function clearOnlyStates() {
-    onlyStates[0]='';
-    for (let i=0;i<idMap.length;i++) { onlyStates[0] += '0' }
-    onlyData.length=0;
-  }
-
-  function applyFilter() { 
-    //onlyCounts string should be applied
-    if (onlyData.length===onlyStates[0].length) {
-      //all selected means none selected
-      deselectAll(true);
+  function applyFilter(noupdate) {
+    if (Object.keys(m.onlyStates).length===m.fltData.length) {
+        //the silly case when all items are selected!
+        m.onlyStates={}
     }
-    //console.log("applyFilterData for ",fid, "onlyData=", onlyData);
-    applyFilterData(fid, onlyData); //this updates counts, etc.
-    appliedStates[0]=onlyStates[0];
-    notifyUpdate(fid); //broadcast the new counts update to other components
+    m.appliedStates=Object.assign({}, m.onlyStates)
+    if (props.onApply) {
+      props.onApply(m.onlyStates, fid)
+    }
+    if (props.filter && props.updateFilter) { //auto-update of filter Set requested
+      const fSet=props.filter
+      fSet.clear()
+      Object.keys(m.onlyStates).map(Number).forEach( k => fSet.add(k) )
+    }
+    if (noupdate) return
+    forceUpdate() //trigger an update
+    //notifyUpdate(fid); //broadcast the new counts update to other components
   }
-  
-  function filterChanged() { //must apply it
-      if (appliedStates[0].indexOf("1")<0 && 
-          (onlyStates[0].indexOf("0")<0)) {
-            //deal with the silly case when all are selected
-            //deselectAll(true);
-            btnApply[0].hide();
-            return;
+
+  function filterChanged() { //show the apply button
+      if (Object.keys(m.appliedStates).length===0 &&
+          (Object.keys(m.onlyStates).length===m.fltData.length)) {
+            //deal with the silly case when all items are selected!
+            return false;
       }
-      if (onlyStates[0]===appliedStates[0]) {
-        btnApply[0].hide();
-        return;
-      }
-      btnApply[0].show();
+      return (!objEq(m.appliedStates, m.onlyStates))
+  }
+
+  function onOnlyClick() { //also applies the filter!
+    deselectAll(true)
+    onApplyClick()
   }
 
   function deselectAll(noupd) {
-    clearOnlyStates();
-    $('#'+fid+' .lg-scroller').find('.lg-sel').removeClass('lg-sel');
-    //t.parents('.lg-panel').find('.lg-sel').removeClass('lg-sel'); //removeClass('lg-sel');
-    let p = $('#'+fid).find('.lg-only');
-    p.hide(); p.empty();
-    if (noupd) return;
-    filterChanged();
+    m.onlyStates={}
+    if (noupd) return
+    //showOnlyItems()
+    unCollapse()
+    forceUpdate()
+    //setSelStates(m.onlyStates)
   }
 
- function toggleItem(t, tsel) {
-   let i = parseInt(t[0].id); //1-based dtaNames index
-   clearOnlyStates();
-   if (tsel) {
-     onlyData.push(i);
-     onlyStates[0]=strPut(onlyStates[0], i-1 , '1');
-   }
-   filterChanged();
- }
+  function showOnlyItems() {
+    const ol=$(refDom.current).find('.lg-only')
+    ol.hide()
+    let oitems=ol.find('.lg-only-item')
+    oitems.off('click')
+    oitems.remove()
+    if (Object.keys(m.onlyStates).length) {
+        ol.append(
+          Object.keys(m.onlyStates).map( k=>Number(m.idMap[k]) ).sort((a,b)=>a-b).map(
+            k => `<span class="lg-only-item" key=${k} id="o${m.fltData[k][3]}">${m.fltData[k][0]}</span>`
+          ))
+        ol.show()
+        oitems=ol.find('.lg-only-item')
+        oitems.on('click', e=>{
+          if (!e.target.id || e.target.id.length<2) return
+          const id=Number(e.target.id.substring(1))
+          //console.log(" id=", id, " list idx:", m.idMap[id])
+          const t=$(e.target).closest('.lg-panel').find('.lg-item')[m.idMap[id]]
+          unselectItem($(t), id)
 
- function addOnlyItem(t) {
-    let p = t.closest('.lg-panel').find('.lg-only');
-    let id = parseInt(t[0].id); //1-based dtaNames index, not matching list index
-    //actual display list index is: t.index()
-    onlyData.push(id); 
-    p.show();
-    if (onlyData.length===1) { //first item added
-      let to=p.append('<span class="lg-only-lb">only</span>');
-      to.children().on('click', function() {
-        //click on the 'only' clears the filter!
-         deselectAll();
-      } );
+        })
     }
-    p.children().remove('.lg-only-item'); //remove all
-    onlyData.sort((a, b) => a - b);
-    onlyData.forEach( function(oid) {
-      //o is the dtaNames index, we need to display the item having idx o
-      p.append('<span class="lg-only-item">'+fltData[idMap[oid]][0]+'</span>') 
-    });
-    onlyStates[0]=strPut(onlyStates[0], id-1 , '1');
-    //console.log("[addOnlyItem] onlystates:" ,onlyStates[0], "applied:", appliedStates[0]);
 
-    filterChanged();
+    
   }
-  
- function removeOnlyItem(t) {
-    let p = t.closest('.lg-panel').find('.lg-only');
-    let id = parseInt(t[0].id, 10); //1-based index
-    //remove item with value i from onlyData
-    let ix=onlyData.indexOf(id);
-    if (ix>=0) onlyData.splice(ix, 1);
-    if (onlyData.length>0) {
-      p.children().remove('.lg-only-item'); //remove all items, re-add them
-      onlyData.map( o => p.append(`<span class="lg-only-item">${fltData[ idMap[o] ][0]}</span>`) );
-    } else { p.hide(); p.empty(); }
-    onlyStates[0]=strPut(onlyStates[0], id-1 , '0');
-    filterChanged();
- }
 
-function unCollapse(jc) {
-  let t=jc.find('.lg-title');
-  if (t) {
-    jc.find('.lg-lst').collapse('show');
-    t.removeClass('lg-collapsed');
-    //scrollShader(p, lh);
-    t.find('.coll-glyph').html(arrowLeft)
+  function showApplyButton() {
+    const ch=filterChanged()
+    const undo=(ch && Object.keys(m.appliedStates).length>0)
+    if (ch) {
+      if (undo) m.btnUndo.show()
+      else m.btnUndo.hide()
+      m.btnApply.show()
+    } 
+     else {
+       m.btnUndo.hide()
+       m.btnApply.hide()
+     }
+  }
+
+  function selectItem(t, id) {
+    t.addClass('lg-sel')
+    m.onlyStates[id]=1
+    showOnlyItems()
+    showApplyButton()
+  }
+
+  function unselectItem(t, id) {
+   t.removeClass('lg-sel')
+   delete m.onlyStates[id]
+   showOnlyItems()
+   showApplyButton()
+  }
+
+  function onClickList(e) {
+    let t=$(e.target)
+    e.preventDefault()
+    if (!t.hasClass('lg-item')) {
+      t=t.closest('.lg-item')
+      if (t.length==0) return
     }
-}
- 
-function onApply(e) {
-      //actually apply the changes
-      const btn=$(e.target)
-      const jc=btn.closest('.lg-panel')
-      btn.hide()
-      applyFilter() //onlyStates string is applied
-      e.stopPropagation()
-      if (isToggle) return
-      if (onlyData.length>0) {
-           //collapse it automatically if there is anything selected!
-           let t=jc.find('.lg-title');
-           jc.find('.lg-lst').collapse('hide');
-           t.addClass('lg-collapsed');
-           t.find('.coll-glyph').html(arrowDown);
-        } else {
-          let t=jc.find('.lg-title');
-          jc.find('.lg-lst').collapse('show');
-          t.removeClass('lg-collapsed');
-          //scrollShader(p, lh);
-          t.find('.coll-glyph').html(arrowLeft)
-        }
- }
- /*
- function addApplyButton(jc) {
-    btnApply[0] = jc.find('.lg-apply');
+    const id=parseInt(t[0].id)
+    if (isNaN(id)) return
+    if (m.onlyStates[id]) unselectItem(t, id);
+                  else    selectItem(t, id);
+  }
 
- }
- */
 
- function toggleCollapse(e) {
-  const t=$(e.target).closest('.lg-title') 
-  const p = t.closest('.lg-panel').find('.lg-lst')
-  if(!t.hasClass('lg-collapsed')) {
-    p.collapse('hide');
+  function unCollapse() {
+    const jc=$(refDom.current)
+    const t=jc.find('.lg-title');
+    if (t) {
+        const p=jc.find('.lg-lst')
+        p.collapse('show')
+        t.removeClass('lg-collapsed');
+        scrollShader(p, m.lHeight);
+        //scrollShader(p, lh);
+        t.find('.coll-glyph').html(arrowLeft)
+    }
+  }
+
+  function collapse() {
+    const jc=$(refDom.current)
+    const t=jc.find('.lg-title');
+    jc.find('.lg-lst').collapse('hide');
     t.addClass('lg-collapsed');
     t.find('.coll-glyph').html(arrowDown);
-  } else { //un-collapse
-    p.collapse('show');
-    t.removeClass('lg-collapsed');
-    scrollShader(p, flDt.current.lHeight);
-    t.find('.coll-glyph').html(arrowLeft)
   }
- }
 
- function addHandlers(jc, lh) {
-    let jscroller=jc.find(' .lg-scroller');
-    scrollShader(jscroller, lh);
-    jscroller.on('scroll', (e) => scrollShader($(e.target), lh) );
-    if (noCollapse) return;
-    
-    jc.on('click', '.lg-item', function(e) { 
-      let t = $(this);
-      if (!t.hasClass('lg-sel')) {
-          t.addClass('lg-sel');
-          addOnlyItem(t);
-      } else {
-        t.removeClass('lg-sel');
-          removeOnlyItem(t);
-      }
-  });
- }
+  function onApplyClick() { //when clicking the Apply button
+      m.applyRender=true //next render was triggered by this apply action
+      applyFilter() //onlyStates string is applied, call props.onApply() handler
+      if (isToggle) return
+      if (Object.keys(m.onlyStates).length>0)
+              collapse()
+         else unCollapse()
+  }
 
- function addToggleHandlers(jc) {
-  jc.on('click', '.lg-item', function() {
-    let t = $(this);
-    if(!t.hasClass('lg-sel')) {
-    //var p=$this.parents('.panel').find('.panel-body');
-      t.siblings().removeClass('lg-sel');
-      t.addClass('lg-sel');
-      //$this.find('b').removeClass('bi-chevron-up').addClass('bi-chevron-down');
-      toggleItem(t, true);
-    } else {
-      t.removeClass('lg-sel');
-      toggleItem(t, false);
-      //$this.find('b').removeClass('bi-chevron-down').addClass('bi-chevron-up');
+  function onSelUndo() {
+    m.onlyStates=Object.assign({}, m.appliedStates)
+    forceUpdate()
+  }
+
+  function toggleCollapse(e) {
+    const t=$(refDom.current).find('.lg-title')
+    //const p = t.closest('.lg-panel').find('.lg-lst')
+    if(!t.hasClass('lg-collapsed')) collapse()
+                 else unCollapse()
+  }
+
+  function firstRender(dom) {
+    //first time rendering
+    if (!isToggle)
+      dom.find('.coll-glyph').html(arrowLeft);
+    /* if (id==='sex') {
+      jc.css("line-height","1rem");
+      jc.find('.lg-title').css("line-height","1rem");
+      jc.css("font-size","90%");
+    } */
+    if (fid==='proto') {
+      dom.css("font-size","84%");
+      dom.css("line-height","1rem");
+      let jt=dom.find('.lg-title');
+      jt.css("line-height","1.2rem");
+      jt.css("font-size", "110%")
     }
-  });
-  /*
-  btnApply[0] = jc.find('.lg-apply');
-  btnApply[0].on('click', function(e) {
-    //actually apply the changes
-     $(this).hide();
-     applyFilter(); //onlyStates string is applied
-     e.stopPropagation();
-  });
-  btnApply[0].hide();
-  */
 
- }
+    if (fid==='dset') {
+      dom.find('.lg-title').css("text-align","center");
+      dom.find('.lg-title').css("color","#dd1848");
+    }
+
+    return dom;
+  }
+
+  function scrollShader(t, lh) {
+    const y = t.scrollTop();
+    const l = t.closest('.lg-panel').find('.lg-lst');
+    if (y>2) {
+      //p.addClass('lg-b-shadow');
+      l.find('.lg-topshade').show();
+    }
+    else {
+      //p.removeClass('lg-b-shadow');
+      l.find('.lg-topshade').hide();
+    }
+    //console.log(`y=${y}+${t.innerHeight()} >= ? ${lh}`);
+    if (y+t.innerHeight()>=lh) {
+      //t.removeClass('lg-in-shadow');
+      l.find('.lg-bottomshade').hide();
+    } else {
+      //t.addClass('lg-in-shadow');
+      l.find('.lg-bottomshade').show();
+    }
+  }
+
+  function isSel(oid) {
+    return (m.onlyStates[oid]>0) ? 'lg-sel' : ''
+  }
+
+  function lockStatus(pd) {
+    if (!pd) return null;
+    return (pd===1) ? <span class="lg-item-lock"> </span> :
+                      <span class="lg-item-pub"> </span>    
+  }
+
+  function renderItems() {
+    const showBars = typeof props.noBars == 'undefined' || 
+                  typeof props.nobars == 'undefined'
+    return (m.fltData.map( (d)=>{
+      return (<li class={`d-flex justify-content-between lg-item ${isSel(d[3])}`}
+        id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
+      <span class="lg-item-th">{lockStatus(d[2])}{d[0]}</span>
+      <span class="lg-item-counts" >
+        { showBars &&  <span class="lg-item-bar"> <span class="lg-item-bar-v"
+             style={ {width: `${d[6]}%` }} > </span> </span>
+        }
+        <span class={`badge-primary badge-pill lg-count ${d[1]===0?"lg-count-0":""}`}>{d[1]}</span>
+      </span>
+      </li>) } ))
+  }
+
+  let addclass=props.class ? `lg-panel ${props.class}` : "lg-panel"
+
+  const showOnly = (!isToggle && Object.keys(m.onlyStates).length>0)
+  const showApply=filterChanged()
+  const showSelUndo=(showApply && Object.keys(m.appliedStates).length>0)
   // --- render FltMList ---
-  let addclass=props.class ? `lg-panel ${props.class}` : "lg-panel";
+  //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates),
+  //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
+
+  // ################## rendering component here:
   return (
-       <div className={addclass} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
+       <div className={addclass} ref={refDom} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
         <div className="lg-title"><span onClick={noCollapse ? null : toggleCollapse} class={noCollapse ? "" : "lg-clickable" }>
-          {id2name[props.id]}</span>
+          {id2name[props.id] || props.id}</span>
            <span className="float-right">
-             <span className="lg-apply" onClick={onApply}>Apply</span>
+             <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)} style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
+             <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)} style={ showApply ? { display:"inline-block"} : { display: "none"}}>
+                 Apply</span>
              { !noCollapse &&
-                 <span className="coll-glyph" onClick={noCollapse ? null : toggleCollapse}> </span>
+                 <span className="coll-glyph" onClick={toggleCollapse}> </span>
              }
            </span>
         </div>
-          { isToggle ? <ul className="lg-toggler">  </ul> 
-          : 
-          <ul className="collapse show lg-lst">
-           <div className="lg-scroller" style={{ maxHeight : props.height ? props.height  : "8.6rem"}}> </div>
+          { isToggle ? <ul className="lg-toggler" onClick={onClickList}> {renderItems()} </ul>
+          :
+          <ul className="collapse show lg-lst" onClick={onClickList}>
+           <div className="lg-scroller" style={{ maxHeight : props.height ? props.height  : "8.6rem"}}>
+              {renderItems()}
+           </div>
            <div className="lg-topshade"> </div>
            <div className="lg-bottomshade"> </div>
           </ul> }
-        {!isToggle && <div className="lg-only"> </div>}
+        <div className="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
+           <span class="lg-only-lb" onClick={onOnlyClick}>only</span>
+
+        </div>
        </div>
      )
 }
 
-function clearList(id, isToggle) {  
-  let jc=$(`#${id}`);
-  if (isToggle) {
-      let jl=jc.find('.lg-toggler');
-      jc.off('click', '.lg-item');
-      jl.empty();
-    } else {
-    let jl=jc.find('.lg-scroller');
-    jl.off();
-    jc.off('click', '.lg-item');
-    jl.empty();
-  }
-  let ba=jc.find('.lg-apply');
-  ba.off('click');
-  ba.hide();
-}
-  
-function ckPubStatus(pd) {
-  if (!pd) return '';
-  return (pd===1) ? ' lg-item-lock' : ' lg-item-pub';
-}
-
-function populateList(id, dta, isToggle, isHoriz) {
-  //dta is [fltNames, fltCounts, pubStatus ] ----
-  //                       0     1     2      3       4        5
-  //dta is a list of  [ label, count, pub, index, oriCounts, fullname ]
-  /* <li class="d-flex justify-content-between lg-item">
-    First one <span class="badge-primary badge-pill lg-count">24</span>
-    </li> */
-  if (isToggle) {
-    let st='lg-item';
-    if (isHoriz) st+=' lg-item-h';
-    $('#'+id+' .lg-toggler').append(
-      $.map(dta, (d,i) => { 
-         return '<li class="d-flex justify-content-between '+st+'" id="'+d[3]+'">'+d[0]+
-           ' <span class="badge-primary badge-pill lg-count">'+d[1]+'</span>'+
-           "</li>\n";
-      }).join(''));
-    return
-  }
-  $('#'+id+' .lg-scroller').append(
-    $.map(dta, (d,i) => { 
-       return '<li class="d-flex justify-content-between lg-item'+ckPubStatus(d[2])+
-       '" id="'+d[3]+'">'+d[0]+
-        ' <span class="badge-primary badge-pill lg-count">'+d[1]+'</span>'+
-         "</li>\n" ;
-    }).join(''));
-}
-
-function jqRender(id, dta, isToggle, isHoriz, noCollapse) {
-  
-  populateList(id, dta, isToggle, isHoriz, noCollapse);
-  let jc=$(`#${id}`);
-  if (!isToggle) 
-    jc.find('.coll-glyph').html(arrowLeft);
-  /*  
-  if (id==='sex') {
-    jc.css("line-height","1rem");
-    jc.find('.lg-title').css("line-height","1rem");
-    jc.css("font-size","90%");
-  }
-  */
-  if (id==='proto') {
-    jc.css("font-size","84%");
-    jc.css("line-height","1rem");
-    let jt=jc.find('.lg-title');
-    jt.css("line-height","1.2rem");
-    jt.css("font-size", "110%")
-  }
-  
-  if (id==='dset') {
-    jc.find('.lg-title').css("text-align","center");
-    jc.find('.lg-title').css("color","#dd1848");
-  }
-  
-  return jc;
-}
 
 
-function scrollShader(t, lh) {
-  var y = t.scrollTop();
-  //var p = t.parents('.lg-panel').find('.lg-title');
-  var l = t.closest('.lg-panel').find('.lg-lst');
-  if (y>2) {
-     //p.addClass('lg-b-shadow');
-     l.find('.lg-topshade').show();
-  }
-  else {
-     //p.removeClass('lg-b-shadow');
-     l.find('.lg-topshade').hide();
-  }
-  //console.log(`y=${y}+${t.innerHeight()} >= ? ${lh}`);
-  if (y+t.innerHeight()>=lh) {
-    //t.removeClass('lg-in-shadow');
-    l.find('.lg-bottomshade').hide();
-  } else {
-    //t.addClass('lg-in-shadow');
-    l.find('.lg-bottomshade').show();
-  }
-}
-
-export default FltMList
