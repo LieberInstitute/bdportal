@@ -1,0 +1,308 @@
+/*
+Styling of ui controls
+These styles could/should be included at a higher level (app)
+to be made available everywhere in the app
+*/
+
+/* Bootstrap: override blue glow around focused form controls etc. */
+.form-control:focus, button:focus, input:focus, select:focus {
+  border: 1px solid rgba(184, 67, 106, 0.4) !important;
+  box-shadow: 0 0 0 0.1rem rgba(224, 60, 88, 0.2) !important;
+  outline-color: rgba(224, 60, 88, 0.6) !important;
+}
+
+.bpink { border: 1px solid pink; }
+.bred { border: 1px solid red; }
+.bgreen { border: 1px solid green; }
+.bblue { border: 1px solid blue; }
+.byellow { border: 1px solid yellow; }
+
+
+/* custom check box style in LIBD palette for ReactStrap: to be used like this
+<Label className="ckbox-label" >
+     <CustomInput type="checkbox" id="ckDisable" onChange={toggleDisable} />
+      Toggle disable
+</Label>
+*/
+
+.ckbox-label-before {
+  display: flex;
+  flex-direction: row-reverse;
+  /* border: 1px solid pink; */
+  align-content: flex-start;
+}
+
+.ckbox-label {
+  display: flex;
+  flex-direction: row;
+  /* border: 1px solid pink; */
+  align-content: flex-start;
+}
+
+.custom-control-label {
+  margin-top:1px;
+  margin-left:4px;
+}
+
+.lb-fetal, .lb-fetal-ck {
+  position:relative;
+  color: #666;
+  font-weight: 400;
+}
+
+.lb-fetal-ck {
+  color: #ed1848;
+}
+
+/* decrease space between checkbox and following label! */
+.custom-checkbox .custom-control-label::before {
+   left:-1.3rem !important;
+}
+.custom-checkbox .custom-control-label::after {
+  left:-1.3rem !important;
+}
+
+.custom-switch .custom-control-label::before, .custom-control-label::after {
+  cursor:pointer;
+}
+
+.custom-control-label:before{
+  border: 1px solid rgba(184, 67, 106, 0.4) !important;
+  background-color:white;
+}
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before{
+  background-color:#ed1848;
+}
+.custom-checkbox .custom-control-input:checked:disabled~.custom-control-label::before{
+  border: 1px solid rgba(184, 167, 146, 0.4) !important;
+  background-color:#b2a8b8;
+}
+
+.custom-switch .custom-control-input:checked~.custom-control-label::before{
+  background-color:#ed1848;
+}
+
+.custom-switch .custom-control-input:checked:disabled~.custom-control-label::before{
+  border: 1px solid rgba(184, 167, 146, 0.4) !important;
+  background-color:#b2a8b8;
+}
+
+
+.custom-checkbox .custom-control-input:focus~.custom-control-label::before {
+  border: 1px solid rgba(184, 67, 106, 0.4) !important;
+  box-shadow: 0 0 0 0.1rem rgba(224, 60, 88, 0.2) !important;
+  outline-color: rgba(224, 60, 88, 0.6) !important;
+}
+
+.custom-switch .custom-control-input:focus~.custom-control-label::before {
+  border: 1px solid rgba(184, 67, 106, 0.4) !important;
+  box-shadow: 0 0 0 0.1rem rgba(224, 60, 88, 0.2) !important;
+  outline-color: rgba(224, 60, 88, 0.6) !important;
+}
+
+
+
+/* panel for custom multi-select list-grid with counts
+   but could be used for other controls */
+.lg-panel {
+  position:relative;
+  background-color: #fff;
+  width: 18rem;
+  overflow: hidden;
+  padding:0;
+  margin: 1rem auto 0.2rem;
+  /* box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3), 0 2px 4px 0 rgba(0, 0, 0, 0.2); */
+  box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.lg-title {
+cursor: default;
+position:relative;
+display: inline-flex;
+width:100%;
+color: #666;
+background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
+background-color: #f2f2f4;
+font-size: 1em;
+font-weight: bold;
+padding:0 4px;
+text-align:left;
+border-bottom:1px solid #e2e2e4;
+justify-content: space-between !important;
+}
+
+.lg-panel .lg-clickable {
+  cursor:pointer;
+}
+
+.lg-title .coll-glyph {
+  cursor:pointer;
+  position:relative;
+  color:#888;
+  width:16px;
+  display:inline-block !important;
+}
+
+.age-panel { /* collapsable region of AgeRange control */
+  position:relative;
+  background-color: #f8f8f8;
+  padding: 0;
+  margin: 0;
+}
+
+.age-label {
+   font-size:90%;
+   display:inline-block;
+   align-self:flex-end;
+   flex:0 0 46px;
+   padding:4px 4px;
+ }
+
+  .age-spacer {
+    padding:0 0.6rem;
+    color:gray;
+ }
+
+ .age-padder {
+     padding:0.4rem 0.2rem;
+ }
+
+ .age-padder input[type=number] {
+  margin:0;
+  padding:0 4px;
+}
+
+ /* footer section of .lg-panel showing the selection */
+ .lg-only {
+  position:relative;
+  background-color: #f2f2f4;
+  z-index:10;
+  display:block;
+  padding:2px;
+  margin:0;
+  text-align:left;
+  overflow-wrap: normal;
+  /* border-top: 1px solid #eee; */
+}
+
+/* "only" label at the bottom */
+.lg-only-lb {
+  font-size: 0px;
+  text-align:center;
+  display:inline-block;
+  width: 32px;
+  height: 22px;
+  font-weight: bold;
+  color: #ed1848;
+  cursor: pointer;
+  margin: 0 1px;
+  padding: 0 1px 0 1px;
+}
+.lg-only-lb::after {
+  font-size:14px;
+}
+
+.lg-only-lb::after {
+  content: "only";
+}
+.lg-only-lb:hover {
+  /* border:1px solid #e2e4e6;*/
+  background-color: #fff;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+.lg-only-lb:hover::after {
+  background-color: #fff;
+  content: "\2715";
+}
+
+.lg-only-item {
+  display:inline-block;
+  pointer-events: auto;
+  font-size: 90%;
+  font-weight: bold;
+  /* cursor: default;*/
+  cursor: pointer;
+  padding: 0 3px 1px;
+  border: 0;
+  margin: 2px 2px;
+  color: white;
+  background-color: #ed1848;
+  border-radius: 6px;
+}
+
+.lg-apply {
+  position:relative;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  /* display:inline; */
+  display: none;
+  top:-2px;
+  height:20px;
+  margin: 0 8px 1px 2px;
+  padding: 0 2px 1px 2px;
+  /*color: #bd0019;*/
+  color: #ed1848;
+  background-color: #fff;
+  border:1px solid #e2e4e6;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  /* border:1px solid #fac7cb;  */
+  border-radius: 2px;
+}
+
+.lg-apply:hover {
+  background-color: #ffffff;
+  color: #ad1848;
+  /* box-shadow: 2px 2px 1px grey; */
+}
+
+
+.btn-age-preset, .btn-undo{
+  position:relative;
+  font-size: 14px;
+  line-height:18px;
+  font-weight: normal;
+  cursor: pointer;
+  display: inline-block;
+  height:20px;
+  width:auto;
+  margin: 0 4px;
+  padding: 0 3px;
+  /* color: #ed1848; */
+  color: #444;
+  background-color: #fff;
+  border:1px solid #e2e4e6;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  /* border:1px solid #fac7cb;  */
+  border-radius: 1px;
+}
+
+.btn-undo {
+  padding-top:0;  
+  height:14px;
+  width:26px;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-undo-icon {
+  position:relative;
+  display:inline-block;
+  height:12px;
+  padding:0;
+  margin:0;
+  top:-4px;
+  left:2px;
+  width:24px;
+  background-color: #ed6848;
+  -webkit-mask-image: url('undo_16.svg');
+  mask-image: url('undo_16.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.btn-age-preset:hover, .btn-apply-undo:hover {
+  background-color: #ffffff;
+  color: #ad1848;
+  /* box-shadow: 2px 2px 1px grey; */
+}
+

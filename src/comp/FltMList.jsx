@@ -64,7 +64,6 @@ export function FltMList( props ) {
     appliedStates:{}, //appliedStates - string map last applied
     idMap:{}, //mapping origIdx to its row index in current fltData
     jqCreated: false,
-    applyRender:false, // transitional state, set only for the render after Apply
     btnApply: null,
     btnUndo: null,
     lHeight: 0 //calculated list height
@@ -87,11 +86,11 @@ export function FltMList( props ) {
 
   // if a filter was given, it's the parent responsibility to keep it updated after onApply!
   // when dtFilter, the object will render selection according to this filter
-  const dtFilter= (typeof props.filter === 'function' ) ? props.filter(fid) : props.filter 
+  const dtFilter= (typeof props.filter === 'function' ) ? props.filter(fid) : props.filter
     /* ? props.filter : new Set()
     m.fltSet=dtFilter */
   const isHoriz=(props.type==='htoggle' || props.horiz==='1')
-  const noCollapse=(isToggle || typeof props.nocollapse != "undefined" || 
+  const noCollapse=(isToggle || typeof props.nocollapse != "undefined" ||
           typeof props.noCollapse != "undefined") // toggle styles are never collapsible
   //WARN: when props.data is a function, that is going to be called by EVERY UPDATE
   // better make it an object updated by the parent only when needed
@@ -115,22 +114,20 @@ export function FltMList( props ) {
              m.fltData[i]=d; //dtaNames index (id)-1 -> fltData index
              if (d[1]>maxv) maxv=d[1];
       })
-      if (props.sort) { //sort by 
+      if (props.sort) { //sort by
          m.fltData.sort( (a, b)=> b[1]-a[1])
       }
-      m.fltData.forEach( (d,i)=>{ 
+      m.fltData.forEach( (d,i)=>{
         m.idMap[d[3]]=i
-        d[6]=Math.round(d[1]*100/maxv)  
+        d[6]=Math.round(d[1]*100/maxv)
       })
   }
 
-  if (dtFilter && m.applyRender) { // && dtFilter.size>0 ?
+  if (dtFilter) { // && dtFilter.size>0 ?
       // when props.filter is given, this will override the current onlyStates and appliedStates!
       // in order to avoid this, any re-render should ONLY happen after
       // onApplyClick() updated the filter data backend (props.filter and props.data)
       //console.log(" -- dtFilter given:", dtFilter, ", overriding selection", m.onlyStates)
-      
-      m.applyRender=false
       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
       dtFilter.forEach( e => m.onlyStates[e]=1 )
       m.appliedStates=Object.assign({}, m.onlyStates)
@@ -164,6 +161,9 @@ export function FltMList( props ) {
           //if (noCollapse) return;
         }
         showOnlyItems()
+       // -- uncollapse if no selection
+        if (Object.keys(m.onlyStates).length===0)
+           unCollapse()
       }
 
   }) // useEffect after every render
@@ -191,7 +191,6 @@ export function FltMList( props ) {
     if (props.onApply) {
       props.onApply(m.onlyStates, fid)
     }
-
 
     if (noupdate) return
     forceUpdate() //trigger an update
@@ -244,7 +243,7 @@ export function FltMList( props ) {
         })
     }
 
-    
+
   }
 
   function showApplyButton() {
@@ -254,7 +253,7 @@ export function FltMList( props ) {
       if (undo) m.btnUndo.show()
       else m.btnUndo.hide()
       m.btnApply.show()
-    } 
+    }
      else {
        m.btnUndo.hide()
        m.btnApply.hide()
@@ -317,7 +316,6 @@ export function FltMList( props ) {
   }
 
   function onApplyClick() { //when clicking the Apply button
-      m.applyRender=true //next render was triggered by this apply action
       applyFilter() //onlyStates string is applied, call props.onApply() handler
       if (isToggle) return
       if (Object.keys(m.onlyStates).length>0)
@@ -347,7 +345,7 @@ export function FltMList( props ) {
       //dom.css("line-height","90%");
       //dom.find('.lg-title').css("line-height","1.2rem");
       //dom.find('.lg-toggler').css( {"font-size":"95%", "line-height":"95%"});
-    } 
+    }
     if (fid==='proto') {
       dom.css({ "font-size":"85%", "line-height":"1.2rem"})
       //dom.find('.lg-title').css({ "line-height":"1.2rem", "font-size":"110%"})
@@ -389,11 +387,11 @@ export function FltMList( props ) {
   function lockStatus(pd) {
     if (!pd) return null;
     return (pd===1) ? <span class="lg-item-lock"> </span> :
-                      <span class="lg-item-pub"> </span>    
+                      <span class="lg-item-pub"> </span>
   }
 
   function renderItems() {
-    const showBars = !isHoriz && (typeof props.noBars == 'undefined' || 
+    const showBars = !isHoriz && (typeof props.noBars == 'undefined' ||
                   typeof props.nobars == 'undefined')
     return (m.fltData.map( (d)=>{
       return (<li class={`d-flex justify-content-between lg-item ${isHoriz?'lg-item-h':''} ${isSel(d[3])}`}
@@ -415,6 +413,8 @@ export function FltMList( props ) {
   const showApply=filterChanged()
   const showSelUndo=(showApply && Object.keys(m.appliedStates).length>0)
   // --- render FltMList ---
+  if (fid==='race')
+    console.log(">>>>>- rendering race fltmlist with onlyStates=", Object.keys(m.onlyStates))
   //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates), " isToggle:",isToggle, ", showOnly:", showOnly)
   //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
 
