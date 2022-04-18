@@ -162,12 +162,13 @@ print "\n],\n";
 
 ## ----- dx, similar to reg, but with sequenced subject counts per datatype -------
 ## build @dx array :  $dx[dbId] = [ ord#, dx, name, dbId, brcount_dt1, brcount_dt2, ..]
+## NOTE: dropped subjects are not counted!
 my @dxord; #push dbid for dx (dx_id) in order they were listed (by dx.ord)
 foreach my $dt (@xdts) {
     my $q=qq/with bd as (select distinct brint, dx_id
     from exp_$dt x, samples s, subjects p, dx d 
-      where x.dropped is not true and 
-       x.s_id = s.id and p.id=s.subj_id and d.id=p.dx_id)
+      where x.dropped is not true and p.dropped is not true 
+       and x.s_id = s.id and p.id=s.subj_id and d.id=p.dx_id)
    SELECT dx, coalesce(name, dx), dx.id, count(dx_id) from bd b
     right outer join dx on dx.id=b.dx_id
     group by 3,2,1 order by dx.ord
@@ -206,15 +207,27 @@ foreach my $dxid (@dxord) {
 print "\n],\n";
 
 ## ----- get the brains - brint hashed but with a new ord# as well
-my ($sth, $r)=dbExec(q/select brint,  dx_id, race, sex,
-  TRUNC(age::NUMERIC, 2) as age, case when dropped is true then 1 else 0 end from subjects 
-/);
+## NOTE: dropped subjects are also pulled but they should be always excluded from all counts!
+my ($sth, $r)=dbExec(q/with rbrs as (SELECT distinct brint from exp_rnaseq x, samples s, subjects p
+       where x.dropped is not true and x.s_id = s.id and p.id=s.subj_id),
+    dbrs as (SELECT distinct brint from exp_dnam x, samples s, subjects p
+       where x.dropped is not true and x.s_id = s.id and p.id=s.subj_id),
+    wbrs as (SELECT distinct brint from exp_wgs x, samples s, subjects p
+       where x.dropped is not true and x.s_id = s.id and p.id=s.subj_id),
+    xs as (select coalesce(r.brint, case when d.brint is null then w.brint else d.brint end) as brint
+    from rbrs r
+      full join dbrs d on d.brint=r.brint
+      full join wbrs w on w.brint=r.brint)
+ select brint,  dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age,
+  case when exists(select from xs where s.brint=xs.brint) then 1 else 0 end as has_seq,
+  case when genotyped is true then 1 else 0 end as genotyped,  
+  case when dropped is true then 1 else 0 end as dropped from subjects s /);
 
-## JSON out: array of [ord#, brint, dx#, race#, sex#, age, dropped]
+## JSON out: array of [ord#, brint, dx#, race#, sex#, age, has_seq, genotyped, dropped]
 print '"brains": [';
 $i=0;
 while (my $rd=dbFetch($sth)) {
- my ($brint, $dx_id, $race, $sex, $age, $drop)=@$rd;
+ my ($brint, $dx_id, $race, $sex, $age, $has_seq, $has_geno, $drop)=@$rd;
  print ($i ? ",\n" : "\n");
  $i++;
  my $dxd=$dx[$dx_id] || die("Error getting \$dx[$dx_id] for brint $brint loading!\n");
@@ -223,7 +236,7 @@ while (my $rd=dbFetch($sth)) {
     die("Error: race $race has no index translation in \%races!\n");
  my $sidx=$hsex{$sex} ||
     die("Error: sex $sex has no index translation in \%sexes!\n");
- print ' '.jsonarr([$i, $brint, $$dxd[0], $ridx, $sidx, $age, $drop], '0000000');
+ print ' '.jsonarr([$i, $brint, $$dxd[0], $ridx, $sidx, $age, $has_seq, $has_geno, $drop], '000000000');
 }
 print "\n],\n";
 
@@ -248,11 +261,12 @@ $idt=0;
 ## JSON out array of arrays per dataset:
 ##    [ br_ord#, sample_id, dataset_ord#, reg_ord#, proto ]
 ##  no need to print a ord# for samples
+## NOTE: dropped samples and subjects are DISCARDED
 foreach my $dt (@xdts) {
    my $q=qq/SELECT brint, sample_id as id, dataset_id as dset, s.r_id as reg, 
    $qf{$dt}
-   FROM  exp_$dt x, samples s, subjects p
-   WHERE s_id=s.id AND s.subj_id=p.id AND x.dropped is not true/;
+   FROM  exp_$dt x, samples s, subjects p  WHERE s_id=s.id
+   AND s.subj_id=p.id AND x.dropped is not true AND p.dropped is not true/;
    my $i=0;
    print ($idt ? ", [" : " [");
    my ($sth, $r)=dbExec($q);
