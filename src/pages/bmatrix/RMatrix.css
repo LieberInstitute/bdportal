@@ -1,3 +1,15 @@
+.matrixCol {
+  min-width: 24rem !important;
+  max-width: 24rem !important;
+}
+
+.matrixWrap {
+  margin-top:-48px;
+  justify-content: space-around;
+  min-width: 22rem;
+  /* border:1px solid yellowgreen;*/
+}
+
 .matrixWrap .mxTitleBox {
   /* make sure this is bigger than your largest
    expected header name slanted at 45 degrees
@@ -8,7 +20,7 @@
    text-align:left;
    margin-left: 0;
    padding-left: 0;
-   /* flex-basis: 4rem; 
+   /* flex-basis: 4rem;
    border: 1px solid red; */
 }
 
@@ -21,15 +33,22 @@
 .matrixWrap .mxApply {
    /* border: 1px solid green; */
    text-align:center;
-   height:1.2rem;
+   height:16px;
+   width:28px;
+   position:relative;
+}
+.mxApply .lg-apply {
+    position: absolute;
+    margin-left:20px;
+    height:20px !important;
 }
 #rxMatrix {
     text-align: left;
-    margin-top: 3.2rem; 
+    margin-top: 3.2rem;
     padding-right: 0.2em;
     border-collapse: collapse;
    }
-   
+
    #rxMatrix th {
      font-size: 0.93rem;
      font-weight: bold;
@@ -51,16 +70,16 @@
      border-left: none;
      white-space: nowrap;
    }
-   
+
    #rxMatrix th.xt > div {
-     transform: 
+     transform:
        translate(36px, 50px)
        rotate(315deg);
      width: 36px;
    }
-   
+
    #rxMatrix th.xt > div > span {
-     text-align: left; 
+     text-align: left;
      padding: 2px 4px;
      margin-left:-6px;
    }
@@ -89,7 +108,7 @@
       display:inline-block;
       text-align:center;
       bottom: 0;
-      left: 0;      
+      left: 0;
       min-width: 2.8rem;
       height: 1.2rem;
       padding-top: 1px;
@@ -135,11 +154,11 @@
      text-align: left;
      /* Move the top left corner of the span bottom-border to line up with the top left corner of the td border-right border so that the border corners are matched */
      /* Rotate -45 degrees about matched border corners */
-      transform: 
+      transform:
        translate(calc(75% - 0.5px), 1px)
        rotate(320deg);
      /* -- if you want to add intersection buttons under the oblique headers:
-       transform: 
+       transform:
        translate(calc(75% - 0.5px), -14px)
        rotate(320deg);*/
      transform-origin: 0% calc(100% - 1px);
@@ -157,8 +176,8 @@
      border-bottom-left-radius: 12px 12px;
      /* border-bottom: 1px solid #ddd; */
    }
-   
-   
+
+
    #rxMatrix td {
      background-color: white;
      color:brown;
@@ -169,8 +188,7 @@
      border: 1px solid #eee;
      cursor: pointer;
    }
-   
+
    #rxMatrix .cr {
-     border-top: none;     
+     border-top: none;
    }
-   

@@ -1,7 +1,6 @@
 import $ from 'jquery'
 import {useEffect, useRef, useState, useReducer } from 'preact/hooks'
 import './ui.css'
-import {arrowLeft, arrowDown, lockIcon} from './ui.jsx'
 import './FltMList.css'
 /* Core functionality props:
    data = function or object that provides the items with ids and counts
@@ -15,7 +14,12 @@ import './FltMList.css'
    updateFilter="yes/1/true" -- updates the Set given at props.filter when user selection
                          is applied
  Esthetics:
+     sort : if present, sort decreasingly by counts
    noBars : if provided, will disable display of bars for each item
+
+ CSS classes:
+   class="fl-shad"      : floating panels with shadow
+   class = "lg-shrink"  : smaller item fonts (e.g. for protocol toggler)
 
 */
 
@@ -127,7 +131,6 @@ export function FltMList( props ) {
       // when props.filter is given, this will override the current onlyStates and appliedStates!
       // in order to avoid this, any re-render should ONLY happen after
       // onApplyClick() updated the filter data backend (props.filter and props.data)
-      //console.log(" -- dtFilter given:", dtFilter, ", overriding selection", m.onlyStates)
       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
       dtFilter.forEach( e => m.onlyStates[e]=1 )
       m.appliedStates=Object.assign({}, m.onlyStates)
@@ -140,26 +143,24 @@ export function FltMList( props ) {
       }
       const dom=$(refDom.current)
       if (!m.jqCreated) {
-        firstRender(dom) //, notifyUpdate);
+        //firstRender(dom)
         m.jqCreated=true;
       }
+      firstRender(dom) //, notifyUpdate);
       m.btnApply = dom.find('.lg-apply')
       m.btnUndo = dom.find('.btn-undo')
       //console.log(`FltMList ${fid} creating with filter size: ${dtFilter.size}`);
       //dom.find('.coll-glyph').html(arrowLeft)
       if (!isToggle) {
-        // add scrolling, collapse and apply click handlers
+        // add scrolling shading
         //if (dtFilter.size===0) unCollapse(dom);
-        const li=dom.find('.lg-item').last();
         // after every render:
-        if (li && li.position) {
-          m.lHeight=Math.floor(li.position().top+li.outerHeight(true));
-          const jscroller=dom.find(' .lg-scroller');
-          scrollShader(jscroller, m.lHeight);
-          jscroller.off('scroll')
-          jscroller.on('scroll', (e) => scrollShader($(e.target), m.lHeight) );
+        //if (li && li.position) {
+          //m.lHeight=Math.round(li.position().top+li.outerHeight(true))
+          const jscroller=dom.find('.lg-scroller')
+          checkScrollShader(jscroller)
           //if (noCollapse) return;
-        }
+        //}
         showOnlyItems()
        // -- uncollapse if no selection
         if (Object.keys(m.onlyStates).length===0)
@@ -239,7 +240,7 @@ export function FltMList( props ) {
           //console.log(" id=", id, " list idx:", m.idMap[id])
           const t=$(e.target).closest('.lg-panel').find('.lg-item')[m.idMap[id]]
           unselectItem($(t), id)
-
+          applyFilter()
         })
     }
 
@@ -261,11 +262,11 @@ export function FltMList( props ) {
   }
 
   function selectItem(t, id) {
-    t.addClass('lg-sel')
-    if (isToggle) {  //deselect all!
-      m.onlyStates={}
-      forceUpdate()
+    if (isToggle)  { // deselect all!
+       m.onlyStates={}
+       t.siblings().removeClass('lg-sel')
     }
+    t.addClass('lg-sel')
     m.onlyStates[id]=1
     if (!isToggle) showOnlyItems()
     showApplyButton()
@@ -291,6 +292,15 @@ export function FltMList( props ) {
                   else    selectItem(t, id);
   }
 
+  function checkScrollShader(jscroller) {
+    m.lHeight=jscroller.get(0).scrollHeight
+    const lh=Math.round(jscroller.height())
+    //console.log(` scroller for ${fid}: `, m.lHeight, ' vs' , lh)
+    jscroller.off('scroll')
+    scrollShader(jscroller, m.lHeight, lh);
+    if (lh<m.lHeight)
+      jscroller.on('scroll', (e) => scrollShader($(e.target), m.lHeight, lh)  );
+  }
 
   function unCollapse() {
     if (isToggle) return
@@ -299,10 +309,9 @@ export function FltMList( props ) {
     if (t) {
         const p=jc.find('.lg-lst')
         p.collapse('show')
-        t.removeClass('lg-collapsed');
-        scrollShader(p, m.lHeight);
-        //scrollShader(p, lh);
-        t.find('.coll-glyph').html(arrowLeft)
+        jc.removeClass('lg-collapsed')
+        if (m.lHeight<4)  //refresh scroll shader
+            checkScrollShader(p.find('.lg-scroller'))
     }
   }
 
@@ -311,8 +320,8 @@ export function FltMList( props ) {
     const jc=$(refDom.current)
     const t=jc.find('.lg-title');
     jc.find('.lg-lst').collapse('hide');
-    t.addClass('lg-collapsed');
-    t.find('.coll-glyph').html(arrowDown);
+    jc.addClass('lg-collapsed');
+    //t.find('.coll-glyph').html(arrowDown);
   }
 
   function onApplyClick() { //when clicking the Apply button
@@ -329,28 +338,33 @@ export function FltMList( props ) {
   }
 
   function toggleCollapse(e) {
-    const t=$(refDom.current).find('.lg-title')
+    //const t=$(refDom.current).find('.lg-title')
+    const t=$(refDom.current)
     //const p = t.closest('.lg-panel').find('.lg-lst')
     if(!t.hasClass('lg-collapsed')) collapse()
                  else unCollapse()
   }
 
   function firstRender(dom) {
-    //first time rendering
-    if (!isToggle)
-      dom.find('.coll-glyph').html(arrowLeft);
+    //first time rendering?
+    //if (!isToggle)
+    //  dom.find('.coll-glyph').html(arrowLeft);
+     /*
     if (fid==='sex') {
-      dom.css({ "font-size":"90%", "line-height":"1.2rem"})
-      dom.find('.lg-apply').css({"font-size":"8px", height:"18px"})
+      dom.css({ "font-size":"90%"})
+      //dom.find('.lg-apply').css({"font-size":"8px", height:"18px"})
       //dom.css("line-height","90%");
       //dom.find('.lg-title').css("line-height","1.2rem");
       //dom.find('.lg-toggler').css( {"font-size":"95%", "line-height":"95%"});
-    }
+    }*/
+
+    /*
     if (fid==='proto') {
-      dom.css({ "font-size":"85%", "line-height":"1.2rem"})
+      dom.find('.lg-item').css({ "font-size":"13px"})
+      dom.find('.lg-count').css({ "font-size":"95%"})
       //dom.find('.lg-title').css({ "line-height":"1.2rem", "font-size":"110%"})
     }
-
+*/
     if (fid==='dset') {
       dom.find('.lg-clickable').css({"text-align":"center", width:"70%", "padding-left":"6rem"});
       dom.find('.lg-title').css("color","#dd1848");
@@ -359,10 +373,10 @@ export function FltMList( props ) {
     return dom;
   }
 
-  function scrollShader(t, lh) {
+  function scrollShader(t, lh, vh) {
     const y = t.scrollTop();
     const l = t.closest('.lg-panel').find('.lg-lst');
-    if (y>2) {
+    if (y>1) {
       //p.addClass('lg-b-shadow');
       l.find('.lg-topshade').show();
     }
@@ -370,8 +384,8 @@ export function FltMList( props ) {
       //p.removeClass('lg-b-shadow');
       l.find('.lg-topshade').hide();
     }
-    //console.log(`y=${y}+${t.innerHeight()} >= ? ${lh}`);
-    if (y+t.innerHeight()>=lh) {
+   //console.log('y+vh=', y+vh, ' vs ', lh)
+    if (y+vh>=lh) {
       //t.removeClass('lg-in-shadow');
       l.find('.lg-bottomshade').hide();
     } else {
@@ -393,6 +407,8 @@ export function FltMList( props ) {
   function renderItems() {
     const showBars = !isHoriz && (typeof props.noBars == 'undefined' ||
                   typeof props.nobars == 'undefined')
+    //if (fid=="sex")
+   //  console.log("renderItems() called with m.onlyStates=", Object.keys(m.onlyStates))
     return (m.fltData.map( (d)=>{
       return (<li class={`d-flex justify-content-between lg-item ${isHoriz?'lg-item-h':''} ${isSel(d[3])}`}
         id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
@@ -406,24 +422,28 @@ export function FltMList( props ) {
       </span>
       </li>) } ))
   }
-
-  let addclass=props.class ? `lg-panel ${props.class}` : "lg-panel"
-
+  let addclass="lg-panel"
+  if (isToggle) addclass=`${addclass} lg-collapsed`
+  if (props.class) addclass=`${addclass} ${props.class}`
+  
   const showOnly = (!isToggle && Object.keys(m.onlyStates).length>0)
   const showApply=filterChanged()
+  //const showApply=true
   const showSelUndo=(showApply && Object.keys(m.appliedStates).length>0)
+  //const showSelUndo=true
   // --- render FltMList ---
-  if (fid==='race')
-    console.log(">>>>>- rendering race fltmlist with onlyStates=", Object.keys(m.onlyStates))
+  //if (fid==='race')
+  //  console.log(">>>>>- rendering race fltmlist with onlyStates=", Object.keys(m.onlyStates))
   //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates), " isToggle:",isToggle, ", showOnly:", showOnly)
   //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
 
   // ################## rendering component here:
+
   return (
-       <div className={addclass} ref={refDom} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
-        <div className="lg-title"><span onClick={noCollapse ? null : toggleCollapse} class={noCollapse ? "" : "lg-clickable" }>
+       <div class={addclass} ref={refDom} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
+        <div class="lg-title"><span onClick={noCollapse ? null : toggleCollapse} class={noCollapse ? "" : "lg-clickable" }>
           {id2name[props.id] || props.id}</span>
-           <span className="float-right">
+           <span class="float-right d-flex justify-content-center align-items-center">
              <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)} style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
              <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)} style={ showApply ? { display:"inline"} : { display: "none"}}>
                  Apply</span>
@@ -432,17 +452,17 @@ export function FltMList( props ) {
              }
            </span>
         </div>
-          { isToggle ? <ul className="lg-toggler" onClick={onClickList}> {renderItems()} </ul>
+          { isToggle ? <ul class="lg-toggler" onClick={onClickList}> {renderItems()} </ul>
           :
-          <ul className="collapse show lg-lst" onClick={onClickList}>
-           <div className="lg-scroller" style={{ maxHeight : props.height ? props.height  : "8.6rem"}}>
+          <ul class="collapse show lg-lst" onClick={onClickList}>
+           <div class="lg-scroller" style={{ maxHeight : props.height ? props.height  : "8.6rem"}}>
               {renderItems()}
            </div>
-           <div className="lg-topshade"> </div>
-           <div className="lg-bottomshade"> </div>
+           <div class="lg-topshade"> </div>
+           <div class="lg-bottomshade"> </div>
           </ul> }
-        <div className="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
-           <span class="lg-only-lb" onClick={onOnlyClick}>only</span>
+        <div class="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
+           <span class="lg-only-lb" onClick={onOnlyClick}>&#x2715;</span>
 
         </div>
        </div>

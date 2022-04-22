@@ -12,11 +12,64 @@ to be made available everywhere in the app
 }
 
 .bpink { border: 1px solid pink; }
+.bpink2 { border: 2px solid pink; }
+.bpink4 { border: 4px solid pink; }
 .bred { border: 1px solid red; }
 .bgreen { border: 1px solid green; }
+.bgreen4 { border: 4px solid green; }
 .bblue { border: 1px solid blue; }
 .byellow { border: 1px solid yellow; }
 
+/* the 1 row wrapping the 3 layout columns */
+.row3Cols {
+  /* margin-bottom:10px; */
+}
+.colMatrix {
+  min-width: 24rem !important;
+  max-width: 24rem !important;
+}
+
+.colCkRow {
+  min-width: 16.6rem !important;
+  max-width: 16.6rem !important;
+  /* max-width: fit-content !important;*/
+  position:relative;
+}
+
+.ckRow {
+  position:absolute;
+  padding:0 !important;
+  top:2px;
+  left:2px;
+  width: 15rem !important;
+  max-width: 15rem !important;
+}
+
+.colDemo {
+  min-width: 16.6rem !important;
+  /* max-width: fit-content !important; */
+  max-width: 16.6rem !important;
+  flex:1;
+  position:relative;
+  /* max-height: 35rem !important;
+  overflow-y: auto;*/
+}
+
+.col-vscroll {
+  position: absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  overflow-y: auto;
+}
+
+.colSummary {
+  min-width: 24rem !important;
+  max-width: 24rem !important;
+  flex:1;
+  position:relative;
+}
 
 /* custom check box style in LIBD palette for ReactStrap: to be used like this
 <Label className="ckbox-label" >
@@ -35,12 +88,13 @@ to be made available everywhere in the app
 .ckbox-label {
   display: flex;
   flex-direction: row;
+  font-size:14px;
   /* border: 1px solid pink; */
   align-content: flex-start;
 }
 
 .custom-control-label {
-  margin-top:1px;
+  margin-top:-2px;
   margin-left:4px;
 }
 
@@ -106,29 +160,52 @@ to be made available everywhere in the app
    but could be used for other controls */
 .lg-panel {
   position:relative;
-  background-color: #fff;
   width: 18rem;
   overflow: hidden;
   padding:0;
-  margin: 1rem auto 0.2rem;
-  /* box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3), 0 2px 4px 0 rgba(0, 0, 0, 0.2); */
-  box-shadow: 1px 2px 4px 1px rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  margin:6px;
+  border-radius:8px;
+  border: 1px solid #fbfbfb;
+  border-right: 1px solid #c8c8c8;
+  border-bottom: 1px solid #c8c8c8;
 }
 
-.lg-title {
+.lg-panel:not(.lg-collapsed) {
+  /* box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2); */
+  box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid #b8b8b8;
+  border-right: 1px solid #b8b8b8;
+  border-bottom-right-radius:2px;
+  border-bottom-left-radius:2px;
+}
+
+/* fl-shad = "floating with shadow" look */
+.lg-panel.fl-shad {
+  border: 1px solid #ddd;
+  /*background-color: #fff;*/
+  background: none;
+  box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.lg-panel .lg-title {
 cursor: default;
 position:relative;
 display: inline-flex;
 width:100%;
+justify-content: space-between !important;
 color: #666;
-background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
-background-color: #f2f2f4;
-font-size: 1em;
+font-size: 95%;
 font-weight: bold;
 padding:0 4px;
 text-align:left;
-border-bottom:1px solid #e2e2e4;
-justify-content: space-between !important;
+/* background-color: #f6f6f6; */
+border-bottom:1px solid #ececec;
+}
+
+.lg-panel.fl-shad .lg-title {
+  background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
+  background-color: #f2f2f4;
+  border-bottom:1px solid #e2e2e4;
 }
 
 .lg-panel .lg-clickable {
@@ -138,9 +215,18 @@ justify-content: space-between !important;
 .lg-title .coll-glyph {
   cursor:pointer;
   position:relative;
-  color:#888;
+  color:#555;
+  margin-left:4px;
   width:16px;
+  height:16px;
   display:inline-block !important;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url("chevron_up.svg")
+}
+
+.lg-panel.lg-collapsed .lg-title .coll-glyph {
+  background-image: url("chevron_down.svg")
 }
 
 .age-panel { /* collapsable region of AgeRange control */
@@ -173,47 +259,66 @@ justify-content: space-between !important;
 }
 
  /* footer section of .lg-panel showing the selection */
- .lg-only {
+ .lg-panel .lg-only {
   position:relative;
-  background-color: #f2f2f4;
-  z-index:10;
+  /* z-index:10; */
   display:block;
   padding:2px;
   margin:0;
   text-align:left;
   overflow-wrap: normal;
-  /* border-top: 1px solid #eee; */
+  /* border:1px solid #f6f6f6;*/
+  border-top:1px solid #ececec;
+  border-radius: 0 0 8px 8px;
+}
+
+.lg-panel.lg-collapsed .lg-only {
+  background-color: #f6f6f6;
+}
+
+.lg-panel.fl-shad .lg-only {
+  background-color: #f2f2f4;
+}
+
+
+.lg-panel.fl-shad.lg-collapsed .lg-title {
+  border: none;
 }
 
 /* "only" label at the bottom */
 .lg-only-lb {
-  font-size: 0px;
+  position:relative;
+  font-size: 12px;
+  line-height:10px;
   text-align:center;
   display:inline-block;
-  width: 32px;
-  height: 22px;
-  font-weight: bold;
+  width:20px;
+  padding:6px;
+  margin:2px;
+  /* width: 20px;
+  height: 20px; */
+  font-weight: normal;
   color: #ed1848;
   cursor: pointer;
-  margin: 0 1px;
-  padding: 0 1px 0 1px;
 }
+/*
 .lg-only-lb::after {
-  font-size:14px;
-}
-
-.lg-only-lb::after {
-  content: "only";
-}
-.lg-only-lb:hover {
-  /* border:1px solid #e2e4e6;*/
-  background-color: #fff;
-  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-}
-.lg-only-lb:hover::after {
-  background-color: #fff;
   content: "\2715";
 }
+.lg-only-lb:hover::after {
+  background-color: #eee;
+  content: "\2715";
+}
+
+*/
+.lg-only-lb:hover {
+  /* border:1px solid #e2e4e6;*/
+  font-weight: bold;
+  color: #ed1848;
+  background-color: #eee;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
 
 .lg-only-item {
   display:inline-block;
@@ -230,17 +335,23 @@ justify-content: space-between !important;
   border-radius: 6px;
 }
 
+.lg-only-item:hover {
+  background-color: #888;
+  color: #ccc;
+}
+
 .lg-apply {
   position:relative;
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 16px;
   font-weight: bold;
   cursor: pointer;
-  /* display:inline; */
+  padding: 0 2px;
   display: none;
-  top:-2px;
-  height:20px;
-  margin: 0 8px 1px 2px;
-  padding: 0 2px 1px 2px;
+  height:18px;
+
+  /* margin: 0 8px 1px 2px;
+  padding: 0 2px 1px 2px;*/
   /*color: #bd0019;*/
   color: #ed1848;
   background-color: #fff;
@@ -278,7 +389,7 @@ justify-content: space-between !important;
 }
 
 .btn-undo {
-  padding-top:0;  
+  padding-top:0;
   height:14px;
   width:26px;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);

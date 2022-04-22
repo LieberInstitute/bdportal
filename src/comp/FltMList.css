@@ -45,7 +45,7 @@
   height: auto;
   min-width: 10rem;
   /* max-height: 8.6rem; */
-  background-color:#fff;
+  background-color:#ffffff;
   overflow-y: auto;
 }
 
@@ -60,14 +60,19 @@
 
 .lg-toggler {
   position:relative;
-  background-color: #fff;
+  background-color: #f6f6f6;
   display:flex;
   justify-content: space-between !important;
-  z-index:10;
+  /* z-index:10; */
   padding:2px;
   margin:0;
   overflow-wrap: normal;
   /* border-top: 1px solid green; */
+  border-radius: 0 0 8px 8px;
+}
+
+.lg-panel.fl-shad .lg-toggler {
+  background-color: #f2f2f4;
 }
 
 .lg-item {
@@ -81,9 +86,16 @@ margin: 2px 2px;
 border-radius: 4px;
 }
 
+.lg-shrink .lg-toggler .lg-item {
+  font-size : 13px;
+}
+.lg-shrink .lg-toggler .lg-count {
+  font-size : 95%;
+}
+
 .lg-spacer {
   display:inline-block;
-  min-width:8px !important;
+  min-width:6px !important;
 }
 
 .lg-item-h {
@@ -108,7 +120,11 @@ border-radius: 4px;
 }
 */
 .lg-item:hover {
-  background-color: #f2ecec;
+  background-color: #fff0f0;
+}
+
+.lg-toggler .lg-item:hover {
+  background-color: #efe6e6;
 }
 
 .lg-item.lg-sel {
@@ -137,8 +153,6 @@ border-radius: 4px;
   mask-image: url('lock-solid.svg');
 }
 
-
-
 .lg-toggler .lg-item {
   min-width: 4rem;
   display: inline-block;
@@ -153,29 +167,11 @@ border-radius: 4px;
 
 .lg-item-counts {
  position:relative;
-
-}
-
-.lg-item-bar, .lg-item-bar-v {
-  position:absolute;
-  z-index:0;
-  right: -2px;
-  bottom: 0.01rem;
-  height: 1rem;
-}
-.lg-item-bar {
-  width: 4rem;
-}
-
-.lg-item-bar-v {
-  float:right;
-  background-color: #f6eaed;
-  margin:0 auto;
 }
 
 .lg-count {
   position:relative;
-  z-index: 100;
+  /* z-index: 100; */
   float:none;
   margin-top: 2px;
   font-size: 85%;
@@ -190,3 +186,22 @@ border-radius: 4px;
 .lg-count-0 {
   color: #ccc !important;
 }
+
+.lg-item-bar, .lg-item-bar-v {
+  position:absolute;
+  z-index:0;
+  right: -2px;
+  bottom: 0.01rem;
+  height: 1rem;
+}
+
+.lg-item-bar {
+  width: 4rem;
+}
+
+.lg-item-bar-v {
+  float:right;
+  background-color: #e4e4e4;
+  margin:0 auto;
+}
+
