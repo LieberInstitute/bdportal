@@ -14,10 +14,7 @@ const BrSelPages = ({ params }) => {
 	if (!dataLoaded) return <h3>Loading..</h3>
 	// data loaded, we are safe to show the pages for this data type
 	changeXType(0);
-	return (<div>
-		 { tab==='matrix' ? <BrMatrix /> :
-		   <BrBrowse /> }
-	   </div>)
+	return tab==='matrix' ? <BrMatrix /> :  <BrBrowse />
 }
 
 export default BrSelPages;

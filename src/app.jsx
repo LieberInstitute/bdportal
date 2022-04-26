@@ -24,7 +24,7 @@ import { useRoute, Route, Router, Switch, Redirect, useLocation } from 'wouter-p
 
 const useComponentWillMount = (fn) => {
     const willMount = useRef(true)
-    if (willMount.current && fn && typeof fn === 'function') 
+    if (willMount.current && fn && typeof fn === 'function')
 	    fn()
     willMount.current = false
 }
@@ -35,7 +35,7 @@ function Redirect(props) {
 		route(props.to, true)
 	})
 	console.log("Redirect exec with props: ", props)
-	return null; 
+	return null;
 }
 */
 function App() {
@@ -44,8 +44,8 @@ function App() {
     const page=fixBasePath(abspage)
 
 	return(<div id="app" className="page">
-        <Header page={page} />
-		<Container fluid className="content"> 
+    <Header page={page} />
+		<Container fluid className="content d-flex h-100">
 		<FltCtxProvider>
            <RDataProvider>
 			<Router base={`${APP_BASE_URL}`} >
@@ -57,7 +57,7 @@ function App() {
 				<Route path="/scrna"  component={ScRnaPages} />
 				{/*
 				<GenoPages path="/genotyp" />
-				<EqtlPages path="/eqtl" /> 
+				<EqtlPages path="/eqtl" />
 				*/}
 				<Route path="/rnaseq"> <Redirect to="/rnaseq/sel" /> </Route>
 				<Route path="/brsel"> <Redirect to="/brsel/matrix" /> </Route>

@@ -46,7 +46,7 @@ export const dtaNames = {
     dspub: [ 'dspub', 'restricted', 'public'],
     dspubIdx: {}, // { "restricted":1, 'public': 2 },
     */
-    // hard-coded for now (an array for each xp type, like dset)    
+    // hard-coded for now (an array for each xp type, like dset)
     proto: [ [1, 'PolyA', 'Ribo-Zero HMR', 'Ribo-Zero Gold'],
              [2, '450k', 'WGBS'],
              [3, 'WGS']
@@ -450,11 +450,11 @@ export function loadData(allData) {
         allDset2db[j].push(it[3]); //save the dset.id from database
       })
       //zero-prep proto data
-      poc[i]=[i]  //poc[i].length=dproto[j].length      
+      poc[i]=[i]  //poc[i].length=dproto[j].length
       let z=dproto[j].length;
       while (--z) poc[i].push(0)
    }
-    
+
   //-- load brains
   dtaBrains.length=0; // array of [ brint,  dx#, race#, sex#, age, has_seq, has_geno, dropped ]
   dtaBrains.push([]); //to make brain indexes start at 1 and match dtaBrains array idx
@@ -572,7 +572,7 @@ export function loadData(allData) {
     const sexoc=dtOriCounts.sex[xtix]
     const ageoc=dtOriCounts.age[xtix]
 
-    const protooc=dtOriCounts.proto[xtix] 
+    const protooc=dtOriCounts.proto[xtix]
     // dtOriCounts.reg were loaded earlier from xdata.reg
 
     //-- these are subject counts spread by per experimental type
@@ -667,15 +667,15 @@ export function getFilterData(fid) {
   if (!rGlobs.dataLoaded) return [];
 
   const rdata=[]; //returning data here a list of items data
-
-  if (xt===0 && (fid==='dset' || fid==='proto'))
+  const seqfid = (fid==='dset' || fid==='proto')
+  if (xt===0 && seqfid)
       throw new Error(`getFilterData(${fid}) should NOT be called with 0 selXType`)
     //console.log(`Error: getFilterData(${fid}) should NOT be called with 0 selXType`);
     //return rdata; }
 
   //let xt=selXType ? selXType-1 : 0;
 
-  const fltNames = (fid==='dset') ? dtaNames.dset[xt-1] : dtaNames[fid];
+  const fltNames = (seqfid) ? dtaNames[fid][xt-1] : dtaNames[fid];
   if (!fltNames || fltNames.length<2)
       //   throw new Error(`Error: could not find data for filter name "${fid}"`);
      throw new Error(`[getFilterData]: no names data found for filter name "${fid}" (selXType=${xt})`);
@@ -702,7 +702,7 @@ export function getFilterData(fid) {
       throw new Error(`[getFilterData ${fid}]: fltNames(${fltNames.length}), fltXCounts(${fltXCounts.length}) and oriCounts(${oriCounts.length}) must be equal length!`);
   //   [ itemLabel, itemBadgeValue, lockStatus, dtaNames[fid] index, itemOrigCounts, tooltip_fullname ]
   // only returns items with oriCounts non-zero
-  const trimZ =(fid==='dx' || fid==='race')
+  //const trimZ =(fid==='dx' || fid==='race')
   // && !(trimZ && fltXCounts[i]===0 && i>4)
   fltNames.forEach( (n,i)=> {
     if (i && oriCounts[i]>0 ) {
@@ -931,11 +931,15 @@ export function updateCounts() {
   const dtCountsSex=dtCounts.sex;
   const dtCountsAge=dtCounts.age;
   const dtCountsRace=dtCounts.race;
+  const dtCountsDset=dtCounts.dset;
+  const dtCountsProto=dtCounts.proto;
   //console.log(`DLPFC dtXCounts.reg[${xt}] before update: ${dtXCountsReg[1]}`)
   const dtXCountsDx=dtXCounts.dx;
   const dtXCountsAge=dtXCounts.age;
   const dtXCountsRace=dtXCounts.race;
   const dtXCountsSex=dtXCounts.sex;
+  const dtXCountsDset=dtXCounts.dset;
+  const dtXCountsProto=dtXCounts.proto;
 
   const dtBrCountsDx=dtBrCounts.dx;
   const dtBrCountsAge=dtBrCounts.age;
@@ -1052,8 +1056,8 @@ export function updateCounts() {
               if (cntItX) {
                 switch (filterBits) {
                     case fltbit_Dx:    dtXCountsDx[dx]++;  break;
-                    case fltbit_Dset:  if (selXType) dtXCounts.dset[ds]++; break;
-                    case fltbit_Proto: if (selXType) dtXCounts.proto[p]++; break;
+                    case fltbit_Dset:  if (selXType) dtXCountsDset[ds]++; break;
+                    case fltbit_Proto: if (selXType) dtXCountsProto[p]++; break;
                     case fltbit_Age:
                                     if (ax===0) ax=age2RangeIdx(a);
                                     if (ax) dtXCountsAge[ax]++;
@@ -1093,6 +1097,10 @@ export function updateCounts() {
           dtCountsSex[s]++
           dtXCountsSex[s]++  //dtBrXallCountsSex[s]++;
 
+          if (selXType) {
+            dtCountsDset[ds]++; dtXCountsDset[ds]++;
+            dtCountsProto[p]++; dtXCountsProto[p]++;
+          }
           if (ax===0) ax=age2RangeIdx(a);
           if (ax===0) ageWarn(a);
              else {

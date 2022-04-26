@@ -3,7 +3,7 @@ html, body {
 	width: 100%;
 	padding: 0;
 	margin: 0;
-	background-color: #eee !important;
+	background-color: #ededed !important;
 	font-family: 'Helvetica Neue', arial, sans-serif;
 	font-weight: 400;
 	color: #444;
@@ -22,21 +22,21 @@ html, body {
 	position:absolute;
 	min-width: 100%;
 	display: inline-flex;
+	height:100%;
 	flex-direction: column;
 	background-color: #ddd;
 	font-size:16px;
+	/* border:2px solid magenta; */
 }
 
 .content {
-  /* same as the borders of .navtab.selected  */
   border: 1px solid #fdd;
   border-bottom: none;
-  background-color: #eee;
+  background-color: #ededed;
 }
 
-/* .content {
-	padding: 3rem 20px 8px;
-	min-height: 100%;
-	width: 100%;
-	background-color: #eee;
-} */
+.form-control:focus, button:focus, input:focus, select:focus {
+	border: 1px solid rgba(184, 67, 106, 0.4) !important;
+	box-shadow: 0 0 0 0.1rem rgba(224, 60, 88, 0.2) !important;
+	outline-color: rgba(224, 60, 88, 0.6) !important;
+ }

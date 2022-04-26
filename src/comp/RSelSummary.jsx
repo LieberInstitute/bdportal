@@ -159,7 +159,7 @@ function RSelSummary() {
 
   }
 
-  console.log("----}}}}}} RSelSummary render..", brCountData.dx, brCountData.sex)
+  //console.log("----}}}}}} RSelSummary render..", brCountData.dx, brCountData.sex)
   //console.log(" dtBrOriCounts.sex: ", dtBrOriCounts.sex)
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
 

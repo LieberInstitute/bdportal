@@ -253,7 +253,7 @@ my %qf=(
  $xdts[1] => q/case when atype='450k' then 1
   when atype='WGBS' then 2
   else 0 end as atype/, ## dnam
-  $xdts[2] => 'xtype'  ## wgs
+  $xdts[2] => '1 as proto'  ## wgs dummy protocol 1 (all samples)
 );
 
 $idt=0;
