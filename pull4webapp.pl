@@ -9,7 +9,7 @@ use Sys::Hostname;
 my $usage = q/Usage:
   pull4webapp.pl [server]
 
- Fetches: regions, datasets[], dx, brains, samples[]
+   Fetches: regions, datasets[], dx, brains, samples[]
    and prepares a json file with all the parsed data, 
    with dx, region, brain and datasets ids reindexed 
 /;
@@ -75,11 +75,11 @@ print "\"race\": [\n",
     '   "'.join('", "', @races).'" ],'."\n";
 ##     "datasets" : [  // array of dataset info arrays
 #           [ // array of rnaseq dataset array entries 
-#              [ 1, "rnaseq_ds_name", public_flag(0/1), dbid, smp_count ],
+#              [ 1, "rnaseq_ds_name", public_flag(0/1), dbid, smp_count, refs ],
 #              ...
 #             ],
 #           [ // array of dnam dataset array entries
-#              [ 1, "dnam_ds_name", public_flag(0/1), dbid, smp_count ],
+#              [ 1, "dnam_ds_name", public_flag(0/1), dbid, smp_count, refs ],
 #              ...
 #             ],
 #           ...
@@ -95,7 +95,7 @@ foreach my $dt (@xdts) {
   ## qry field order: 0:name, 1:public, 2:id, 3:count
   my $q=qq/
     SELECT d.name, case when d.public is true then 1 else 0 end as public,
-       d.id, COUNT(*) as num
+       d.id, COUNT(*) as num, COALESCE(refs, '') as refs
       FROM exp_$dt x, datasets d
       WHERE x.dataset_id = d.id AND x.dropped is not TRUE and dtype='$dt'
        GROUP BY 3 ORDER BY 3/;
@@ -103,10 +103,17 @@ foreach my $dt (@xdts) {
   while (my $rd=dbFetch($sth)) { #@$rd = ds_dbid, ds_name, public(0/1), count
      print ($i ? ",\n" : "\n");
      $i++;
-     # $$rd[2] is d.id from SELECT above = [ ord#, name, public, count ]
+     # $$rd[2] is d.id from SELECT above = [ ord#, name, public, count, refs ]
+     my $refs=$$rd[4];
+     if (length($refs)) {
+       $refs=~s/[\r\n]+$//;
+       $refs=~s/[\n\r]+/\|\|/g;
+       $refs=~tr/"//d; #"
+       $$rd[4]=$refs;
+     }
      $ds[ $$rd[2] ]=[ $i, @$rd[0,1,3] ];
      my @js=($i, @$rd);
-     print '  ',jsonarr(\@js, '01000');
+     print '  ',jsonarr(\@js, '010001');
   }
   print ($idt==$#xdts ? "\n ]\n" : "\n ]");
   #$sth->finish();
