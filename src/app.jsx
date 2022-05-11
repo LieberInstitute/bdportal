@@ -1,78 +1,68 @@
-import "jquery"
-import 'bootstrap'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { h } from 'preact'
-import {useEffect, useState, useRef} from "preact/hooks"
-import './app.css'
-//import 'bootstrap-slider/dist/css/bootstrap-slider.min.css';
-import {Header, navRoutes} from './comp/header';
-import { Container } from 'reactstrap';
-import {rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx';
-// Code-splitting is automated for `routes` directory
-import MetPages from './pages/met/met';
-import RnaPages from './pages/rna/rna';
-import GenoPages from './pages/geno/geno';
-import LongRnaPages from './pages/lrna/lrna';
-import ScRnaPages from './pages/scrna/scrna';
-import EqtlPages from './pages/eqtl/eqtl';
-import BrSelPages from './pages/bmatrix/mx';
-import { useRoute, Route, Router, Switch, Redirect, useLocation } from 'wouter-preact';
+import $ from 'jquery';
+import Popper from 'popper.js';
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './app.css';
+import { render } from 'preact';
+
+import {Header, navRoutes, parsePageTab, useHashLoc, currentLoc} from './comp/header'
+import {Container, Col, Row, Nav, NavItem} from 'reactstrap';
+import {useRef} from 'preact/hooks'
+import { rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx'
+//import {PageContent} from './pages/bmatrix/page'
+import BrPages from './pages/br/br'
+import RnaPages from './pages/rna/rna'
+import LrnaPages from './pages/lrna/lrna'
+import DnamPages from './pages/dnam/dnam'
+
+import {APP_BASE_URL, fixBasePath} from './appcfg'
 
 // this is like a useEffect hook that only executes the first render
-
 const useComponentWillMount = (fn) => {
     const willMount = useRef(true)
-    if (willMount.current && fn && typeof fn === 'function') 
+    if (willMount.current && fn && typeof fn === 'function')
 	    fn()
     willMount.current = false
 }
-/*
-function Redirect(props) {
-	useComponentWillMount( () => {
-		console.log("Redirecting to: ", props.to)
-		route(props.to, true)
-	})
-	console.log("Redirect exec with props: ", props)
-	return null; 
-}
-*/
 
-export function App() {
-	//const [page, setPage]=useState(null);
-    const [page, setLocation] = useLocation();
+function App() {
+	const [location, setLocation] = useHashLoc();
+	let [ page, tab ] = parsePageTab(location)
+	//const basePath=APP_BASE_URL
+	if (!tab) tab=''
+	//const router=useRouter()
+	//console.log("######## App location: ", location, `(${page},${tab})`)
+	//const pageUrl=fixBasePath(location)
 
-    //async function routeChange(e) {
-	//   console.log('route changed to:', e.url);
-	//   setPage(e.url);
-       /*switch (e.url) {
-		case '/profile':
-		  const isAuthed = await this.isAuthenticated();
-		  if (!isAuthed) route('/', true);
-		  break;
-	  }*/
-	//}
-	//<Router onChange={routeChange}>
-	return(<div id="app" class="page">
-        <Header page={page} />
-		<Container fluid className="content"> 
-		<FltCtxProvider>
-           <RDataProvider>
-			<Router>
-				<Route path="/brsel/:tab" component={BrSelPages}/>
-				<Route path="/rnaseq/:tab" component={RnaPages}/>
-				<Route path="/methyl" component={MetPages}/>
-				<Route path="/longrna" component={LongRnaPages}/>
-				<Route path="/scrna"  component={ScRnaPages}/>
-				{/*
-				<GenoPages path="/genotyp" />
-				<EqtlPages path="/eqtl" /> 
-				*/}
-				<Route path="/rnaseq" component={RnaPages}/>
-				<Route path="/brsel" component={BrSelPages}/>
-				<Route path="/" component={BrSelPages} />
-			</Router>
-		  </RDataProvider>
-          </FltCtxProvider>
-   		</Container>
-	</div>)
+	function menuClick(pId, pNum) {
+		//console.log("setting location to:", `${APP_BASE_URL}/${pId}`);
+    setLocation(pId)
+	}
+
+	function getPage() {
+    switch (page) {
+		  case 'brsel': return  <BrPages params= { {tab: `${tab}` } } />;
+		  case 'rna': return  <RnaPages params= { {tab: `${tab}` } } />;
+		  case 'dnam': return  <DnamPages />;
+		  case 'lrna': return  <LrnaPages />;
+		}
+		// default:
+		return  <BrPages params= { {tab: {tab} } } />;
+	}
+
+	const goPages=getPage()
+	// key={`${page}_${tab}`}
+	return (<>
+     <Header page={page} tab={tab} menuClick={menuClick} />
+		 <Container fluid className="content d-flex h-100">
+		   <FltCtxProvider>
+		    <RDataProvider>
+				 { goPages }
+ 			 </RDataProvider>
+		  </FltCtxProvider>
+		 </Container>
+		</>
+	);
 }
+
+render(<App />, document.getElementById('app'))

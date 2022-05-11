@@ -1,0 +1,6 @@
+{
+    "eslint.rules.customizations": [
+        { "rule": "no-unused-vars", "severity": "warn" },
+        { "rule": "react/self-closing-comp", "severity": "warn" }
+      ]
+}

@@ -1,0 +1,5 @@
+<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="undo"
+ class="svg-inline--fa fa-undo fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" x="0px" y="0px">
+	<path fill="currentColor" d="M160,208h192c52.91,0,96,43.09,96,96c0,52.94-43.09,96-96,96h-96v64h96c88.22,0,160-71.78,160-160s-71.78-160-160-160H160
+		V48L0,176l160,128V208z"/>
+</svg>

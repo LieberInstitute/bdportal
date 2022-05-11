@@ -8,15 +8,16 @@ import { useState } from 'preact/hooks';
    so the component has access to them.
 */
 export const useModal = () => {
-  const [isModalShowing, setIsShowing] = useState(false);
+  const [isVisible, showModal] = useState(false);
 
   function toggleModal() {
     //console.log("________ useModal() toggle() called with isShowing=",isModalShowing)
-    setIsShowing(!isModalShowing);
+    showModal(!isVisible);
   }
 
-  return {
-    isModalShowing,
+  return [
+    isVisible,
     toggleModal,
-  }
+    showModal
+  ]
 }

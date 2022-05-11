@@ -1,0 +1,64 @@
+/* this can be moved to a higher level (application css)
+  so it affects all controls
+*/
+
+.bred {  border: 1px solid red; }
+.bpink { border: 1px solid pink; }
+.bgreen { border: 1px solid green; }
+.bblue { border: 1px solid blue; }
+.byellow { border: 1px solid yellow; }
+.bpurple { border: 1px solid purple; }
+
+.tbl {
+  text-align:left;
+}
+.tbldsets {
+  text-align:left;
+}
+.rowfh {
+   height: calc(100% - 180px) !important;
+}
+.tbl tr:nth-child(even) {
+     background-color: #f2f2f2;
+}
+.tbl td:first-child {
+  text-align:right;
+}
+
+.dt-wrapper {
+  margin:4px;
+}
+
+.tbldsets tr {
+/*.tbldsets tr td:nth-child(1), .tbldsets tr td:nth-child(3),
+.tbldsets tr td:nth-child(4), .tbldsets tr td:nth-child(5) */
+  font-size:95%;
+}
+
+ .brtbl {
+  cursor:default;
+ }
+
+.brtbl tr td:nth-child(7), .brtbl tr td:nth-child(8), .brtbl tr td:nth-child(9) {
+  text-align:right;
+}
+.brtbl td {
+  padding: 1px 8px;
+}
+.brtbl thead td {
+  background-color:#ddd;
+}
+.brtbl .clhead {
+  cursor:pointer;
+}
+
+.brtbl thead, .brtbl tbody { display: block }
+.brtbl {
+  border: 1px solid #ddd;
+}
+.brtbl tbody {
+  overflow-y: auto;    /* Trigger vertical scroll    */
+  overflow-x: hidden;  /* Hide the horizontal scroll */
+  height: calc(100vh - 122px);
+
+}

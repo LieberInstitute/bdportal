@@ -1,3 +1,16 @@
+.b-red {
+  border: 1px solid red;
+}
+.b-pink {
+  border: 1px solid pink;
+}
+.b-green {
+  border: 1px solid green;
+}
+.b-blue {
+  border: 1px solid blue;
+}
+
 .dlgmodal-overlay {
     position: fixed;
     top: 0;
@@ -25,27 +38,34 @@
     z-index: 100;
     background: #eee;
     position: relative;
-    margin: 1.75rem auto;
+    margin: 1rem auto;
     border-radius: 3px;
-    max-width: 500px;
+    max-width: 40rem;
     padding: 2rem;
   }
   
   .dlgmodal-header {
-    display: flex;
-    justify-content: flex-end;
+    position:relative;
+    top:-2rem;
+    margin:4px;
+    border: 1px solid blue;    
+    justify-content: normal;
   }
   
   .dlgmodal-close-button {
     position:relative;
-    top:-2rem;
-    margin-right:2rem;
+    margin-right:1rem;
     font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1;
+    font-weight: 700;    
     color: #000;
     opacity: .3;
     cursor: pointer;
-    border: none;
+    /* border: none; */
+    border: 1px solid red;
   }
   
+  .dlgmodal-content {
+    border:1px solid green;
+    width:100%;
+    height:100%;
+  }

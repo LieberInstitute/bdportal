@@ -1,10 +1,23 @@
-import { defineConfig } from 'vite'
-import preact from '@preact/preset-vite'
+import { defineConfig } from "vite";
+import preact from "@preact/preset-vite";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  server:{
-    port: 8080
+  plugins: [ preact() ],
+  // base: "/", -- set the base to something else if needed
+  server: {
+    port:8080,
+    proxy: {
+      '/auth':'http://gdebsrv:16443'
+    }
   },
-  plugins: [preact()]
-})
+  assetsInclude: ['**/*.json.gz'],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`
+      }
+    }
+  }
+});

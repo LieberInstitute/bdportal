@@ -1,0 +1,208 @@
+.matrixCol {
+  min-width: 24rem !important;
+  max-width: 24rem !important;
+}
+
+.matrixWrap {
+  margin-top:-64px;
+  justify-content: space-around;
+  min-width: 22rem;
+  /* border:1px solid yellowgreen;*/
+}
+
+.matrixWrap .mxTitleBox {
+  /* make sure this is bigger than your largest
+   expected header name slanted at 45 degrees
+   i.e. sqrt(2) * length of text */
+   position:relative;
+   top:2.2rem;
+   width:9rem;
+   text-align:left;
+   margin-left: 0;
+   padding-left: 0;
+   /* flex-basis: 4rem;
+   border: 1px solid red; */
+}
+
+.rg-tooltip {
+  display:none;
+  position:absolute;
+  border-radius:4px;
+}
+
+.mxTitleBox h5 {
+  font-size: 110%;
+  font-weight:normal;
+  color: #d8a;
+}
+
+.mxImgBox {
+  padding-top:0;
+  position:relative;
+  display:block;
+  height:70px;
+  background:transparent;
+}
+.mxImgBox img {
+  position:absolute;
+  top:8px;
+  left:0;
+  margin:0;
+}
+.matrixWrap .mxApply {
+   /* border: 1px solid green; */
+   position:relative;
+   margin-top:18px;
+   text-align:center;
+   height:20px;
+   width:32px;
+}
+.mxApply .lg-apply {
+    position: absolute;
+    margin-top: 4px;
+    margin-left:15px;
+    padding:2px 4px 1px;
+    height:23px !important;
+}
+
+#rxMatrix {
+    text-align: left;
+    margin-top: 12px;
+    padding-right: 0.2em;
+    border-collapse: collapse;
+   }
+
+   #rxMatrix th {
+     font-size: 0.93rem;
+     font-weight: bold;
+     color: #999;
+     letter-spacing: 0.05em;
+     padding: 0 4px;
+     /* padding-right:0.2em; */
+     text-align: right;
+     cursor: pointer;
+     border: 1px solid #eee;
+     border-left: none;
+     /* border-top:none; */
+     border-bottom:none;
+     white-space: nowrap;
+     border-bottom-left-radius: 8px 8px;
+     border-top-left-radius: 8px 8px;
+   }
+   /*
+   #rxMatrix th.xt {
+     text-align: left;
+     border-left: none;
+     white-space: nowrap;
+   }
+
+   #rxMatrix th.xt > div {
+     transform:
+       translate(36px, 50px)
+       rotate(315deg);
+     width: 36px;
+   }
+
+   #rxMatrix th.xt > div > span {
+     text-align: left;
+     padding: 2px 4px;
+     margin-left:-6px;
+   }
+   */
+   /* another way to rotate */
+   #rxMatrix th.rt {
+     white-space: nowrap;
+     position: relative;
+     border-top:none;
+     cursor: default;
+   }
+   #rxMatrix th.rt span.xSym {
+      z-index:30;
+      position:absolute;
+      display:inline-block;
+      text-align:center;
+      bottom: 0;
+      left: 0;
+      min-width: 2.8rem;
+      height: 1.2rem;
+      padding-top: 1px;
+      /* border: 1px solid green;
+      background-color: none;*/
+   }
+   #rxMatrix th.rt span.xSym div.xBtn {
+      z-index:40;
+      cursor: pointer;
+      position:relative;
+      top:0px;
+      line-height:100%;
+      text-align:center;
+      font-weight:bold;
+      margin:2px 6px;
+      background-color:#f8f8f8;
+      color:#999;
+      border:none;
+      border-radius:4px 4px;
+      font-size:12px;
+      height:14px;
+      width:auto;
+   }
+
+   .clMxSelItem {
+     color:#fff;
+     background-color:#ed1848;
+   }
+
+   #rxMatrix th.rt span.xSym div.xBtn:hover {
+    color:#e46;
+    background-color:#fff;
+   }
+
+   #rxMatrix th.rt div.txRotate {
+     /* place div at bottom left of the th parent */
+     position: absolute;
+     cursor: pointer;
+     bottom: 0;
+     left: 0;
+     font-size:1rem;
+     /* Make sure short setting names still meet the corner of the parent otherwise you'll get a gap */
+     text-align: left;
+     /* Move the top left corner of the span bottom-border to line up with the top left corner of the td border-right border so that the border corners are matched */
+     /* Rotate -45 degrees about matched border corners */
+      transform:
+       translate(calc(75% - 0.5px), 1px)
+       rotate(320deg);
+     /* -- if you want to add intersection buttons under the oblique headers:
+       transform:
+       translate(calc(75% - 0.5px), -14px)
+       rotate(320deg);*/
+     transform-origin: 0% calc(100% - 1px);
+     /* border:1px solid #ddd; */
+     width: 100%;
+   }
+   #rxMatrix th.rt div.txRotate > span {
+     /* make sure the bottom of the span is matched up with the bottom of the parent div */
+     position: absolute;
+     bottom: 0;
+     left: 0;
+     padding: 0 0.6em 0.2em 0.3em;
+     margin-left:-0.6em;
+     border-radius: 6px 6px;
+     border-bottom-left-radius: 12px 12px;
+     /* border-bottom: 1px solid #ddd; */
+   }
+
+
+   #rxMatrix td {
+     background-color: white;
+     color:brown;
+     min-width: 2.9rem;
+     height: 1.7rem;
+     padding-top: 2px;
+     text-align: center;
+     border: 1px solid #eee;
+     cursor: pointer;
+   }
+
+   #rxMatrix .cr {
+     border-top: none;
+   }
