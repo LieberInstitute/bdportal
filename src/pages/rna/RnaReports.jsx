@@ -10,18 +10,18 @@ function BrRegSeq(props) {
 	  const [rows, setRows]=useState([])
  //
  //const [datasrc, setDataSrc] = useState(APP_BASE_URL+'data/multi_dta.json.gz');
-		const fetchData = async (url) => {
-			const res =  await fetch(url, { mode: 'cors'})
-			const ctype=res.headers.get('Content-Type')
-			//console.log("url=",url," content type : ", ctype)
-			//if (ctype=="application/json") {
-			//		return JSON.parse(await jres.text());
-			//}
-		  return (await res.text());
-			//console.log("  str=", str)
-			//return JSON.parse(str);
-		}
-		function buildTable() {
+	async function fetchData(url) {
+		const res =  await fetch(url, { mode: 'cors'})
+		const ctype=res.headers.get('Content-Type')
+		//console.log("url=",url," content type : ", ctype)
+		//if (ctype=="application/json") {
+		//		return JSON.parse(await jres.text());
+		//}
+		return (await res.text());
+		//console.log("  str=", str)
+		//return JSON.parse(str);
+	}
+	function buildTable() {
       if (rows.length==0) return null;
 		  //	console.log(" -----  building table for rows=", rows)
 			return <table class="tbl tbldsets bregtbl">
@@ -41,35 +41,36 @@ function BrRegSeq(props) {
 						</tr>
 				 )}
 			  </tbody></table>
-		}
+	}
 
-		useEffect( () => {
-			 function parseData(fdata) {
-				//const decoder = new TextDecoder('utf-8')
-				//const fcsv = decoder.decode(result.value) // the csv text
-				let lines = fdata.trim().split(/[\n\r]+/)
-				const drows = lines.map( (e)=>{
-					 let row=e.split(/,/)
-					 row.splice(12,1)
-					 row.splice(5,1)
-					 return row
-					 }) // array of objects
-				console.log(" -- parsed drows len", drows.length)
-				return drows
-			 }
+  function parseData(fdata) {
+    //const decoder = new TextDecoder('utf-8')
+    //const fcsv = decoder.decode(result.value) // the csv text
+    let lines = fdata.trim().split(/[\n\r]+/)
+    const drows = lines.map( (e)=>{
+       let row=e.split(/,/)
+       row.splice(12,1)
+       row.splice(5,1)
+       return row
+       }) // array of objects
+    console.log(" -- parsed drows len", drows.length)
+    return drows
+  }
 
-			 console.log(" --- BrRegSeq creation time --")
-				 //const script = document.createElement("script");
-				 //script.src = "/json_plotly_ageplot.js";
-				 //script.async = true;
-				 //document.body.appendChild(script);
-				fetchData(APP_BASE_URL+'br_reg_crosstab.csv')
-				 .then(  res => {
-					 console.log("..fetching table data");
-					 setRows(parseData(res));
-				} )
-     	 .catch(error => console.log(error));
-			}, [])
+  useEffect( () => {
+   console.log(" --- BrRegSeq creation time --")
+	 //const script = document.createElement("script");
+	 //script.src = "/json_plotly_ageplot.js";
+	 //script.async = true;
+	 //document.body.appendChild(script);
+  fetchData(APP_BASE_URL+'br_reg_crosstab.csv')
+    .then(  res => {
+        console.log("..fetching table data");
+        setRows(parseData(res));
+        } )
+    .catch(error => console.log(error))
+
+  }, [])
 
 			useEffect(  ()=>{
 				// resize the header and body columns to align
