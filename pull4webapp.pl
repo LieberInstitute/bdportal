@@ -47,7 +47,7 @@ my (@ds, @dx, @reg);
 #  for @ds: $ds[dbid] = [ord#, name, public(0,1), count]
 #  for @dx: $dx[dbid] = [ord#, name, fullnam, count]
 
-my %br; # brint => [ ord#, dx, race, sex, age ]
+my %br; # brint => [ ord#, dx, race, sex, age, pmi ]
 
 #-----------------
 # Then the samples data is written with the new indexes (ord#) for each categorical data
@@ -225,7 +225,7 @@ my ($sth, $r)=dbExec(q/with rbrs as (SELECT distinct brint from exp_rnaseq x, sa
     from rbrs r
       full join dbrs d on d.brint=r.brint
       full join wbrs w on w.brint=r.brint)
- select brint,  dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age,
+ select brint,  dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age, coalesce(pmi,0) as pmi,
   case when exists(select from xs where s.brint=xs.brint) then 1 else 0 end as has_seq,
   case when genotyped is true then 1 else 0 end as genotyped,  
   case when dropped is true then 1 else 0 end as dropped from subjects s /);
@@ -234,7 +234,7 @@ my ($sth, $r)=dbExec(q/with rbrs as (SELECT distinct brint from exp_rnaseq x, sa
 print '"brains": [';
 $i=0;
 while (my $rd=dbFetch($sth)) {
- my ($brint, $dx_id, $race, $sex, $age, $has_seq, $has_geno, $drop)=@$rd;
+ my ($brint, $dx_id, $race, $sex, $age, $pmi, $has_seq, $has_geno, $drop)=@$rd;
  print ($i ? ",\n" : "\n");
  $i++;
  my $dxd=$dx[$dx_id] || die("Error getting \$dx[$dx_id] for brint $brint loading!\n");
@@ -243,7 +243,7 @@ while (my $rd=dbFetch($sth)) {
     die("Error: race $race has no index translation in \%races!\n");
  my $sidx=$hsex{$sex} ||
     die("Error: sex $sex has no index translation in \%sexes!\n");
- print ' '.jsonarr([$i, $brint, $$dxd[0], $ridx, $sidx, $age, $has_seq, $has_geno, $drop], '000000000');
+ print ' '.jsonarr([$i, $brint, $$dxd[0], $ridx, $sidx, $age, $pmi, $has_seq, $has_geno, $drop], '0000000000');
 }
 print "\n],\n";
 

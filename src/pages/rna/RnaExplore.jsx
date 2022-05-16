@@ -19,9 +19,12 @@ function ExpAgePlots(props) {
 		<Row className="d-flex flex-nowrap flex-fill">
 			<Col xs="12" className="d-flex flex-column">
 			<Row className="d-flex flex-row justify-content-start p-3">
+          <Col xs="1" className="d-flex justify-content-start align-content-start pt-2 pr-0">
+            <b>[Preview]</b>
+          </Col>
 				  <Col xs="2" className="d-flex justify-content-end align-content-start pt-2 pr-0">
-					 <Label>Genes to plot:</Label></Col>
-					<Col xs="6" className="d-flex justify-content-start align-content-center">
+           <Label> Genes to plot:</Label></Col>
+					<Col xs="8" className="d-flex justify-content-start align-content-center">
 					   <Input value="GRIN2A,GRIN2B,SP4" disabled />
 				 </Col>
 				 </Row>
@@ -46,10 +49,13 @@ function ExpBoxPlots(props) {
 		<Row className="d-flex flex-nowrap flex-fill">
 			<Col xs="12" className="d-flex flex-column">
 			<Row className="d-flex flex-row justify-content-start p-3 pl-0">
+          <Col xs="1" className="d-flex justify-content-start align-content-start pt-2 pr-0">
+            <b>[Preview]</b>
+          </Col>
 				  <Col xs="5" className="d-flex justify-content-end align-content-start pt-2 pr-0">
 					 <Label>Control vs SCZD for gene <b>GPR52</b> across datasets: </Label></Col>
 					<Col xs="6" className="d-flex justify-content-start align-content-center">
-					   <Input value="Caudate, DentateGyrys, DLPFC.polyA, DLPFC, Habenula, mPFC" disabled />
+					   <Input value="Caudate, DG, DLPFC.polyA, DLPFC, Habenula, mPFC" disabled />
 				 </Col>
 				 </Row>
 	    <Row className="d-flex flex-fill">

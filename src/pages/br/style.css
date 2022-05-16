@@ -35,13 +35,18 @@
   font-size:95%;
 }
 
- .brtbl {
+.brtbl {
   cursor:default;
- }
+}
 
-.brtbl tr td:nth-child(7), .brtbl tr td:nth-child(8), .brtbl tr td:nth-child(9) {
+.brtbl tr td {
   text-align:right;
 }
+
+.brtbl tr td:nth-child(2), .brtbl tr td:nth-child(3), .brtbl tr td:nth-child(4), .brtbl tr td:nth-child(5) {
+  text-align:center;
+}
+
 .brtbl td {
   padding: 1px 8px;
 }

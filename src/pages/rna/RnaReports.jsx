@@ -118,7 +118,7 @@ function BrRegSeq(props) {
 				<Col xs="12" className="d-flex flex-column">
 				<Row className="d-flex flex-row justify-content-start p-0">
 						<Col xs="6" className="d-flex justify-content-start align-content-start pt-2 pr-0">
-						 <Label>Per Brain RNA-seq sample count by region</Label></Col>
+						 <Label>RNA-seq sample count per brain by region</Label></Col>
 					 </Row>
 				<Row className="fixbregtbl">
 					<Col>

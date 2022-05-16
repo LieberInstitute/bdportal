@@ -17,7 +17,7 @@ import {ToastBox} from './ToastBox'
 import { useModal } from './useModal';
 import { DlgBrUpload } from './DlgBrUpload'
 import { rowCSV, rowTSV }  from './gutils';
-
+import { navigateTo, hrefTo, currentPageTab} from './header';
 
 // props.onBrList() callback being passed the brlist array
 function LoadBrList(props) {
@@ -284,6 +284,13 @@ useEffect( ()=> {
 
   }
 
+  function clickExploreBtn() {
+    const [page, tab]=currentPageTab()
+    //tab can be undefined for default/entry page
+    //console.log("----}} ExploreBtnClick: ", page, tab)
+    navigateTo('rna', 'exp')
+  }
+
   //console.log("----}} RSelSummary render..", dtBrXsel.size)
 
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
@@ -337,13 +344,14 @@ useEffect( ()=> {
               <Row className="d-flex flex-fill flex-nowrap justify-content-center">
                  <Col className="d-flex justify-content-center">
                      <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleModal}>
-                       <b>Download</b></Button>
+                       Download</Button>
                     { restrictedDatasets.length ?
                       <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
                       <DlgDownload isOpen={isModalShowing} toggle={toggleModal} /> }
                  </Col>
                  <Col className="d-flex justify-content-center">
-                    <Button className="btn-light btn-sm app-btn btn-xplore"><b>Explore</b></Button>
+                    <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>
+
                  </Col>
               </Row>
             </Col> : <Col> {selXType ? <div className="mx-auto">

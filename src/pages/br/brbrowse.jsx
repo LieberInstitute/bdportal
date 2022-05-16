@@ -24,11 +24,11 @@ function arrShow(c) {
 
 //const columns=['#','Bint', 'Dx', 'Anc.', 'Sex', 'Age','RnaSeq', 'DNAm', 'WGS', ' dropped ' ];
 
-const columns=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age','RNAseq', 'DNAm', 'WGS']
-const numsortCols=[   1,                               5,     6,       7,      8]
+const columns=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'RNAseq', 'DNAm', 'WGS']
+const numsortCols=[   1,                               5,     6,       7,      8,      9]
 
 function getBrTblRow(rd, brix, i) {
-	const [brint, dxix, raix, six, age, hasSeq, hasGeno, dropped]=rd;
+	const [brint, dxix, raix, six, age, pmi, hasSeq, hasGeno, dropped]=rd;
 	let rs = br2Smp[0];
 	let numrs = 0
 	if (rs && rs[brix]) {
@@ -47,7 +47,7 @@ function getBrTblRow(rd, brix, i) {
 
 	return(<tr key={i}>
 		<td>{i}.</td>	<td>Br{brint}</td><td>{dtaNames.dx[dxix]}</td>
-		<td>{dtaNames.race[raix]}</td> <td>{dtaNames.sex[six]}</td>	<td>{age}</td>
+		<td>{dtaNames.race[raix]}</td> <td>{dtaNames.sex[six]}</td>	<td>{age}</td> <td>{pmi}</td>
 		<td>{numrs}</td>	<td>{numds}</td>		<td>{numws}</td>
 		{/* <td>{dropped ? 'dropped' : ''}</td> */}
 	</tr>)

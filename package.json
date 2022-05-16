@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build-based": "vite build --base=/dev/bdportal/",
+    "build-based": "vite build --base=/bdportal/",
+    "build-dev-based": "vite build --base=/dev/bdportal/",
+    "build-based-dev": "vite build --base=/dev/bdportal/",
     "preview": "vite preview",
     "lint": "eslint src"
   },
