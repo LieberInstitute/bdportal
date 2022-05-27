@@ -39,14 +39,22 @@
  }
 
   .subjxtbl thead tr th:nth-child(2) {
-   border-left: 1px solid #ddd;
+    /*border-left: 1px solid #ddd;
+    padding-right:4px;*/
  }
 
- .subjxtbl tbody tr th:nth-child(1) {
+ .subjxtbl thead tr td.totals {
+  color: #855;
+  text-align:left;
+  border:none;
+ }
+
+
+ .subjxtbl tbody tr th:nth-child(1), .subjxtbl tbody tr th:nth-child(2) {
     padding-right:4px;
  }
 
- .subjxtbl td {
+  .subjxtbl td {
    min-width: 38px;
    text-align: right;
    padding-right:4px;

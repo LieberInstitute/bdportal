@@ -230,7 +230,7 @@ useEffect( ()=> {
      }
      return (<Col className="pt-2"><table className="subjxtbl">
        <thead>
-         <tr><td class="td-blank">  </td> <td class="td-blank">  </td>
+         <tr><td class="td-blank totals" colspan="2">TOTALS</td> {/* <td class="td-blank">  </td> */}
             {csums.map( (v,i)=> <th key={i}>{v}</th>)}
             {/*  bind the sex column totals the same way */}
             <td class="tc-spacer"> </td>
