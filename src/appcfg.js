@@ -3,6 +3,10 @@
 // -- for routing and webpack uncomment this:
 //export const APP_BASE_URL = cfg_APP_BASE_URL
 export const APP_BASE_URL=import.meta.env.BASE_URL
+
+// node middleware server running on port 4095
+//export const NODEMW_URL=process.env.NODE_ENV=='development' ? '' : 'http://localhost:4095';
+
 //console.log("#-#-#-#-#-#-#-#- appcfg: mode=", import.meta.env.MODE, " base_url:", import.meta.env.BASE_URL)
 //console.log("#$#$#$#$#$#$ NODE_ENV: ", process.env.NODE_ENV)
 //-- routing for the Link elements is in: app.js
