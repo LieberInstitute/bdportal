@@ -82,7 +82,7 @@ export function parsePageTab(loc) {
   return (pt.split('/'))
 }
 
-/*
+
 function ServerStatus( ) {
   const [status, setStatus]=useState('checking status..')
   const [pgstatus, setPgStatus]=useState('...')
@@ -112,7 +112,7 @@ function ServerStatus( ) {
      {status} [{pgstatus}]
   </div>)
 }
-*/
+
 
 export function Login({ login }) {
   const [loginModal, setLoginModal] = useState(false)
@@ -227,7 +227,7 @@ export function Header({ page, tab, menuClick }) {
       </UncontrolledDropdown>
 
       <div class="navtab-box flex-nowrap">
-        {/* <ServerStatus /> */}
+         <ServerStatus />
         {tabs.length > 0 && tabs.map((t) => (
           <NavItem className={t[0] === tab ? "navtab selected" : "navtab"} key={t[0]} id={t[0]}>
             {/* <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link> */}
