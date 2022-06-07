@@ -21,7 +21,7 @@ const app_port = config['app_port'] || 4095;
 //const hostname = process.env.HOSTNAME; //WHY is this undefined?!
 const hostname = os.hostname()
 require('dotenv').config(); // .env should have DB_SRV, DB_USER, DB_PASS
-//console.log("process.env:", process.env) 
+//console.log("process.env:", process.env)
 const dbuser = process.env.DB_USER;
 const dbpasswd = process.env.DB_PASS;
 let auth_srv = 'http://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
@@ -36,13 +36,13 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
            else r_filedir="/ssdata/postgresql/r_staging";
     mail_url = 'http://gdebsrv:14244/';
     auth_srv= 'http://192.168.2.2:16443';
-} else { //LIBD devel or server, or aws  
+} else { //LIBD devel or server, or aws
   if (!dbserver) dbserver='localhost';
   if (hostname=="linwks34") {
          r_filedir=(dbserver=='localhost') ? '/ssdata/postgresql/r_staging' : '';
-  } //else { //MUST be on srv16 itself, or aws 
+  } //else { //MUST be on srv16 itself, or aws
     //r_filedir='/dbdata/cdb/r_staging';
-    //if (hostname!=='srv16') console.log("WARNING: srv16 assumed, r_filedir set to: ", r_filedir)    
+    //if (hostname!=='srv16') console.log("WARNING: srv16 assumed, r_filedir set to: ", r_filedir)
   //}
 }
 const auth_url = `${auth_srv}/auth`;
@@ -98,13 +98,13 @@ db.init(db_creds);
 
 // Connect with a connection pool.
 function poolTest() {
-  
+
   //const now = await pool.query("SELECT NOW()");
   //await pool.end();
   db.query("select id, name from datasets where dtype='rnaseq'", [], (err, res)=>{
      return res;
   });
-  
+
 }
 // ----------- middleware setup -----
 // Parsers for POST data
@@ -129,11 +129,11 @@ app.post('/auth', (req, res) => {
   /* for axios, certificate can be passed as a  httpsAgent parameter
      which can be read in advance, before the routing:
 
-    const agent = new https.Agent({ ca: fs.readFileSync("./resource/bundle.crt"),  
+    const agent = new https.Agent({ ca: fs.readFileSync("./resource/bundle.crt"),
          rejectUnauthorized: (process.env.NODE_ENV !== 'development')});
 
     and then add an additional axios.post param :
-      axios.post(url, body, 
+      axios.post(url, body,
         { httpsAgent : agent } ).then( ... )
   */
   axios.post(auth_url, {
@@ -153,7 +153,7 @@ app.post('/auth', (req, res) => {
 
 /* once authentication took place, authres.data.token will be stored
  by the client and sent as req.token (or req.authorization) with every
- future restricted/sensitive request, so the request should be validated 
+ future restricted/sensitive request, so the request should be validated
  like this:
 app.post('/status', (req, res)=> {
     const jwt_token = req.headers.authorization;
@@ -172,7 +172,7 @@ app.post('/status', (req, res)=> {
 
 app.post('/mail', (req, res) => {
   axios.post(mail_url, req.body).then(ares=> {
-    res.status(200).json(ares.data); 
+    res.status(200).json(ares.data);
   }).catch((err) => {
     res.status(500).json({ message: err });
   });
@@ -195,7 +195,7 @@ function resRNASeqSelector(res, dta) {
   //TODO: cookie/session data to restore last selection?
   //TODO: caching so there is no need to return the whole thing again?
   res.json(dta);
-} 
+}
 //
 let res=fetchZjson(jzfile);
 console.log("loading json.gz file..")
@@ -246,7 +246,7 @@ function queryDatasets(res, dtype) {
   db.query(qry_rna_dsets, parms, (err, dbrows)=>{
     if (err) {
       res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
-    } 
+    }
     else {
       res.json(dbrows);
     }
@@ -262,13 +262,30 @@ async function queryDx(res) {
   return now;
 }
 
+
+function queryDsetList(res, dtype) {
+  const dslstqry=`SELECT d.name, case when d.public is true then 1 else 0 end as public,
+  d.id, COUNT(*) as num_samples FROM exp_${dtype} x, datasets d
+  WHERE x.dataset_id = d.id AND x.dropped is not TRUE and dtype='${dtype}'
+  GROUP BY 3 ORDER BY 3`;
+  db.query(dslstqry, [], (err, dbrows)=>{
+    if (err) {
+      res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+    } else {
+     res.json(dbrows);
+   }
+  });
+}
+
 // ----  route with sub-routes/terms
 app.get(['/pgdb/:qry/:dtype','/pgdb/:qry'] , (req, res)=> {
     console.log(`got pg query: ${req.params.qry}`);
     //possible subpages: sel (default), ex, rep
     switch (req.params.qry) {
-      case 'dsets': queryDatasets(res, req.params.dtype); 
+      case 'dsets': queryDatasets(res, req.params.dtype);
                     break;
+      case 'dslist': queryDsetList(res, req.params.dtype);
+                     break;
       case 'dx': notImplemented(req, res);//queryDx(res);
                  break;
       default: res.status(400).send('Invalid Request');
@@ -298,7 +315,7 @@ app.get('/pgplrinit', (req, res)=> {
     if (err) {
       //res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
       res.send('error')
-    } 
+    }
     else {
       res.send('pl/r');
     }

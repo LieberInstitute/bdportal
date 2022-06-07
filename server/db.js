@@ -2,14 +2,14 @@ const { Pool } = require('pg')
 let pool=null;
 const ERR_NOPOOL="Error: db connections pool not created! (use db.init(cred)) !";
 //const pool = new Pool()
-/* a query can be an object with {text: , values: and rowMode: } properties 
+/* a query can be an object with {text: , values: and rowMode: } properties
    rowMode can be set to 'array' in order to return rows as arrays instead of objects
    const query = {
       text: 'SELECT $1::text as first_name, select $2::text as last_name',
       values: ['Brian', 'Carlson'],
        rowMode: 'array',
    }
-   Rows are returned in res.rows (as array of arrays), to get the columns: 
+   Rows are returned in res.rows (as array of arrays), to get the columns:
       res.fields.map(field => field.name)
 */
 function errpool() {
@@ -57,8 +57,8 @@ module.exports = {
         }
         //callback(err, res) //caller should use res.rows
         // arrayMode: pass to callback res as [ columns, res.rows] :
-        const hrows=[ res.fields.map(field => field.name) ]
-        Array.prototype.push.apply(hrows, res.rows);
+        const hrows=err ? [] : [ res.fields.map(field => field.name) ]
+        if (!err) Array.prototype.push.apply(hrows, res.rows);
         callback(err, hrows)
       })
     },
@@ -71,17 +71,17 @@ module.exports = {
         console.log('executed query', { text, duration, rows: res.rowCount })
         return res
       },
-    
-    //if we need to check out a client from the pool to run 
+
+    //if we need to check out a client from the pool to run
     // several queries in a row in a transaction
-    //-- prevent routes checking out a client from forgetting 
+    //-- prevent routes checking out a client from forgetting
     //   to call done (leaking client), so add more info here
     getClient: (callback) => {
         pool.connect((err, client, done) => {
             const query = client.query //save original query here
             // monkey patch the query method to keep track of the last query executed
             client.query = (...args) => {
-                client.lastQuery = args        
+                client.lastQuery = args
                 return query.apply(client, args)
             }
             // set a timeout of 5 seconds, after which we will log this client's last query
