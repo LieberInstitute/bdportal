@@ -18,6 +18,10 @@ import AgeDualPanel from '../../comp/AgeDualPanel'
 import {useMxSel, MxSelProvider} from './mxSelCtx'
 import RMatrix from './RMatrix'
 
+//import { MW_SERVER } from '../../appcfg'
+//import axios from 'axios'
+import {saveRStagedFile} from '../../comp/gutils.js'
+
 // the top-right info panel- show numeric summary of filters?
 //items is an array of text lines to show
 // the top-right info panel
@@ -49,6 +53,12 @@ if (nhregs && dtFilters.reg.size>0) m.regSelApplied=true
 m.showHint = (nhregs && !m.regSelApplied)
 m.expType=expType
 
+ function bSaveClick() {
+    console.log("Save button clicked")
+    const fname='rse_test.rda'
+    saveRStagedFile(fname)
+ }
+
  useEffect( ()=>{
        if (m.showHint) {
 			   $('#regSelInfo').toast('show')
@@ -56,6 +66,7 @@ m.expType=expType
 	 } )
  return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"
  style="width:20rem;min-height:4rem;">
+  {/* <Button id="bsave" className="btn-sm app-btn" onClick={bSaveClick}>Save</Button>&nbsp; */}
 	<div class="position-fixed p-1" style="z-index: 15; top: 4em; right: 12em;">
   <div id="regSelInfo" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
     <div class="toast-header-sm">

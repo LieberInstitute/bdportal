@@ -2,7 +2,7 @@ import './header.css';
 import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem } from 'reactstrap'
 import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
-import { APP_BASE_URL } from '../appcfg'
+import { APP_BASE_URL, MW_SERVER, AUTH_SERVER } from '../appcfg'
 //import axios from 'axios'
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
@@ -44,7 +44,7 @@ export function currentLoc() {
 }
 
 function navigate(to) {
-  console.log("~~~~ asked to navigate to:", to)
+  //console.log("~~~~ asked to navigate to:", to)
   window.location.hash = to;
 }
 
@@ -86,10 +86,10 @@ export function parsePageTab(loc) {
 function ServerStatus( ) {
   const [status, setStatus]=useState('checking status..')
   const [pgstatus, setPgStatus]=useState('...')
-
+  console.log(" using mw-server: ", MW_SERVER)
   useEffect(() => {
 
-    axios.get('/ruthere', { timeout: 1500 }).then((res) => {
+    axios.get(`${MW_SERVER}/ruthere`, { timeout: 1500 }).then((res) => {
         //console.log(res.data);
         setStatus(res.data);
     })
@@ -97,7 +97,7 @@ function ServerStatus( ) {
         console.log("TIMEOUT reached!")
         setStatus('not connected')
     })
-   axios.get('/pgplrinit', { timeout: 10000 }).then((res) => {
+   axios.get(`${MW_SERVER}/pgplrinit`, { timeout: 10000 }).then((res) => {
       //console.log(res.data);
       setPgStatus(res.data);
     })
@@ -143,7 +143,7 @@ export function Login({ login }) {
     //const headers = { "Content-type": "application/x-www-form-urlencoded" }
     const headers = { "Access-Control-Allow-Origin": "*" }
     try {
-      const res = await axios.post('/auth', areq, { headers })
+      const res = await axios.post(`${AUTH_SERVER}/auth`, areq, { headers })
       if (res) {
         setAuth([res.data.signed_user, 'x', res.data.token])
         return true
