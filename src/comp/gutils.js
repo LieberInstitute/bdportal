@@ -79,6 +79,6 @@ export async function saveRStagedFile(relpath, newfname) {
     //});
     document.body.appendChild(a); //FF needs this
     a.click();
-    a.remove();
+    //a.remove();
     document.body.removeChild(a); //FF needed this
 }
