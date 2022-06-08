@@ -1,31 +1,94 @@
-import { h } from 'preact'
-import $ from "jquery"
-import {useEffect, useState} from "preact/hooks"
 import './header.css';
-//import { route } from 'preact-router';
-//import { Link } from 'preact-router/match';
-import {useLocation, Link } from 'wouter-preact'
-import {APP_BASE_URL, fixBasePath} from '../appcfg'
-import axios from 'axios'
-import {DropdownMenu, DropdownToggle, DropdownItem, 
-                  UncontrolledDropdown, Nav, NavItem} from 'reactstrap';
+import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem } from 'reactstrap'
+import { useEffect, useState, useCallback } from "preact/hooks"
+//import {useLocation, Link, useRoute } from 'wouter-preact'
+import { APP_BASE_URL } from '../appcfg'
+//import axios from 'axios'
+import imgLogo from '/assets/logo.svg'
+import imgBands from '/assets/bands.png'
+import imgBandsR from '/assets/bands_r.png'
+import imgBrCirc from '/assets/brain_encircled.svg'
 
-   //these are "router" paths (longer), not pages dirs
-   // navRoutes are also used as 
-export const navRoutes= { 
-    brsel : [1, "Brain Matrix", { matrix: [1, "Matrix"], browse: [2, "Browser"] } ], 
-    rnaseq : [2, "bulk RNAseq", { sel: [1, "Select"], exp: [2, "Explore"], rep: [3, "Reports"] }], 
-    methyl : [3, "DNA methylation"],
-    scrna : [4, "scRNAseq data"],
-    genotyp : [5, "Genotype data"],
-   longrna : [6, "long RNAseq data"] 
- }
+import { DlgLogin } from './DlgLogin';
+import { DlgConfirm } from './DlgConfirm';
+import axios from 'axios'
+
+export const navRoutes = {
+  brsel: [1, "Brain Matrix", ["matrix", "Select"], ["browse", "Browse"]],
+  rna: [2, "bulk RNAseq", ["sel", "Select"], ["exp", "Explore"], ["rep", "Reports"]],
+  dnam: [3, "DNA methylation"],
+  lrna: [4, "long RNAseq"],
+  default: 'brsel'
+}
+
+
+export const navDropDown = [];
+// array of [pageId, pageOrd#, pageName, [tabId, tabName], [tabId2, tabName2], ..]
+// sorted by order of listing
+
+function navDDsetup() {
+  if (navDropDown.length) return
+  Object.keys(navRoutes).forEach(k => {
+    if (k !== 'default') {
+      const kd = navRoutes[k]
+      navDropDown.push([k, ...kd])
+    }
+  })
+  navDropDown.sort((a, b) => (a[1] - b[1]))
+}
+
+// returns the current hash location (excluding the '#' symbol)
+export function currentLoc() {
+  //console.log(" currentLoc() called with windows.location", window.location)
+  return (window.location.hash.replace("#", "") || "/")
+}
+
+function navigate(to) {
+  console.log("~~~~ asked to navigate to:", to)
+  window.location.hash = to;
+}
+
+export function useHashLoc() {
+  const [loc, setLoc] = useState(currentLoc());
+  useEffect(() => {
+    //initialize other structures
+    const handler = () => setLoc(currentLoc());
+    // subscribe on hash changes
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
+  //const navigate = useCallback(to => (window.location.hash = to), []);
+  return [loc, navigate];
+}
+
+export function currentPageTab() {
+  //const loc=window.location.hash.replace("#", "") || "/"
+  return parsePageTab(currentLoc())
+}
+
+export function parsePageTab(loc) {
+  // assume post-hash location:  /page[/tab]
+  //console.log("<<<< parsePageTab received loc:",loc);
+  //tab can be undefined - check defaults
+  if (!loc) return ([navRoutes.default])
+  const r = []
+  let pt = loc
+  while (pt.charAt(0) == '/') pt = pt.substring(1)
+  if (pt.length == 0) { r[0] = navRoutes.default; return r }
+  //remove any double slashes
+  pt = pt.replace('//', '/')
+  while (pt.length && pt.charAt(pt.length - 1) == '/') pt = pt.substring(0, pt.length - 1)
+  return (pt.split('/'))
+}
+
 
 function ServerStatus( ) {
   const [status, setStatus]=useState('checking status..')
   const [pgstatus, setPgStatus]=useState('...')
 
   useEffect(() => {
+
     axios.get('/ruthere', { timeout: 1500 }).then((res) => {
         //console.log(res.data);
         setStatus(res.data);
@@ -51,140 +114,139 @@ function ServerStatus( ) {
 }
 
 
-export function Header( {page} ) {
-  const [absloc, setLocation] = useLocation();
-  const location=fixBasePath(absloc)
-	console.log("location is: ", location, "  page is:", page)
-	useEffect( () => {
-        function updateTabs() {
-          $('.navtab').addClass('enabled').removeClass('selected');
-          const [p, t]=splitRoute(page);          
-          if (t) {
-              //console.log("setting class selected to #"+t+" .navtab");
-              $(`#${t}`).addClass('selected');
-          }
-        }
-        if (page) updateTabs();
-     }
-  );
+export function Login({ login }) {
+  const [loginModal, setLoginModal] = useState(false)
+  const [logoutAsk, setLogoutAsk] = useState(false)
 
-	function dtaXSelClick(lnk) {
-    //console.log("---------- lnk clicked: ", lnk)
-    let lnkitems=splitRoute(lnk);
-    let pt=splitRoute(page);
-    if (pt[0]===lnkitems[0]) return;
-    console.log(`Routing to page: ${lnk}`);
-    // limit for now:
-     //route(`/${lnk}`);
-    setLocation(`${APP_BASE_URL}/${lnk}`);
-		//setPage(lnk)
-		//history.push("/"+lnk)
-	  }
+  function toggleLoginDlg() { setLoginModal(!loginModal) }
+  function toggleLogoutAsk() { setLogoutAsk(!logoutAsk) }
 
-	function sortNavMap(navmap, pre) { //returns sorted array of [ lnk, title, ord#, tab ]
-		//input navmap MUST have the form: lnk: [ord#, title, subnav]
-		let sorted=[];
-		if (pre) pre+='/';
-			else pre='';
-		for (let v in navmap) {
-		  let d=navmap[v];
-		  sorted.push([pre+v, d[1], d[0], v]);
-		}
-		sorted.sort( (a, b) => {
-		  return a[2] - b[2];
-		})
-		return sorted;
-	  }
- 
-	function splitRoute(loc) {
-    let elems=loc.split('/');
-    if (elems.length) {
-       if (elems[0]==='') elems.shift();
-       if (elems[elems.length-1]==='') elems.pop();
+  const [auth, setAuth] = useState(['', '', null]) //user, pass, jwt/valid
+
+  function loginoutDlg() {
+    if (!auth[2]) {//no authenticated user
+      setLoginModal(true)
+    } else { //do you want to logout?
+      setLogoutAsk(true)
     }
-		return elems;
-	  }
-	
-	const ddnavs = sortNavMap(navRoutes); //array of [lnk, title, ord#]
-	
-	let pagelnk=page;
-	if (page && page.charAt(0)==='/')
-	   pagelnk=page.substr(1);
-    
-    if (pagelnk) {
-       //parse the tab out of the link, if there
-       const [p,t] = splitRoute(pagelnk);
-       if (t!=='_') {
-         pagelnk=p;
-       }
+  }
+  function logout() {
+    setAuth(['', '', null])
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function checkLogin(user, pass) {
+    const areq = { username: user, password: pass }
+    //const headers = { "Content-type": "application/x-www-form-urlencoded" }
+    const headers = { "Access-Control-Allow-Origin": "*" }
+    try {
+      const res = await axios.post('/auth', areq, { headers })
+      if (res) {
+        setAuth([res.data.signed_user, 'x', res.data.token])
+        return true
+      }
+    } catch (err) {
+      console.log(`Error : ${err}`)
     }
-    else pagelnk=ddnavs[0][0];
-  
-    let dt=navRoutes[pagelnk];
-    if (!dt) {
-       console.log("Error, page ",page, " does not map!");
-       pagelnk=ddnavs[0][0];
-       dt=navRoutes[pagelnk];
-    }
-    let selTitle=dt[1];
-    let subpages=dt[2];
-    let subtabs=null;
-    if (subpages && Object.keys(subpages).length>0) {
-      subtabs=sortNavMap(subpages, pagelnk);
-	  //console.log("subtabs:", subtabs);
-      // first entry MUST be same with ddnavs[0][0]
-      //subtabs[0][0]=ddnavs[0][0];
-    }
+    //await sleep(5000) -- testing only
+    return false
+  }
 
-    //console.log("rendering Nav header...")
+  useEffect(() => {
+    setLoginModal(false) //set to true to ask for login at startup
+  }, []) //run only once!
 
-	return (
-		<Nav className='bg-light d-flex align-items-center navheader flex-nowrap'>
-		<a href='http://www.libd.org'><img alt="logo" src={`${APP_BASE_URL}/assets/logo.svg`} style={{ height: "2rem"}} /></a>
-		<span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
-		<UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
-           <DropdownToggle className="navdbtsel v-100 m-2" nav caret>
-             {selTitle}
-           </DropdownToggle>
-           <DropdownMenu style={{marginTop: "-0.4rem", left:"0.5rem"}}>
-             {  ddnavs.map((t, i) => (
-                 <DropdownItem key={i} disabled={i>1} onClick={ () => dtaXSelClick(t[0])}> 
-                  {t[1]} 
-                 </DropdownItem>
-                 )
-                ) 
-             }
-           </DropdownMenu>
-
-         </UncontrolledDropdown>
- 
-        <div className="navtab-box flex-nowrap">
-               <ServerStatus />
-               { subtabs && subtabs.map((t) => (
-                   <NavItem className="navtab" key={t[3]} id={t[3]}> 
-				             <Link activeClassName="active" href={`${APP_BASE_URL}/${t[0]}`}>{t[1]}</Link>
-                   </NavItem>
-               ) ) }
-        </div>
-        
- 		{/* <Link activeClassName="active" href="/">RNA-Seq</Link> 
-   		  <Link activeClassName="active" href="/methyl">DNA methylation</Link>
-		  <Link activeClassName="active" href="/genotyp">Genotypes</Link> */}
-
-         {/* <NavItem className="ml-auto nav-right navtitle">
-            <img alt="bands" src="../assets/bands.png" className="navimgbands" /> Data Portal&nbsp;
-            <img alt="bands_r" src="../assets/bands_r.png" className="navimgbands" />
-		</NavItem> */}
-       <NavItem className="ml-auto nav-right">
-		   <img alt="bands" src={`${APP_BASE_URL}/assets/bands.png`} className="navimgbands" /> 
-		   <span className="navtitle">Data Portal</span>
-           <img alt="bands_r" src={`${APP_BASE_URL}/assets/bands_r.png`} className="navimgbands" />
-           <span className="navlogin">Login</span>
-           <img alt="brainlogo" src={`${APP_BASE_URL}/assets/brain_encircled.svg`} 
-                               style={{ height: "2rem", paddingRight:"0.5rem" }} />
-         </NavItem>
-		</Nav>
-     )
+  return (<>
+    <span className="navlogin" onClick={() => loginoutDlg()} >
+      {auth[2] ? auth[0] : "Login"}
+    </span>
+    <DlgLogin isOpen={loginModal} toggle={toggleLoginDlg} checkLogin={checkLogin}
+      title="User Login" />
+    <DlgConfirm isOpen={logoutAsk} toggle={toggleLogoutAsk} onConfirm={logout}
+      title="Logout" />
+  </>)
 }
 
-export default Header;
+export function navigateTo(page, tab) { //subtab? on RnaExplore for example
+  //const basePath = APP_BASE_URL
+  window.location.hash = `${page}/${tab}`;
+}
+
+export function hrefTo(page, tab) {
+  const basePath = APP_BASE_URL
+  return `${basePath}#/${page}/${tab}`
+}
+
+export function Header({ page, tab, menuClick }) {
+
+  //const [absloc, setLocation] = useHashLoc()
+  navDDsetup()
+  const basePath = APP_BASE_URL
+  //const location=fixBasePath(absloc)
+  //console.log("[Header] location is: ", location, "  page is:", page)
+
+  function ddClick(pageId, pageNum) {
+    if (pageId == page) return //current item clicked
+    if (menuClick || typeof menuClick !== 'function')
+      menuClick(pageId, pageNum) //should navigate to `${basePath}/#/${pageId}` and update props
+  }
+
+
+  const pageNav = navRoutes[page] // [pageOrd#, pageTitle [,  [ tabId1, tabLabel1], [tabId2, tabLabel2], ...] ]
+  if (!pageNav) {
+    return (<h1> Navdata for page ${page} not found!</h1>)
+  }
+  const tabs = pageNav.slice(2)
+  if (!tab && tabs.length) {
+    tab = tabs[0][0]
+  }
+
+
+  // -- disable items beyond i==1 in drop down menu:
+  //<DropdownItem key={i} disabled={i>1} onClick={ () => ddClick(t[0], t[1])}>
+  return (
+    <Nav className='bg-light d-flex align-items-center navheader flex-nowrap'>
+      <a href='http://www.libd.org'><img alt="logo" src={imgLogo} style={{ height: "2rem" }} /></a>
+      <span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
+      <UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
+        <DropdownToggle className="navdbtsel v-100 m-2" nav caret>
+          {pageNav[1]}
+        </DropdownToggle>
+        <DropdownMenu className="navddlst">
+          {navDropDown.map((pd, i) => (
+            <DropdownItem key={i} disabled={i > 1} onClick={() => ddClick(pd[0], pd[1])}>
+              {pd[2]}
+            </DropdownItem>
+          )
+          )
+          }
+        </DropdownMenu>
+      </UncontrolledDropdown>
+
+      <div class="navtab-box flex-nowrap">
+         <ServerStatus />
+        {tabs.length > 0 && tabs.map((t) => (
+          <NavItem className={t[0] === tab ? "navtab selected" : "navtab"} key={t[0]} id={t[0]}>
+            {/* <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link> */}
+            <div>
+              {/* <a href={`${basePath}#/${page}/${t[0]}`}>{t[1]}</a> */}
+              <a href={hrefTo(page,t[0])}>{t[1]}</a>
+            </div>
+          </NavItem>
+        ))}
+      </div>
+
+      <NavItem className="ml-auto nav-right">
+        <img alt="bands" src={imgBands} className="navimgbands" />
+        <span className="navtitle">LIBData Portal</span>
+        <img alt="bands_r" src={imgBandsR} className="navimgbands" />
+        {/* <span className="navlogin">Login</span> */}
+        <Login />
+        <img alt="brainlogo" src={imgBrCirc} style={{ height: "2rem", paddingRight: "0.5rem" }} />
+      </NavItem>
+    </Nav>
+  )
+}

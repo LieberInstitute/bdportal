@@ -1,144 +1,192 @@
-//const $ = require('jquery')
+import $ from 'jquery';
 import { h, render } from 'preact';
 import {useEffect, useState} from "preact/hooks";
-import './style.css';
-import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
-	Row, Col, Input, Button, Label} from 'reactstrap';
-import axios from 'axios'
-import useSWR from 'swr'
-//$.DataTable = require('datatables.net');
-
-const fetcher = url => axios.get(url).then(res => res.data)
-const opts = { revalidateOnFocus:false }
-
-function arrShow(c) {
-	return Array.isArray(c) ? c.map( (e, i) => (i ? <span><br />{e}</span> : <>{e}</>  ))  
-		   : c 
-}
-/*
-const TableDSets = ( props ) => {
-	const urls=[null, '/pgdb/dsets', '/pgdb/dx'];
-	let tnum=parseInt(props.tnum);
-	if (!tnum || tnum>=urls.length) tnum=0;
-	const { data, error } = useSWR( (tnum ? urls[tnum] : null), 
-		    fetcher, opts)
-	if (tnum===0) return null;
-    if (error) return <div><h4> Failed to load! </h4></div>
-	if (!data) return <div><h4> loading table.. </h4></div>
-	// render the table here
-	// header is the first 
-	return (<table className="tbl tbldsets"><thead>
-		<tr key="t0">
-        { data[0].map( (c,j)=> <td key={j}>{c}</td> ) }
-		</tr>
-		</thead><tbody>
-	    { data.slice(1).map( (r, i) => {
-         return (<tr key={i}>
-          { r.map( (c,j) => <td key={j}> {arrShow(c)} 
-		  
-		  </td> ) 
-		  }
-		 </tr>)
-	   }) }
-    </tbody></table>);
-}
+import {APP_BASE_URL} from '../../appcfg'
+import './style.css'
+import {Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink} from 'reactstrap'
 
 
-function DTable( props ) {
-	const columns = [
-		{
-			title: 'Name',
-			width: 120,
-			data: 'name'
-		},
-		{
-			title: 'Nickname',
-			width: 180,
-			data: 'nickname'
-		},
-	];
-
-	function shouldComponentUpdate(nextProps) {
-		if (nextProps.names.length !== this.props.names.length) {
-			reloadTableData(nextProps.names);
-		} else {
-			updateTable(nextProps.names);
-		}
-		return false;
+function BrRegSeq(props) {
+	  const [rows, setRows]=useState([])
+ //
+ //const [datasrc, setDataSrc] = useState(APP_BASE_URL+'data/multi_dta.json.gz');
+	async function fetchData(url) {
+		const res =  await fetch(url, { mode: 'cors'})
+		const ctype=res.headers.get('Content-Type')
+		//console.log("url=",url," content type : ", ctype)
+		//if (ctype=="application/json") {
+		//		return JSON.parse(await jres.text());
+		//}
+		return (await res.text());
+		//console.log("  str=", str)
+		//return JSON.parse(str);
+	}
+	function buildTable() {
+      if (rows.length==0) return null;
+		  //	console.log(" -----  building table for rows=", rows)
+			return <table class="tbl tbldsets bregtbl">
+				<thead>
+					<tr>
+						{ rows[0].map( (e,i)=>
+              <th key={i}>{e}</th>
+						)}
+					</tr>
+				</thead>
+				<tbody>
+        { rows.slice(1).map( (r,i)=>
+            <tr key={i}>
+						{ r.map((c,j)=>
+                 <td key={j}>{c==0 && j>=5 ?'-':c}</td>
+							)}
+						</tr>
+				 )}
+			  </tbody></table>
 	}
 
-	function updateTable(names) {
-		const table = $('.dt-wrapper')
-					  .find('table')
-					  .DataTable();
-		let dataChanged = false;
-		table.rows().every(function () {
-			const oldNameData = this.data();
-			const newNameData = names.find((nameData) => {
-				return nameData.name === oldNameData.name;
-			});
-			if (oldNameData.nickname !== newNameData.nickname) {
-				dataChanged = true;
-				this.data(newNameData);
-			}
-			return true; // RCA esLint configuration wants us to 
-						 // return something
-		});
-	
-		if (dataChanged) {
-			table.draw();
-		}
-	}
-	function reloadTableData(names) {
-		const table = $('.dt-wrapper')
-					  .find('table')
-					  .DataTable();
-		table.clear();
-		table.rows.add(names);
-		table.draw();
-	}
-	useEffect(()=> {
-		$(this.refs.main).DataTable({
-			dom: '<"dt-wrapper"t>',
-			data: this.props.names,
-			columns,
-			ordering: false
-		 });
-		//cleanup function:
-		return () => { $('.dt-wrapper')
-		  .find('table')
-		  .DataTable()
-		  .destroy(true);
-	   }
-	})
-  
-   return ( <div className=".dt-wrapper">
-         <table ref="main"> 
-		 </table>
-   </div>)
+  function parseData(fdata) {
+    //const decoder = new TextDecoder('utf-8')
+    //const fcsv = decoder.decode(result.value) // the csv text
+    let lines = fdata.trim().split(/[\n\r]+/)
+    const drows = lines.map( (e)=>{
+       let row=e.split(/,/)
+       row.splice(12,1)
+       row.splice(5,1)
+       return row
+       }) // array of objects
+    console.log(" -- parsed drows len", drows.length)
+    return drows
+  }
 
-}
-*/
-const RnaReports = ({ style }) => {
-	const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
-    function onBtnClick(e) {
-        const id=e.target.id;
-		switch (id) {
-			case "b1": setTable(1);
-			           break;
-			default: 
-		}
-		
-		
-	   }
-	
-	return (<div style={style}>
-	 <Row />
-	 <Row className="pt-2"> <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Datasets</Button> </Row>
-	 <Row className="justify-content-center mx-auto p-1">
-	{/*	 <Col className="col-auto"><TableDSets tnum={tbl} /></Col> */}
-	</Row>
-	</div>);
-}
+  useEffect( () => {
+   console.log(" --- BrRegSeq creation time --")
+	 //const script = document.createElement("script");
+	 //script.src = "/json_plotly_ageplot.js";
+	 //script.async = true;
+	 //document.body.appendChild(script);
+  fetchData(APP_BASE_URL+'br_reg_crosstab.csv')
+    .then(  res => {
+        console.log("..fetching table data");
+        setRows(parseData(res));
+        } )
+    .catch(error => console.log(error))
+
+  }, [])
+
+			useEffect(  ()=>{
+				// resize the header and body columns to align
+				/*
+				const table = $('.bregtbl'),
+					bodyCells = table.find('tbody tr:first').children(), //first row
+					thead =  table.find('thead tr');
+					// Get the tbody columns width array
+					let bWidths = bodyCells.map( function() {
+							 return $(this).width()   }).get();
+					let hWidths = thead.children().map( function() {
+								//$(this).addClass('clhead');
+								return $(this).width()   }).get();
+						 // Set the width of thead columns
+					thead.children().each((i, v) => {
+						 $(v).width(Math.max(bWidths[i], hWidths[i]) ) });
+					bodyCells.each((i, v) => {
+						$(v).width(Math.max(bWidths[i], hWidths[i]))	});
+					 /* thead.children().on("click")
+					thead.children().on("click", function() {
+							 const cid=$(this).index()
+					} ) */
+
+			})
+       /*
+			 async function getData() {
+					const response = await fetch('/br_reg_crosstab.csv')
+					const reader = response.body.getReader()
+					const result = await reader.read() // raw array
+					const decoder = new TextDecoder('utf-8')
+					const fcsv = decoder.decode(result.value) // the csv text
+					let lines = fcsv.trim().split(/[\n\r]+/)
+					const rows = lines.map( (e)=>{
+             const row=e.split(/\,/)
+						 return row
+					   }) // array of objects
+				  console.log(" rows len", rows.length)
+					setRows(rows)
+				}
+				getData()
+		},[]) */
+		console.log("~~~~~~~~~~~~ Rendering with rows len:", rows.length)
+		return(<>
+			<Row className="d-flex flex-nowrap flex-fill">
+				<Col xs="12" className="d-flex flex-column">
+				<Row className="d-flex flex-row justify-content-start p-0">
+						<Col xs="6" className="d-flex justify-content-start align-content-start pt-2 pr-0">
+						 <Label>RNA-seq sample count per brain by region</Label></Col>
+					 </Row>
+				<Row className="fixbregtbl">
+					<Col>
+				  {buildTable()}
+					</Col>
+				</Row>
+				</Col>
+			</Row>
+		</>
+		)
+	}
+
+	function DatasetReport(props) {
+		useEffect( () => {
+			console.log(" --- ExpBoxPlots creation time --")
+			  //const script = document.createElement("script");
+				//script.src = "/json_plotly_boxplots.js";
+				//script.async = true;
+				//document.body.appendChild(script);
+	 },[])
+	 return(<>
+			<Row className="d-flex flex-nowrap flex-fill">
+				<Col xs="12" className="d-flex flex-column">
+				<Row className="d-flex flex-row justify-content-start p-3 pl-0">
+						<Col xs="5" className="d-flex justify-content-end align-content-start pt-2 pr-0">
+						 <Label>Dataset demographics and region report </Label></Col>
+						<Col xs="6" className="d-flex justify-content-start align-content-center">
+
+					 </Col>
+					 </Row>
+				<Row className="d-flex flex-fill">
+				 <div id="plot1" class="w-100 align-self-stretch plotly-graph-div"> </div>
+				</Row>
+				</Col>
+			</Row>
+		</>)
+	}
+
+
+	const RnaReports = ({ style }) => {
+		const [nav, setNav]=useState(1)
+  	function clickNav(e) {
+  		setNav(Number(e.target.id))
+	  }
+	 return(<div class="col-12 d-flex flex-nowrap flex-column">
+	 <Row className="flex-grow-1 pt-1 mt-1 justify-content-start">
+		<Col xs="1" className="d-flex p-0 m-0 colExpNav justify-content-start" >
+			 <Nav vertical tabs>
+			 <NavItem>
+					<NavLink className="app-navlnk" id="1" active={nav==1} onClick={clickNav} href="#">Brain Region Reports</NavLink>
+			 </NavItem>
+			 <NavItem>
+					<NavLink className="app-navlnk" id="2" active={nav==2} onClick={clickNav} href="#">Dataset reports</NavLink>
+			 </NavItem>
+			 <NavItem>
+				 <NavLink className="app-navlnk">more to come..</NavLink>
+			 </NavItem>
+			</Nav>
+		</Col>
+		<Col xs="10" className="d-flex flex-fill">
+						{(nav==1) ? <BrRegSeq /> : <DatasetReport /> }
+		</Col>
+		</Row>
+		</div>)}
+
+
+
+
+
 
 export default RnaReports;

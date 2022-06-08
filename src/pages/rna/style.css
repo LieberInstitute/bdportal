@@ -1,6 +1,10 @@
-.bordred {
-    border: 1px solid red;
-}
+.bred {  border: 1px solid red; }
+.bpink { border: 1px solid pink; }
+.bgreen { border: 1px solid green; }
+.bblue { border: 1px solid blue; }
+.byellow { border: 1px solid yellow; }
+.bpurple { border: 1px solid purple; }
+
 .tbl {
   text-align:left;
 }
@@ -8,13 +12,20 @@
   text-align:left;
 }
 
-.tbl tr:nth-child(even) { 
+.tbl tr:nth-child(even) {
      background-color: #f2f2f2;
 }
-.tbldsets tr td:nth-child(1), td:nth-child(3),  td:nth-child(4), td:nth-child(5) {   
+.tbldsets tr td:nth-child(1), .tbldsets tr td:nth-child(3),
+.tbldsets tr td:nth-child(4), .tbldsets tr td:nth-child(5) {
   font-size:90%;
 }
 
+.fixbregtbl {
+  min-width:60em !important;
+  max-width:60em !important;
+  overflow-x:auto;
+
+}
 .dt-wrapper {
     margin:4px;
 }
@@ -24,4 +35,54 @@
 }
 .tbl td:first-child {
   text-align:right;
+}
+
+
+.bregtbl {
+  cursor:default;
+ }
+
+ /*
+.bregtbl tr td:nth-child(7), .bregtbl tr td:nth-child(8), .bregtbl tr td:nth-child(9) {
+  text-align:right;
+}
+*/
+.bregtbl td {
+  padding: 1px 8px;
+}
+.bregtbl thead td {
+  background-color:#ddd;
+}
+.bregtbl .clhead {
+  cursor:pointer;
+}
+
+.bregtbl thead, .bregtbl tbody { display: block }
+
+.bregtbl {
+  border: 1px solid #ddd;
+}
+
+.bregtbl thead {
+  width:80rem !important;
+}
+.bregtbl tbody {
+  overflow-y: auto;    /* Trigger vertical scroll    */
+  overflow-x: auto;  /* Hide the horizontal scroll */
+  width:80rem !important;
+  height: calc(100vh - 162px);
+}
+
+.bregtbl thead th {
+   width:3.3rem;
+   text-align:center;
+}
+.bregtbl thead th:nth-child(1) {
+  width:5rem;
+  text-align:left;
+}
+
+.bregtbl tbody td {
+  width:3.3rem;
+  text-align:center;
 }

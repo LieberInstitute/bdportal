@@ -1,41 +1,50 @@
 
 .navimglogo {
 	height: 100%; /* after padding, this becomes 2rem */
-	vertical-align:middle; 
-	padding:0.5rem 0;  
+	vertical-align:middle;
+	padding:0.5rem 0;
   }
-   
+
  .navheader {
 	height: 3rem;
 	flex: 0 0 3rem;
-	min-width:64rem !important;
+	min-width:68rem !important;
 	z-index: 50;
- }  
-   
+ }
+
  .navimgbands {
   height: 1.6rem;
  }
- 
+
  .ddtsel {
-   white-space: nowrap; 
+   white-space: nowrap;
  }
- 
+ .navddlst {
+	 font-size: 105%;
+	 margin-top: -0.4rem;
+	 left: 0.8rem;
+	 width: 11.5rem;
+	 box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.2);
+	 border-radius:0;
+
+	}
+
  .navdbtsel {
-   background-color: #eae8e8 !important;  
+   background-color: #eae8e8 !important;
    box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.2);
    min-width: 12rem !important;
-   border-bottom: 4px solid #eae8e8;
+   /* border-bottom: 4px solid #eae8e8; */
    /* vertical-align: middle !important; */
    color: #ef3868;
    font-size:110%;
    text-align: center;
-   padding: 0;
+   padding: 4px;
  }
- 
+
  .navdbtsel:hover {
    color: #cd1836;
  }
- 
+
  .navtab-box {
 	 /*position:absolute;
 	 left:14rem;
@@ -45,13 +54,13 @@
 	 padding-left:0.3rem;
 	 display:inline-block;
 	 white-space: nowrap;
-	 margin-bottom:0px; 
+	 margin-bottom:0px;
 	 background-color: transparent;
 	 color: #ccc;
  }
  .navtab {
-	 padding: 4px 6px; 
-	 margin:0 0.3rem;  
+	 padding: 4px 6px;
+	 margin:0 0.3rem;
 	 line-height:100%;
 	 display:inline-block;
 	 border-radius: 4px 4px 0 0;
@@ -61,93 +70,105 @@
 	 bottom:-26px;
 	 /* border: 1px solid red;  */
 	 color: #888;
-	 cursor:default;
-	 pointer-events:none; 
+	 z-index:auto;
+	 /*cursor: default;
+	  pointer-events:none; */
  }
- 
+
  .navtab.enabled {
 	 color: #f68;
 	 pointer-events: auto;
  }
- 
+
  .navtab.enabled:hover {
 	 color: #f48;;
 	 text-decoration: underline #fd6888;
 	 cursor:pointer;
    }
-   .navtab.enabled a:hover {
+
+  .navtab.enabled a:hover {
 	color: #f48;
   }
-  
+
  .navtab.selected {
-	 color: #f48;
+	 color: #d24;
 	 border-left:1px solid #fdd;
 	 border-right:1px solid #fdd;
 	 border-top:1px solid #fdd;
-
 	 font-weight:bold;
 	 background-color:#eee;
   }
- 
+
   .navtab.selected:hover {
-	text-decoration:none !important;
-	cursor:default;
-  } 
- 
- .navtab a {
-   color: #f68;
- }
- 
- .navtab.selected:hover a {
-	color: #f68;
-	text-decoration:none !important;
+	  text-decoration:none !important;
+	  cursor:default;
   }
-  
+ .navtab a {
+	 color: #f68;
+ }
+ .navtab.selected a {
+   color: #d24;
+ }
+
+ .navtab.selected:hover a {
+
+	 text-decoration:none !important;
+	 cursor:default;
+ }
+
+	/*
   .navtab a .active:hover a {
 	color: #f68;
 	text-decoration:none !important;
   }
-  
+
+  .navtab .active {
+	font-weight: 600;
+	color: #f68;
+	text-decoration:none !important;
+  }
+
+
   .navtab-box a:hover,
   .navtab-box a:active {
 	  text-decoration:none;
   }
-  
+
   .navtab-box a.active {
 	  color: #ef3868;
 	  text-decoration:none;
 	  cursor:default;
   }
-  
+
   .navtab a.active {
 	  font-weight: 600;
 	  text-decoration:none !important;
 	  cursor:default;
   }
-  
-  
+  */
+
  .navtab.disabled a {
    color: #888;
    pointer-events:none;
  }
- 
+
  .nav-right {
    white-space: nowrap
  }
- 
- .navlogin { 
+
+ .navlogin {
 	 padding-right: 1rem;
 	 padding-left: 0.2rem;
 	 display:inline-block;
 	 color: #ed1848;
  }
- 
+
  .navlogin:hover {
    color: #ad1828;
    text-decoration: underline #fd6888;
    cursor:pointer;
  }
- 
+
  .navtitle {
    white-space: nowrap;
    color: #ed6888;
@@ -157,4 +178,3 @@
    font-weight:bold;
    display:inline-block;
  }
- 

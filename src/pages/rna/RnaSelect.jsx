@@ -1,87 +1,182 @@
+/* eslint-disable no-lonely-if */
+import $ from 'jquery';
 import { h } from 'preact';
-import {useEffect, useState} from "preact/hooks";
+import {useEffect, useState, useRef, useReducer} from "preact/hooks";
+import '../../comp/ui.css';
 import './style.css';
-import AgeRangeEntry from '../../comp/agerange';
-import {RDataProvider, FltCtxProvider, useFltCtxUpdate, useRData, clearFilters,
-   } from '../../comp/RDataCtx';
 
-import FltMList from '../../comp/FltMList';
-import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Row, Col, Button, Label} from 'reactstrap';
-import RSelSummary from '../../comp/RSelSummary';
+import {useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
+	applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetRef,
+  applyBrList, clearBrListFilter, getBrListFilter} from '../../comp/RDataCtx'
+
+import {FltMList} from '../../comp/FltMList'
+import {Row, Col, Button, Label, Input, CustomInput} from 'reactstrap'
+import {ToastBox} from '../../comp/ToastBox'
+import RSelSummary from '../../comp/RSelSummary'
+import AgeDualPanel from '../../comp/AgeDualPanel'
 
 const RnaSelect = ({ style }) => {
-	const notifyUpdate = useFltCtxUpdate(); 
-	const [forceUpdate, setForceUpdate] = useState(false);
+	const [, , , dataLoaded] = useRData()
+  const notifyUpdate = useFltCtxUpdate();
+	const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-    const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
-    function ageRangeChange(v) {
-		   console.log(" RNASelect.ageRangeChange called with v = ", v);
-           setAgeRangeState(v);
+  //const [brloaded, setBrLoaded] = useState(0)
+
+  useEffect( ()=>{
+    $('[data-toggle="tooltip"]').tooltip({ delay:{show:800, hide:100 }, trigger : 'hover'})
+    //$("body").tooltip({ selector: '[data-toggle=tooltip]' });
+    $('.toast').toast({ delay: 4000 })
+  }, [])
+
+  useEffect( ()=> {
+    clearDsetInfo() //every re-render should clear that
+  })
+
+  if (!dataLoaded) return <h3>Loading..</h3>
+
+  function clearDsetInfo() {
+     const dt=$('#dset-info-content')
+     dt.html("");dt.hide()
+  }
+
+  function resetFilters() {
+    clearDsetInfo()
+    clearFilters()
+    notifyUpdate('clear')
+    //simply triggers refresh, but for some components we want to trigger remount
+  }
+
+	function applyFilter(fid) {
+    clearDsetInfo()
+		applyFilterSet(fid)
+		notifyUpdate(fid)
 	}
 
-	function resetFilters() {
-		clearFilters();
-		setForceUpdate(!forceUpdate);
-		notifyUpdate('clear');
-	}
-    //console.log(">> rendering RnaSelect parent with ageRangeState :", ageRangeState);
-	/*
-		  <AgeRangeEntry min={-1} max={110} enabled={ageRangeState[0]} vmin={ageRangeState[1]} vmax={ageRangeState[2]} onChange={ageRangeChange} />
-			<br /><br />
-    */
-	return (<div style={style}>
-  	<Row>
- 	   <Col xs="3">
-         <Row className="d-flex justify-content-end">
-		    <div className="float-right">
-             <FltMList id="sex" type="htoggle" width="12rem"  /> 
-			</div>
-         </Row>
-         <Row className="d-flex justify-content-end">
-		    <div className="float-right">
-            <FltMList id="age" width="12rem" />
-			</div>
-         </Row> 
-         <Row className="d-flex justify-content-end">
-		    <div className="float-right">
-           <FltMList id="race"  height="12rem" width="12rem" />
-		   </div>
-	    </Row>
-		<Row className="d-flex justify-content-end pt-4 mt-3">
-			 <Button outline color="danger"  onClick={resetFilters}
-			 style="line-height:80%;font-size:90%">Clear selection</Button>
-   	   </Row>
+  function onAgeSelection(customRange) {
+    notifyUpdate(customRange?'age-range':'age')
+  }
 
-	  </Col>
-	  <Col>
-	    <Row>
-	      <Col>
-		    <Row> 
-		       <FltMList id="proto" type="htoggle" width="24rem" />
-		    </Row>
-			<Row>  
-		       <FltMList id="dset" height="10rem" width="24rem" />
-		    </Row>
+  function onBrListLoad(brlist) {
+    if (!brlist || brlist.length==0) {
+      clearDsetInfo()
+      //clearFilters()
+      clearBrListFilter()
+      notifyUpdate('clear-brlist')
+      //setBrLoaded(0)
+      return 0
+    }
+    const n=applyBrList(brlist)
+    notifyUpdate('brlist')
+    return n
+  }
+
+  function prepRefHtml(ref) {
+    // ref=ref.replace(/\|/g, "<br>")
+    let rl=ref.trim().split(/\|/)
+    // 0 - authors | 1 - title | 2-journal | 3,4 = url:check prefixes
+    if (rl[2]) if (rl[2].length<3) rl[2]=""; else rl[2]=`<i>${rl[2]}</i>`;
+    for (let i=3;i<rl.length;i++) {
+      let u=rl[i].split(/:/);
+      if (u && u.length>1) {
+         u[0]=u[0].toLowerCase()
+         switch (u[0]) {
+           case 'doi': u[1]=`<a href="https://doi.org/${u[1]}" target="_blank">DOI</a>`;
+                      rl[2]+=`&nbsp;&nbsp;&nbsp;&nbsp;${u[1]}`;
+                      break;
+           case 'pmid' : u[1]=`<a href="https://pubmed.ncbi.nlm.nih.gov/${u[1]}" target="_blank">PMID</a>`;
+                      rl[2]+=`&nbsp;&nbsp;&nbsp;&nbsp;${u[1]}`;
+                      break;
+           case 'https' : u[1]= `<a href="https:${u[1]}" target="_blank">url</a>`;
+                      rl[2]+=`&nbsp;&nbsp;&nbsp;&nbsp;${u[1]}`;
+                      break;
+         }
+      }
+    }
+    return `<b>${rl[1]}</b><br/>${rl[0]},&nbsp;${rl[2]}`
+  }
+
+  function onDatasetClick(dix, fid, sel) {
+    let ref=getDatasetRef(0, dix)
+    const dt=$('#dset-info-content')
+    if (sel && sel.length>1) {
+      //dt.html('<span class="dset-info-warn"> Warning: selecting samples from more than one dataset! </span>');
+      //dt.show()
+      $("#dsMultiWarn").toast('show')
+      return
+    }
+    if (ref && ref.length>0) {
+        const refhtml=prepRefHtml(ref)
+        dt.html(refhtml);
+        dt.show()
+    } else { dt.html("");dt.hide() }
+  }
+
+  const dtaSex=getFilterData('sex')
+	//const dtaAge=getFilterData('age')
+	const dtaDx=getFilterData('dx')
+	const dtaRace=getFilterData('race')
+	const dtaProto=getFilterData('proto')
+	const dtaDset=getFilterData('dset')
+	const dtaReg=getFilterData('reg')
+  const brloaded=getBrListFilter().size
+
+  //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with brloaded=",brloaded)
+  return(<div class="col-12 d-flex flex-nowrap flex-column">
+<Row className="pt-0 mt-0 justify-content-center flex-nowrap">
+  <Col xs="3" className="d-flex pl-1 ml-1 colDemo justify-content-start" >
+   <Button outline color="danger" className="mt-0 btn-sm align-self-center" onClick={resetFilters}
+	 	    data-toggle="tooltip" title="Clear all selection filters"
+			  style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>
+  </Col>
+  <Col className="pl-0 pt-0 mt-1 align-self-start" style="max-width:26rem;min-width:26rem;">
+     <div id="dset-info"><div id="dset-info-content"> </div></div>
+  </Col>
+  <Col xs="4" className="d-flex flex-fill" style="z-index:-1;" >
+  </Col>
+</Row>
+<Row className="flex-grow-1 pt-0 mt-0 justify-content-center flex-nowrap">
+	<Col xs="3" className="colDemo" >
+   <Col className="d-flex flex-column col-vscroll"  >
+    <Row className="d-flex justify-content-start">
+      <FltMList id="dx" width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+    </Row>
+    <Row className="d-flex justify-content-start">
+      <FltMList id="sex" type="htoggle" width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
+    </Row>
+    <AgeDualPanel width="15em" onAgeSelection={onAgeSelection} />
+    <Row className="d-flex justify-content-start">
+      <FltMList id="race" width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
+    </Row>
+   </Col>
+  </Col>
+  {/*  middle column -- protocol, datasets and regions */}
+  <Col className="pt-0 mt-0 align-self-start" style="max-width:26rem">
+	 <Row className="mt-0 pt-0">
+			<Col>
+       <Row>
+		       <FltMList id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-shad lg-sq"
+             data={dtaDset} filter={getFilterSet} onApply={applyFilter} updateFilter onClickItem={onDatasetClick} />
+		   </Row>
+       <Row className="d-flex justify-content-start flex-nowrap">
+          <Col className="p-0 m-0" style="max-width:15.2em;">
+          <FltMList id="reg" width="14rem" height="8.1rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
+          </Col>
+         <Col className="p-0 m-0">
+           <FltMList id="proto" type="toggle" nobars width="10.4em" data={dtaProto} filter={getFilterSet} onApply={applyFilter} updateFilter />
+         </Col>
+       </Row>
 		  </Col>
-		</Row>
- 		<Row className="m-0 p-0 justify-content-left flex-nowrap">
-			 <Col className="m-1 p-1 float-right">
-             <FltMList id="dx" width="11rem" /> 
-		   </Col>
-		   <Col className="m-1 p-1 justify-content-left">
-              <FltMList id="reg" width="11rem" />
-		   </Col>
-        </Row>
-	  </Col>
-	  <Col >
-	  <Row className="d-flex justify-content-start">
-		    <div className="float-left">
-  			<RSelSummary />
-			</div>
-         </Row>
-	  </Col>
-	</Row>
-  </div>);
+	 </Row>
+  </Col>
+  {/* -- right column: selection summary -- */}
+  <Col xs="4" className="d-flex flex-fill" >
+		 <Row className="pt-0 mt-0 d-flex flex-fill flex-grow-1 justify-content-center align-items-start">
+				 <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} />
+  	 </Row>
+  </Col>
+  <ToastBox id="dsMultiWarn" title="Warning" text="Batch effect should be considered when selecting samples from multiple datasets." />
+ </Row>
+ </div>)
 }
 
 export default RnaSelect;

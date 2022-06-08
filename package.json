@@ -26,10 +26,11 @@
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-react": "^7.28.0",
     "jest": "^27.5.1",
-    "preact-cli": "^3.3.2",
+    "preact-cli": "^3.3.5",
     "sirv-cli": "^1.0.3"
   },
   "dependencies": {
+    "autoprefixer": "10.4.5",
     "axios": "^0.26.0",
     "bootstrap": "^4.6.1",
     "datatables.net-bs4": "^1.11.4",
@@ -48,8 +49,7 @@
     "preact": "^10.5.15",
     "react-bootstrap-slider": "^3.0.0",
     "reactstrap": "^8.10.1",
-    "swr": "^1.2.1",
-    "wouter-preact": "^2.7.5"
+    "swr": "^1.2.1"
   },
   "browserslist": [
     "defaults",
