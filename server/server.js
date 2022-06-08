@@ -304,13 +304,14 @@ app.get('/rstaging/:file', (req, res)=> {
 })
 
 app.get('/ruthere', (req, res)=> {
+    console.log('#>>> ping /ruthere received')
     res.send("online");
 })
 
 
 app.get('/pgplrinit', (req, res)=> {
   //DEBUG: disable this for now:
-  res.send('nop'); return;
+  //res.send('nop'); return;
   db.query('select * from r_version()', [], (err, dbrows)=>{
     if (err) {
       //res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
