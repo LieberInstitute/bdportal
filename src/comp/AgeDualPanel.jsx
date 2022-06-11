@@ -58,7 +58,7 @@ export default function AgeDualPanel(props) {
            otherwise cancel selection (with a pop-up notice?)
   */
     let noUpdate=true
-    noUpdate=sel ? switchAgeBinToRange() : true //switchAgeRangeToBin()
+    noUpdate=sel ? switchAgeBinToRange() : switchAgeRangeToBin()
     if (!noUpdate) {
         noUpdate=true
         console.log("NOTICE::::: Age selection cleared!")

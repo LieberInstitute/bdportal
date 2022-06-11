@@ -81,7 +81,7 @@ export function AgeRange( props ) {
     appliedRange: [fullAgeRange[0], fullAgeRange[1]],
     // -- ^^
     jqCreated: false,
-    internalRerender:false, // set to TRUE for each setRangeState() call
+    //internalRerender:false, // set to TRUE for each setRangeState() call
     renderKey:1234, // updated to force refresh for non-internalRerender
     btnApply: null,
     inputTimeout:null
@@ -92,8 +92,8 @@ export function AgeRange( props ) {
   function setRangeState(newSlState) {
       //const m=refData.current
       const sliderChanged = (m.slState.vmin!=newSlState.vmin ||  m.slState.vmax!=newSlState.vmax ||
-                            m.slState.fetal!=newSlState.fetal)
-      if (m.slState.fetal!=newSlState.fetal)  { //also update other internal state variables
+                            m.slState.fetal!==newSlState.fetal)
+      if (m.slState.fetal!==newSlState.fetal)  { //also update other internal state variables
           if (newSlState.fetal) {
             m.scale=fetalScale
             m.mrange=fetalRange
@@ -114,21 +114,22 @@ export function AgeRange( props ) {
         if (props.onChange) props.onChange(_vmin, _vmax)
         m.currentRange[0]=_vmin;
         m.currentRange[1]=_vmax;
+        //console.log(' ~~ m.currentRange set to:', m.currentRange)
         /*
         if (m.currentRange[0]!==m.appliedRange[0] || m.currentRange[1]!==m.appliedRange[1])
            rangeChanged()
         */
       }
       //update the state - note that rangeState may only be updated in the next render!
-      m.internalRerender=true
-      _setRangeState(newSlState)
+      //m.internalRerender=true
+      _setRangeState( m.slState )
   }
 
   function haveRangeFilter() { //to show the Apply button
     return (m.currentRange[0]!=fullAgeRange[0] || m.currentRange[1]!=fullAgeRange[1])
   }
 
-  function onApplyClick() {
+  function doApply() {
       //actually apply the changes here --> trigger updateCounts()
       if (rangeRW) {
         if (m.currentRange[0]===fullAgeRange[0] && m.currentRange[1]===fullAgeRange[1])
@@ -153,7 +154,7 @@ export function AgeRange( props ) {
     m.currentRange[0]=fullAgeRange[0]
     m.currentRange[1]=fullAgeRange[1]
     setRangeState( { vmin:fullAgeRange[0], vmax:fullAgeRange[1], fetal:false } )
-    onApplyClick()
+    doApply()
   }
 
   useEffect( () => {
@@ -161,7 +162,7 @@ export function AgeRange( props ) {
      if (!m.jqCreated) {
        m.jqCreated=true
      }
-     m.internalRerender=false //set after each rerender, no matter what
+     //m.internalRerender=false //set after each rerender, no matter what
   });
   /*
   useEffect( () => {
@@ -204,6 +205,7 @@ export function AgeRange( props ) {
   function sliderChange(v_min, v_max) {
     if (v_min>0.00) v_min=Math.round(v_min)
     if (v_max>0.00) v_max=Math.round(v_max)
+    //console.log(`.. AgeRange:sliderChange(${v_min}, ${v_max}) called`)
     setRangeState({ ... refData.current.slState, vmin:v_min, vmax:v_max})
   }
 
@@ -230,7 +232,8 @@ export function AgeRange( props ) {
   }
 
   function updateVMin(e, delay=1200) {
-    if (e.inputType==="insertReplacementText") delay=0
+    const itype=e.inputType
+    if (!itype || e.inputType==="insertReplacementText") delay=0
     //assume this is up/down keys or mini-buttons
     unsetTimeout()
     m.inputTimeout=setTimeout(  ()=> {
@@ -321,67 +324,33 @@ function onSelUndo() {
   //forceUpdate()
 }
 
-//this should update m data
-//called before EVERY RENDER:
-if (rangeRW) { //override applied data at EVERY render
-  if (rangeRW.length==0) { //default state
-     m.appliedRange=[fullAgeRange[0], fullAgeRange[1]]
-  } else {
-     m.appliedRange=[rangeRW[0], rangeRW[1]]
-  }
+
+if (rangeRW && rangeRW.length==2 &&
+  (rangeRW[0]!==m.appliedRange[0] || rangeRW[1]!==m.appliedRange[1]) ) {
+   //the applied range was changed externally through drange prop change!
+   m.appliedRange=[rangeRW[0], rangeRW[1]]
+   rangeState.vmin=rangeRW[0]
+   rangeState.vmax=rangeRW[1]
+   rangeState.fetal=(rangeState.vmin<0 && rangeState.vmax<=0)
+   m.currentRange=[rangeState.vmin, rangeState.vmax]
+   if (rangeState.vmin<0 && rangeState.vmax<=0) { //raw values passed
+    rangeState.fetal=true //convert to PCW for slider display
+    let vmin=Math.round((rangeState.vmin * 52.0)+40)    //PCW = (age * 52) + 40
+    let vmax=Math.round((rangeState.vmax * 52.0)+40)
+    const fmin=fetalScale[0], fmax=fetalScale[fetalScale.length-1]
+    if (vmin<fmin) vmin=fmin;
+    if (vmin>fmax) vmin=fmax;
+    if (vmax<fmin) vmax=fmin;
+    if (vmax>fmax) vmax=fmax;
+    rangeState.vmin=vmin
+    rangeState.vmax=vmax
+   }
+   m.scale = rangeState.fetal ? fetalScale : fullScale
+   m.mrange=[m.scale[0], m.scale[m.scale.length-1]]
+   m.slState={ ... rangeState }
+   m.renderKey=String(Date.now()).substring(4)
+   //setRangeState( { vmin:rangeRW[0], vmax:rangeRW[1] } )
 }
-
-
-
-if (!m.jqCreated || !m.internalRerender) {
-     //console.log(" ####---- creating/resetting AgeRange component")
-    // --- check values from props
-    if (rangeRW) {
-       rangeState.vmin=m.appliedRange[0]
-       rangeState.vmax=m.appliedRange[1]
-       rangeState.fetal=(rangeState.vmin<0 && rangeState.vmax<=0)
-    } else { //use props, if any, to get the initial values to show
-      rangeState.vmin=pdefnum(props.vmin, props.fetal ? fetalRange[0] : fullAgeRange[0])
-      rangeState.vmax=pdefnum(props.vmax, props.fetal ? fetalRange[1] : fullAgeRange[1])
-      if (props.fetal) {
-         rangeState.fetal=true
-      } else {
-        rangeState.fetal= (rangeState.vmin<0 && rangeState.vmax<=0)
-        }
-    }
-    //if (rangeState.vmin!==fullAgeRange[0] || rangeState.vmax!==fullAgeRange[1]) {
-    m.currentRange=[rangeState.vmin, rangeState.vmax]
-    if (rangeState.vmin<0 && rangeState.vmax<=0) { //raw values passed
-     rangeState.fetal=true //convert to PCW for slider display
-     let vmin=Math.round((rangeState.vmin * 52.0)+40)    //PCW = (age * 52) + 40
-     let vmax=Math.round((rangeState.vmax * 52.0)+40)
-     const fmin=fetalScale[0], fmax=fetalScale[fetalScale.length-1]
-     if (vmin<fmin) vmin=fmin;
-     if (vmin>fmax) vmin=fmax;
-     if (vmax<fmin) vmax=fmin;
-     if (vmax>fmax) vmax=fmax;
-     rangeState.vmin=vmin
-     rangeState.vmax=vmax
-    }
-    m.scale = rangeState.fetal ? fetalScale : fullScale
-    m.mrange=[m.scale[0], m.scale[m.scale.length-1]]
-    m.slState={ ... rangeState }
-    m.renderKey=String(Date.now()).substring(4)
-}
-
-// these are updated before every render:
-/*
-if (rangeState.fetal) {
-   m.fetalSel=[rangeState.vmin, rangeState.vmax]
-   m.scale=fetalScale
-} else {
-   m.fullSel=[rangeState.vmin, rangeState.vmax]
-   m.scale=fullScale
-}
-m.mrange=[m.scale[0], m.scale[m.scale.length-1]]
-///^^^^ updated m data for slider rendering
-*/
-//-----------------------------------------
 
 const showOnlyFilter=haveRangeFilter()
 const showApply=(m.currentRange[0]!=m.appliedRange[0] || m.currentRange[1]!=m.appliedRange[1])
@@ -394,8 +363,7 @@ if (m.slState.fetal) {
      selRange = `fetal - ${m.slState.vmax}`
     }
 
-//console.log(" ..... AgeRange rendering with fetal state=", m.slState.fetal," values:", m.slState.vmin, m.slState.vmax)
-//console.log(" .....  applied range: ", m.appliedRange, "||  currentRange:", m.currentRange)
+//console.log(" ... AgeRange rendering with current range:",  m.currentRange, ' applied:', m.appliedRange, ' rangeRW:', rangeRW)
 
 const caption=props.title || "Age range"
 //key={m.renderKey}
@@ -418,7 +386,7 @@ return (<div class="lg-panel" ref={refDom} style={{ width : (props.width ? props
                    */}
              <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)}
                   style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
-             <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)}
+             <span class="lg-apply" onClick={doApply} key={String(Date.now()).substring(4)}
                  style={ { display: showApply ? "inline" : "none" } }>
                  Apply</span>
              <span className="coll-glyph" onClick={toggleCollapse}> </span>

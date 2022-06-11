@@ -662,7 +662,7 @@ export function loadData(allData) {
       //if (xtix===0)
       protooc[p]++;
       // -- update dtOriCounts.dx sample counts:
-      const [ , dxi, raidx, sidx, age, pmi, hasSeq, hasGt, drop ] = dtaBrains[bridx];       
+      const [ , dxi, raidx, sidx, age, pmi, hasSeq, hasGt, drop ] = dtaBrains[bridx];
       // never count dropped brains!
       if (!drop) {
         let ax=age2RangeIdx(age);
@@ -902,10 +902,12 @@ export function switchAgeRangeToBin() {
   //  console.log(" switchToRangeBins: received:", dtFilters.ageRange)
 
   //if (amin==-1 && amax==0) {
-  if (amin<-0.76 && amax==0) { //
+  //only basic single interval conversion
+  if (amin<=-0.76 && amax==0) { //
       dtFilters.age.add(1)
-  } else if (amin==65 && amax>110) { //  (PCW-40)/52 where PCW=[0..40]
-      dtFilters.age.add(numBins)
+  } else if (amin==65 && amax>110) {
+    const bin=dtaNames.age.length()-1
+    dtFilters.age.add()
   } else {
     for (let i=1;i<numBins-1;i++) {
        if (amin==Math.trunc(abins[i][0]) &&

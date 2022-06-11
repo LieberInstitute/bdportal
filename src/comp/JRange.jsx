@@ -4,7 +4,7 @@ import {useRef, useEffect, useState} from "preact/hooks"
 import './JRange.css';
 
 export function JRange( p ) {
-  /* { id, type, disabled, min, max, from, to, step, scale, width,
+  /* { id, type, disabled, min, max, value, from, to, step, scale, width,
     scaleClickable, snap, theme, showLabels, format, showScale,
     value,  decimals, onChange, onDragEnd, onBarClick } */
   //from to = absolute range
@@ -226,7 +226,7 @@ export function JRange( p ) {
 		}
 
      // e.g. jqMove(pointer, { left: newXpos}, true)
-     function jqMove(t, mvTo, anim) { 
+     function jqMove(t, mvTo, anim) {
       if (anim) {
         t.stop(true) //prevent animation queue build-up
         t.animate(mvTo)
@@ -445,7 +445,7 @@ export function JRange( p ) {
 				av[1] = Math.min(Math.max(av[1], m.from), m.to);
         if (av[0]>av[1]) {m.value[0]=av[1] ; m.value[1]=av[0] }
                    else { m.value[0]=av[0] ; m.value[1]=av[1] }
-      }
+      } else { m.value[0]=av[0] }
       //console.log(">>>>>>>> showValue:",m.value, " pos1: ", Math.round(val2px(m.value[0])))
       setPosition(0, Math.round(val2px(m.value[0])), false, m.value[0]);
       if (m.isRange && defined(av[1]))
@@ -504,7 +504,7 @@ export function JRange( p ) {
       //m.pxmul=vpxmul
       if (m.showLabels) m.labels.show()
                    else m.labels.hide()
-      detachEvents()             
+      detachEvents()
       attachEvents()
       if (p.scale) renderScale()
       m.rebuild=false;
@@ -532,10 +532,10 @@ export function JRange( p ) {
   useEffect(() => {
     return () => { //clean-up code only executed on unmounting:
       detachEvents()
-    };
+    }
   }, []); // note the empty dependency array!
 
-  //console.log(`---->> JRange render (rebuild = ${m.rebuild}), m.value`, m.value)
+  //console.log(`   .....  JRange render (rebuild: ${m.rebuild}), m.val:`, m.value, '| p.val:', p.value)
   return ( <div class="slider-range-wrap">
      <div ref={domRef} class="slider-container">
 			  <div class="back-bar">
