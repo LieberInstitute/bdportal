@@ -53,7 +53,7 @@ module.exports = {
         if (err) {
             console.log('query-error:', { query:text, error:err.message} );
         } else {
-          console.log('query', { query:text, duration, rows: res.rowCount })
+          //console.log('query', { query:text, duration, rows: res.rowCount })
         }
         //callback(err, res) //caller should use res.rows
         // arrayMode: pass to callback res as [ columns, res.rows] :

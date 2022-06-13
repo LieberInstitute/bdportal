@@ -7,7 +7,7 @@ import './style.css';
 
 import {useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
 	applyFilterSet, applyFilterCond, applyBrList, clearBrListFilter,
-	getBrListFilter, clearFilters, dtFilters} from '../../comp/RDataCtx'
+	getBrListFilter, clearFilters, dtFilters, buildRSE, saveRStagedFile} from '../../comp/RDataCtx'
 
 import {FltMList} from '../../comp/FltMList'
 import {Row, Col, Button, Label, Input, CustomInput} from 'reactstrap'
@@ -18,71 +18,95 @@ import AgeDualPanel from '../../comp/AgeDualPanel'
 import {useMxSel, MxSelProvider} from './mxSelCtx'
 import RMatrix from './RMatrix'
 
-//import { MW_SERVER } from '../../appcfg'
 //import axios from 'axios'
-//import {saveRStagedFile} from '../../comp/gutils.js'
+import { MW_SERVER } from '../../appcfg'
 
-// the top-right info panel- show numeric summary of filters?
-//items is an array of text lines to show
 // the top-right info panel
 // items is an array of text lines to show
 function TrPanel( ) {
-const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update this component
-//
-const [selcol, selregs, mxvals, dtxs] = useMxSel(); //when Matrix regions are clicked this gets updated
-let nhregs=0; //number of hilighted regions (not necessarily applied!)
-let clist='';
-const regions=[];
-const regc=[];
-let expType='';
-const refData = useRef({
-    regSelApplied: false,
-		showHint:false,
-		expType:''
-})
-const m=refData.current
-if (selcol>0) { // selcol-1 : experiment type
+	const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update this component
+	//
+	//const [dlStatus, setDlStatus] = useState(0); // 0 = nothing, 1 = "preparing the file"
+	const [ fDlPath, setFDlPath ] = useState(""); // ".." : loading, otherwise relative file path
+	const [selcol, selregs, mxvals, dtxs] = useMxSel(); //when Matrix regions are clicked this gets updated
+	let nhregs=0; //number of hilighted regions (not necessarily applied!)
+	let clist='';
+	const regions=[];
+	const regc=[];
+	let expType='';
+	const refData = useRef({
+			regSelApplied: false,
+			showHint:false,
+			expType:''
+	})
+	const m=refData.current
+	if (selcol>0) { // selcol-1 : experiment type
 
- expType=['RNASeq', 'DNAm', 'WGS', 'scRNAseq', 'long RNAseq' ][selcol-1];
-	for (let i=0;i<selregs.length; i++) {
-		if (selregs[i])
-			nhregs++;
+	expType=['RNASeq', 'DNAm', 'WGS', 'scRNAseq', 'long RNAseq' ][selcol-1];
+		for (let i=0;i<selregs.length; i++) {
+			if (selregs[i])
+				nhregs++;
+		}
 	}
-}
-if (nhregs && dtFilters.reg.size>0) m.regSelApplied=true
-m.showHint = (nhregs && !m.regSelApplied)
-m.expType=expType
+	if (nhregs && dtFilters.reg.size>0) m.regSelApplied=true
+	m.showHint = (nhregs && !m.regSelApplied)
+	m.expType=expType
 
- function bSaveClick() {
-    console.log("Save button clicked")
-    const fname='rse_test.rda'
-    saveRStagedFile(fname)
- }
+	function bSaveClick() {
+			console.log("Save button clicked")
+			//setDlStatus((v) => (v ? 0 : 1))
+			setFDlPath('..')
+			//Step 1 - show loading animation and submit the Post request
+      buildRSE('tst_rse_gene_rpkm', ['R15930', 'R5637_C41CPACXX'], 'g', 'rpkm')
+			 .then( res => {
+			   //Step 2 - download the relative file path name returned by Step 1
+				 console.log("res=", res)
+				 return res.json()
+			  } )
+			 .then( fn => {
+				  console.log("fn result:", fn)
+					// 1st row: header, 2nd row: data = filename
+					let fname=""
+					if (fn.length>1) fname=fn[1][0]
+					if (fname) {
+						 fname=fname.replace(/\//g, '|')
+						 let fn=fname.split('|')
+						 setFDlPath(fn[fn.length-1]+' saved.')
+					   //simulate a link->click to download the file:
+					   saveRStagedFile(fname)
+					}
+			 })
 
- useEffect( ()=>{
-       if (m.showHint) {
-			   $('#regSelInfo').toast('show')
-			 }
-	 } )
- return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"
- style="width:20rem;min-height:4rem;">
-  {/* <Button id="bsave" className="btn-sm app-btn" onClick={bSaveClick}>Save</Button>&nbsp; */}
-	<div class="position-fixed p-1" style="z-index: 15; top: 4em; right: 12em;">
-  <div id="regSelInfo" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
-    <div class="toast-header-sm">
-      {/* <img src="..." class="rounded mr-2" alt="..." /> */}
-      <strong class="mr-auto" style="color:#777;">Information</strong>
-      {/* <small>11 mins ago</small> */}
-      <button type="button" class="ml-2 mb-1 mr-1 close" data-dismiss="toast" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="toast-body mt-1 pt-0">
-		  Only subjects having {m.expType} samples in the <br /> selected brain regions
-			will be considered after selection is applied
-    </div>
-  </div>
- </div></Row>)
+			// saveRStagedFile(fname)
+	}
+
+	useEffect( ()=>{
+				if (m.showHint) {
+					$('#regSelInfo').toast('show')
+				}
+		} )
+	return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"
+	style="width:20rem;min-height:4rem;">
+		{/*  */}
+		<Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
+			className={  fDlPath=='..' ? "blink-anim" : null } > {fDlPath=='..' ? "preparing..." : (fDlPath.length>2 ? fDlPath : " ")} </Label>
+		<Button id="bsave" className="btn-sm app-btn" onClick={bSaveClick}>Save</Button>&nbsp;
+		<div class="position-fixed p-1" style="z-index: 15; top: 4em; right: 12em;">
+		<div id="regSelInfo" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+			<div class="toast-header-sm">
+				{/* <img src="..." class="rounded mr-2" alt="..." /> */}
+				<strong class="mr-auto" style="color:#777;">Information</strong>
+				{/* <small>11 mins ago</small> */}
+				<button type="button" class="ml-2 mb-1 mr-1 close" data-dismiss="toast" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="toast-body mt-1 pt-0">
+				Only subjects having {m.expType} samples in the <br /> selected brain regions
+				will be considered after selection is applied
+			</div>
+		</div>
+	</div></Row>)
 
 /*
 return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"

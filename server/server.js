@@ -1,13 +1,18 @@
 const os=require("os");
 const express = require('express');
 const axios = require('axios')
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
+// -- no longer needed for express 4.16+
 const jwt = require('jsonwebtoken');
 const { Pool, Client } = require("pg");
 //const http = require('http');
 //const bodyParser = require('body-parser');
 //const async = require("async");
 //const request = require("request");
+const fs = require('fs');
+const path = require('path');
+const db = require('./db');
+//const { emitWarning } = require('process');
 
 
 // Read in config vars
@@ -35,7 +40,7 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
        else if (hostname=="gi7") r_filedir="/data/gdebsrv_ssdata/postgresql/r_staging";
            else r_filedir="/ssdata/postgresql/r_staging";
     mail_url = 'http://gdebsrv:14244/';
-    auth_srv= 'http://192.168.2.2:16443';
+    auth_srv= 'http://192.168.2.2:16600'; //no ssl in my LAN tests
 } else { //LIBD devel or server, or aws
   if (!dbserver) dbserver='localhost';
   if (hostname=="linwks34") {
@@ -46,7 +51,7 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
   //}
 }
 const auth_url = `${auth_srv}/auth`;
-console.log(`dbserver=${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
+console.log(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
 
 const jwt_shh =  process.env.JWTSHH
 
@@ -71,20 +76,10 @@ const db_creds = {
   port: 5432,
 };
 
-const fs = require('fs');
-const path = require('path');
-const db = require('./db');
-const e = require('express');
-const { emitWarning } = require('process');
-
+// ------------------ MAIN ENTRY POINT:
 const app = express();
 
 db.init(db_creds);
-
-// -- Parsers for POST data (Bill)
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({ extended: false }));
-
 
 /* Use a self-calling function so we can use async / await.
 (async () => {
@@ -98,7 +93,6 @@ db.init(db_creds);
 
 // Connect with a connection pool.
 function poolTest() {
-
   //const now = await pool.query("SELECT NOW()");
   //await pool.end();
   db.query("select id, name from datasets where dtype='rnaseq'", [], (err, res)=>{
@@ -107,15 +101,24 @@ function poolTest() {
 
 }
 // ----------- middleware setup -----
-// Parsers for POST data
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
+// requests FIRST go through these MIDDLEware app.use() handlers which can transform/parse the request
+//      and THEN they arrive at app.get()/app.post() ENDpoint handlers
+//      (with the req potentially modified by the app.use() handlers)
+// ----------------------------------
+// parsers for POST data
+// -- bodyParser functionality now built in express 4.16+
+//app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json()); //parse JSON-encoded POST requests
+//to allow parsing of url-encoded POST requests (application/x-www-form-urlencoded):
+app.use(express.urlencoded({ extended: false }));
+//extend : false -- means only strings and arrays are being parsed
+//       : true     any encoded (nested) objects can be decoded, more work
 // Allow CORS requests
 app.use(  (req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
 });
 
 // ----------- routes handling
@@ -177,6 +180,29 @@ app.post('/mail', (req, res) => {
     res.status(500).json({ message: err });
   });
 });
+
+app.post('/pgdb/adl', (req, res) => {
+   let feature=req.body.feature || 'g'
+   let filetype=req.body.filetype || 'rse'
+   let fname=req.body.fname || 'ftmp'
+   let dtype=req.body.dtype || 'counts'
+   let sarr=req.body.samples
+   if (sarr.length===0) res.status(500).send(
+       { error: ':user error', message: " empty sample list provided"}
+   )
+   db.query('select save_rse_gene($1, $2, $3)',
+         [fname, sarr, dtype ], (err, dbrows)=>{
+      if (err) {
+        res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+      }
+      else {
+        //console.log( "pdgb/adl response: ", res)
+        res.json(dbrows);
+      }
+   });
+})
+
+
 //const mdata={};
 //const jzfile='rnaseq_samples.json.gz';
 //-- load json.gz file
@@ -276,6 +302,7 @@ function queryDsetList(res, dtype) {
   });
 }
 
+
 // ----  route with sub-routes/terms
 app.get(['/pgdb/:qry/:dtype','/pgdb/:qry'] , (req, res)=> {
     console.log(`got pg query: ${req.params.qry}`);
@@ -285,16 +312,21 @@ app.get(['/pgdb/:qry/:dtype','/pgdb/:qry'] , (req, res)=> {
                     break;
       case 'dslist': queryDsetList(res, req.params.dtype);
                      break;
+      case 'adl': notImplemented(req, res);//queryDx(res);
+                     break;
       case 'dx': notImplemented(req, res);//queryDx(res);
                  break;
       default: res.status(400).send('Invalid Request');
     }
 })
 
-app.get('/rstaging/:file', (req, res)=> {
-  console.log("got rstaging query:"+req.params.file);
-  let fpath=path.join(r_filedir,req.params.file);
-  console.log(" trying to load: ", fpath);
+app.get('/rstaging/:fpath', (req, res)=> {
+  let relpath=req.params.fpath
+  //convert relpath
+  relpath=relpath.replace(/\|/g, '/')
+  console.log("~~vv~~ got rstaging query: "+relpath);
+  let fpath=path.join(r_filedir, relpath);
+  //console.log("     trying to load: ", fpath);
   if (fs.existsSync(fpath)) {
       //console.log(`calling res.download(${fpath})`)
       res.download(fpath)

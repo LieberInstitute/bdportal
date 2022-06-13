@@ -7,9 +7,8 @@ import axios from 'axios';
 export function DlgDownload( props ) {
   const fNames=['gene', 'tx', 'ex', 'jx'];
 
-    let url='/pgdb/save_rse_gene'
+    let dlurl='/pgdb/adl'
   /*
-
   const fetcher = (...args) => fetch(url, {
    method: 'post',
    headers: {

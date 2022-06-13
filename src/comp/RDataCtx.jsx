@@ -2,7 +2,7 @@
 import { useContext, useState, useRef, useEffect } from "preact/hooks";
 import {  createContext } from "preact";
 import { strFromU8, decompressSync } from "fflate"
-import {APP_BASE_URL} from '../appcfg'
+import {APP_BASE_URL, MW_SERVER} from '../appcfg'
 
 //---------- this module holds a lot of global data for the RNAseq part of the app --------
 //same with loaded dtypes entries appended to ["rnaseq", "dnam" ] so far..
@@ -1618,4 +1618,36 @@ export function FltCtxProvider (props) {
          </FltCtxUpdate.Provider>
      </FltCtx.Provider>
     )
+}
+
+//////////////  --- data prep & fetching functions:
+
+export async function buildRSE(fpre, sarr, ft, assayType='counts') {
+	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
+	if (!ft) ft='g' //feature type
+	ft=ft.charAt(0).toLowerCase()
+	if (ft=='t') assayType='tpm'
+	const reqOpts = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ type: 'rna', fname: fpre,  feature:'g', samples:sarr,
+		filetype:'rse', dtype:assayType })
+  };
+  return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
+}
+
+export async function saveRStagedFile(relpath, newfname) {
+  const a = document.createElement('a');
+  a.href = `${MW_SERVER}/rstaging/${relpath}`;
+  if (newfname && newfname.length) {
+     //NOTE: download attribute only honored for links to resources with the same origin !!
+     a.download = newfname;
+  }
+  //a.addEventListener('click', () => {
+  //  setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000); //prevent timeout?
+  //});
+  document.body.appendChild(a); //FF needs this
+  a.click();
+  //a.remove();
+  document.body.removeChild(a); //FF needed this
 }
