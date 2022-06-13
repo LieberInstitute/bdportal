@@ -1622,15 +1622,15 @@ export function FltCtxProvider (props) {
 
 //////////////  --- data prep & fetching functions:
 
-export async function buildRSE(fpre, sarr, ft, assayType='counts') {
+export async function buildRSE(f_name, sarr, feat, assayType='counts') {
 	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
-	if (!ft) ft='g' //feature type
-	ft=ft.charAt(0).toLowerCase()
-	if (ft=='t') assayType='tpm'
+	if (!feat) feat='g' //feature type
+	feat=feat.charAt(0).toLowerCase()
+	if (feat=='t') assayType='tpm'
 	const reqOpts = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ type: 'rna', fname: fpre,  feature:'g', samples:sarr,
+		body: JSON.stringify({ type: 'rna', fname: f_name,  feature:feat, samples:sarr,
 		filetype:'rse', dtype:assayType })
   };
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)

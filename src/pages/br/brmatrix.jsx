@@ -53,11 +53,11 @@ function TrPanel( ) {
 	m.expType=expType
 
 	function bSaveClick() {
-			console.log("Save button clicked")
+			//console.log("Save button clicked")
 			//setDlStatus((v) => (v ? 0 : 1))
 			setFDlPath('..')
 			//Step 1 - show loading animation and submit the Post request
-      buildRSE('tst_rse_gene_rpkm', ['R15930', 'R5637_C41CPACXX'], 'g', 'rpkm')
+      buildRSE('tst_rse_gene_rpkm', ['R15930', 'R5637_C41CPACXX'], 'g')
 			 .then( res => {
 			   //Step 2 - download the relative file path name returned by Step 1
 				 console.log("res=", res)

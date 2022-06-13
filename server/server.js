@@ -326,7 +326,7 @@ app.get('/rstaging/:fpath', (req, res)=> {
   relpath=relpath.replace(/\|/g, '/')
   console.log(`~~vv~~ got rstaging query: ${relpath}`);
   let fpath=path.join(r_filedir, relpath);
-  console.log("     trying to load: ", fpath);
+  //console.log("     trying to load: ", fpath);
   if (fs.existsSync(fpath)) {
       //console.log(`calling res.download(${fpath})`)
       res.download(fpath)
