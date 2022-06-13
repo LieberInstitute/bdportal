@@ -64,13 +64,12 @@ function TrPanel( ) {
 				 return res.json()
 			  } )
 			 .then( fn => {
-				  console.log("fn result:", fn)
 					// 1st row: header, 2nd row: data = filename
 					let fname=""
 					if (fn.length>1) fname=fn[1][0]
+          console.log("fn result:", fname)
 					if (fname) {
-						 fname=fname.replace(/\//g, '|')
-						 let fn=fname.split('|')
+						 let fn=fname.split('/')
 						 setFDlPath(fn[fn.length-1]+' saved.')
 					   //simulate a link->click to download the file:
 					   saveRStagedFile(fname)

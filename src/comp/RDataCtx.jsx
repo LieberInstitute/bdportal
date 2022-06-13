@@ -1638,6 +1638,8 @@ export async function buildRSE(fpre, sarr, ft, assayType='counts') {
 
 export async function saveRStagedFile(relpath, newfname) {
   const a = document.createElement('a');
+  //make sure relpath replaces / with | :
+  relpath=relpath.replace(/\//g, '|')
   a.href = `${MW_SERVER}/rstaging/${relpath}`;
   if (newfname && newfname.length) {
      //NOTE: download attribute only honored for links to resources with the same origin !!

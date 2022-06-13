@@ -324,14 +324,14 @@ app.get('/rstaging/:fpath', (req, res)=> {
   let relpath=req.params.fpath
   //convert relpath
   relpath=relpath.replace(/\|/g, '/')
-  console.log("~~vv~~ got rstaging query: "+relpath);
+  console.log(`~~vv~~ got rstaging query: ${relpath}`);
   let fpath=path.join(r_filedir, relpath);
-  //console.log("     trying to load: ", fpath);
+  console.log("     trying to load: ", fpath);
   if (fs.existsSync(fpath)) {
       //console.log(`calling res.download(${fpath})`)
       res.download(fpath)
     }
-    else res.status(400).send('File does not exist!');
+    else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
 })
 
 app.get('/ruthere', (req, res)=> {
