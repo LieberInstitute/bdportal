@@ -41,10 +41,10 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
            else r_filedir="/ssdata/postgresql/r_staging";
     mail_url = 'http://gdebsrv:14244/';
     auth_srv= 'http://192.168.2.2:16600'; //no ssl in my LAN tests
-} else { //LIBD devel or server, or aws
-  if (!dbserver) dbserver='localhost';
+} else { //LIBD devel, or server, or aws
+  if (!dbserver) dbserver='192.168.77.16';
   if (hostname=="linwks34") {
-         r_filedir=(dbserver=='localhost') ? '/ssdata/postgresql/r_staging' : '';
+         if (dbserver=='localhost') r_filedir= '/ssdata/postgresql/r_staging';
   } //else { //MUST be on srv16 itself, or aws
     //r_filedir='/dbdata/cdb/r_staging';
     //if (hostname!=='srv16') console.log("WARNING: srv16 assumed, r_filedir set to: ", r_filedir)

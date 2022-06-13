@@ -12,13 +12,6 @@ const ERR_NOPOOL="Error: db connections pool not created! (use db.init(cred)) !"
    Rows are returned in res.rows (as array of arrays), to get the columns:
       res.fields.map(field => field.name)
 */
-function errpool() {
-    if (!pool) {
-        console.log(ERR_NOPOOL);
-        return true;
-    }
-    return false;
-}
 
 const qry_rna_dsets=`with dsbr as (select distinct dataset_id as ds_id, p.id as p_id
   FROM exp_rnaseq e, samples s, subjects p
@@ -39,21 +32,37 @@ select d.id, d.name, dxs, ancestry, agebins, brcount
  from dxsum dx, asum a, racesum r, datasets d where d.id=dx.ds_id
    and r.ds_id=d.id and a.ds_id=dx.ds_id`
 
+function errpool() {
+    if (!pool) { //no pool created yet!
+        console.log(ERR_NOPOOL);
+        return true;
+    }
+    return false;
+}
 
 module.exports = {
-    init:  (credentials) => { pool= new Pool(credentials); },
+    init:  (credentials) => { 
+         pool= new Pool({ ...credentials,
+              idleTimeoutMillis:7200000, //2h !
+              max: 30 //max 30 clients at once!
+            }); 
+        },
     query: (text, params, callback) => {
       const qrycfg={ text, values: params, rowMode: 'array' };
       if (errpool()) {
           return callback(ERR_NOPOOL, null);
       }
       const start = Date.now()
+      console.log(`>> [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`+
+      " Recvd query: ", text)
       return pool.query(qrycfg, (err, res) => {
         const duration = Date.now() - start;
         if (err) {
             console.log('query-error:', { query:text, error:err.message} );
         } else {
           //console.log('query', { query:text, duration, rows: res.rowCount })
+          console.log(`  << [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`+
+          ` done (${duration}) query: `, text)
         }
         //callback(err, res) //caller should use res.rows
         // arrayMode: pass to callback res as [ columns, res.rows] :
