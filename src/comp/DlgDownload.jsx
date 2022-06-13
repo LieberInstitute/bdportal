@@ -4,9 +4,34 @@ import {useState, useRef} from "preact/hooks";
 import {Row, Col, Input, Button, Label, FormGroup, } from 'reactstrap';
 import axios from 'axios';
 
-export function DlgDownload( props ) {
-  const fNames=['gene', 'tx', 'ex', 'jx'];
+const fNames=['gene', 'tx', 'ex', 'jx'];
 
+function f2Name(str) {
+  switch (str) {
+    case 'ex': str='exon';break;
+    case 'tx': str='transcript';break;
+    case 'jx': str='junction';break;
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function MxDlButton (props) { //TODO
+
+  function dlClick() {
+    //TODO: 
+  }
+  const [fstatus, setFStatus]=useState(0)
+  return( <div>
+    <Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
+         className={  fstatus ? "blink-anim" : null }> <b>{ fstatus ? "..." : " " }</b> </Label>
+   <Button id="bsave" className="btn-sm app-btn" disabled={fstatus!==0} onClick={dlClick}>Download</Button>
+   </div>
+  )
+}
+
+
+export function DlgDownload( props ) {
+  
     let dlurl='/pgdb/adl'
   /*
   const fetcher = (...args) => fetch(url, {
@@ -41,18 +66,10 @@ export function DlgDownload( props ) {
     .catch((error) => { console.log(error) })
   }
 
-  function f2Name(str) {
-    switch (str) {
-      case 'ex': str='exon';break;
-      case 'tx': str='transcript';break;
-      case 'jx': str='junction';break;
-    }
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
+ 
   function prefixChange( {target}) { setPrefix(target.value); }
 
-  return (<DlgModal { ...props} title="Download data" justClose="1" width="40em">
+  return (<DlgModal { ...props} title="Download data" justClose="1" width="50em">
     <Row className="form-group d-flex justify-content-center flex-nowrap mb-0 pb-0" style="font-size:90%;">
       <Col xs="3" className="d-flex justify-content-end mr-0 pr-2">
               <Label className="pt-2 float-right">File prefix:</Label>
