@@ -57,7 +57,7 @@ function TrPanel( ) {
 			//setDlStatus((v) => (v ? 0 : 1))
 			setFDlPath('..')
 			//Step 1 - show loading animation and submit the Post request
-      buildRSE('tst_rse_gene_rpkm', ['R15930', 'R5637_C41CPACXX'], 'g')
+      buildRSE('tst_rse_gene_counts', ['R15930', 'R5637_C41CPACXX'], 'g')
 			 .then( res => {
 			   //Step 2 - download the relative file path name returned by Step 1
 				 console.log("res=", res)
@@ -84,12 +84,14 @@ function TrPanel( ) {
 					$('#regSelInfo').toast('show')
 				}
 		} )
-	return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"
+
+  const fileSaving= (fDlPath=='..')
+	return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"  
 	style="width:20rem;min-height:4rem;">
 		{/*  */}
 		<Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
-			className={  fDlPath=='..' ? "blink-anim" : null } > {fDlPath=='..' ? "preparing..." : (fDlPath.length>2 ? fDlPath : " ")} </Label>
-		<Button id="bsave" className="btn-sm app-btn" onClick={bSaveClick}>Save</Button>&nbsp;
+			className={  fileSaving ? "blink-anim" : null }> { fileSaving ? "preparing..." : (fDlPath.length>2 ? fDlPath : " ")} </Label>
+		<Button id="bsave" className="btn-sm app-btn" disabled={fileSaving} onClick={bSaveClick}>Save</Button>&nbsp;
 		<div class="position-fixed p-1" style="z-index: 15; top: 4em; right: 12em;">
 		<div id="regSelInfo" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
 			<div class="toast-header-sm">

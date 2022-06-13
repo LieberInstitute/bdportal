@@ -188,7 +188,7 @@ to be made available everywhere in the app
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.2) !important;
 }
 .app-btn:disabled {
-  color:#666 !important;
+  color:#4a4a4a !important;
 }
 
 .app-file-upload {
@@ -214,7 +214,7 @@ to be made available everywhere in the app
   background-color:#d2d2d2 !important;
 }
 
-.app-btn:hover {
+.app-btn:hover:enabled {
   background-color:#ffffff !important;
   border:1px solid #ffffff !important;
   color:#333 !important;
