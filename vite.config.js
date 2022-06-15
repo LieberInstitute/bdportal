@@ -18,16 +18,17 @@ export default defineConfig(({ command, mode }) => {
      //pgdb_proxy='http://192.168.77.16:4095'
      pgdb_proxy='http://10.17.9.59:4095'
      //if
-     nodemw_srv=devmode ? 'http://localhost:4095' : 'http://192.168.77.16:4095'
+     //nodemw_srv=devmode ? 'http://localhost:4095' : 'http://192.168.77.16:4095'
      nodemw_srv=devmode ? 'http://localhost:4095' :  'http://10.17.9.59:4095'
   }
+  
   process.env.VITE_NODESRV=nodemw_srv;
 
   if (devmode)
-     console.log("~~~~~~~ DEV mode: vite proxy set to VITE_NODESRV =", nodemw_srv)
+     console.log("~~~~~~~ vite.config DEV mode: vite proxy set to VITE_NODESRV =", nodemw_srv)
 
   else
-     console.log("~~~~~~~ Build mode: VITE_NODESRV =", nodemw_srv)
+     console.log("~~~~~~~ vite.config Build mode: VITE_NODESRV =", nodemw_srv)
 
   // - - finally, return mode-dependent config:
   return {

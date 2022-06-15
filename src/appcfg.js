@@ -8,7 +8,9 @@ export const APP_BASE_URL=import.meta.env.BASE_URL
 //export const NODEMW_URL=process.env.NODE_ENV=='development' ? '' : 'http://localhost:4095';
 const devmode=(import.meta.env.DEV===true)
 //export const MW_SERVER= 'http://srv16.lieber.local:4095'
-export const MW_SERVER = devmode ? '' : import.meta.env.VITE_NODESRV
+const env_MWSRV=import.meta.env.VITE_MWSERVER
+export const MW_SERVER = devmode ? '' : (env_MWSRV ? env_MWSRV : import.meta.env.VITE_NODESRV)
+
 export const AUTH_SERVER='http://srv16.lieber.local:16600'
 export const COMMIT_DATE = import.meta.env.VITE_COMMIT_DATE.substring(2)
 export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH
