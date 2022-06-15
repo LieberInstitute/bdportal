@@ -116,8 +116,7 @@ export function DlgDownload( props ) {
 
   const m=refData.current;
 
-  function afterOpen() {
-    console.log(" ~~~~ afterOpen called, props=",props)
+  function afterOpen() {    
     if (props.getData)  {
       const data=props.getData()
       if (data.datasets) {
@@ -179,7 +178,12 @@ export function DlgDownload( props ) {
          </FormGroup>
       </Col>
     </Row>
-
+    { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-2" style="font-size:90%;">
+      <Col xs="3" className="p-0 m-0 align-self-begin text-nowrap" style="min-width:6.2rem;top:3px;">Restrict to genes:</Col>
+      <Col className="pl-1 ml-0 mx-auto mr-0 pr-0"><Input className="frm-input" style="font-size:14px;" />
+      <Label style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
+      </Col>
+      </Row> : null }
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} samples={m.samples} /> )}
   </DlgModal>
