@@ -15,9 +15,11 @@ export default defineConfig(({ command, mode }) => {
     //dev at LIBD:
      auth_proxy='http://192.168.77.16:16600'
      mail_proxy='http://192.168.77.16:1244'
-     pgdb_proxy='http://192.168.77.16:4095'
+     //pgdb_proxy='http://192.168.77.16:4095'
+     pgdb_proxy='http://10.17.9.59:4095'
      //if
      nodemw_srv=devmode ? 'http://localhost:4095' : 'http://192.168.77.16:4095'
+     nodemw_srv=devmode ? 'http://localhost:4095' :  'http://10.17.9.59:4095'
   }
   process.env.VITE_NODESRV=nodemw_srv;
 
