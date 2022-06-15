@@ -1466,6 +1466,19 @@ export function updateCounts() {
   //console.log(dtXCounts.proto);
 }
 
+//simply return the names of datasets in the filter
+// for the current experiment type
+export function getSelDatasets() {
+   const dsnames=[]
+   if (rGlobs.selXType===0) return dsnames;
+   if (dtFilters.dset.size===0) return dsnames;
+   const xt=rGlobs.selXType-1
+   dtFilters.dset.forEach( di => {
+     dsnames.push(dtaNames.dset[xt][di])
+   })
+   return dsnames
+}
+
 export function getBrSelData(showSmpCounts) {
 //returns an array with rows of data for brains in dtBrAllsel
 // if showSmpCounts is an array, it has experiment data types
@@ -1621,7 +1634,6 @@ export function FltCtxProvider (props) {
 }
 
 //////////////  --- data prep & fetching functions:
-
 export async function buildRSE(f_name, sarr, feat, assayType='counts') {
 	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
 	if (!feat) feat='g' //feature type

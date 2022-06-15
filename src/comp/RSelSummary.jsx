@@ -3,7 +3,7 @@ import {useState, useEffect} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
    dtaBrains, XBrs, anyActiveFilters, clearFilters,
-   getBrSelData, dtBrXsel } from './RDataCtx';
+   getBrSelData, getSelDatasets, dtBrXsel } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
      Row, Col, Button, Label, Alert} from 'reactstrap';
@@ -130,6 +130,8 @@ useEffect( ()=> {
        if (dtaNames.dsetp[xt][di]===1)
            restrictedDatasets.push(dtaNames.dset[xt][di]);
     } )
+
+
 
   /*
   const saveFile = async (fname, blob) => {
@@ -284,6 +286,19 @@ useEffect( ()=> {
 
   }
 
+  function getSelSampleData() { // return { datasets: [], samples: []}
+   const data={ }
+   data.datasets=getSelDatasets()
+   const sampleIDs=[]
+   const xt=0 //RNAseq data type, rGlobs.selXType-1
+   xdata[xt].forEach( (r,i)=>{
+     sampleIDs.push(r[1]) //  [ br_idx, sample_id, ds_idx, reg_idx, proto ]
+   })
+   data.samples=sampleIDs
+   console.log("getSelSampleData called, ret:", data)
+   return data
+  }
+
   function clickExploreBtn() {
     const [page, tab]=currentPageTab()
     //tab can be undefined for default/entry page
@@ -347,7 +362,7 @@ useEffect( ()=> {
                        Download</Button>
                     { restrictedDatasets.length ?
                       <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
-                      <DlgDownload isOpen={isModalShowing} toggle={toggleModal} /> }
+                      <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} /> }
                  </Col>
                  <Col className="d-flex justify-content-center">
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>

@@ -1,54 +1,136 @@
 import $ from 'jquery';
 import { DlgModal } from './DlgModal';
-import {useState, useRef} from "preact/hooks";
-import {Row, Col, Input, Button, Label, FormGroup, } from 'reactstrap';
-import axios from 'axios';
+import './spinners.css';
+import {useState, useRef, useEffect} from "preact/hooks";
+import {Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
+import {buildRSE, saveRStagedFile} from './RDataCtx';
+//import axios from 'axios';
 
-const fNames=['gene', 'tx', 'ex', 'jx'];
+const  fTypes=['gene', 'tx', 'ex', 'jx']; //feature types
+const ftNames=['Gene', 'Transcript', 'Exon', 'Junction']
 
-function f2Name(str) {
-  switch (str) {
-    case 'ex': str='exon';break;
-    case 'tx': str='transcript';break;
-    case 'jx': str='junction';break;
-  }
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+/* Matrix/Assay download row + control(spinner + Button)
+props :
+   prefix : file name (prefix)
+   fext : 'rda' | 'csv.gz'
+   fidx :  idx in fTypes/ftNames
+   norm : 0 (counts) or 1 (rpmkm)
+*/
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples}) {
 
-function MxDlButton (props) { //TODO
+  const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
+  const [saved, setSaved]=useState("")
+  const ds0= (datasets && datasets.length)? datasets[0] : "nope"
+  const numsamples =  (samples && samples.length)? samples.length : 0
+
+  const filename = `${prefix}${fTypes[fidx]}_n${numsamples}.${fext}`
 
   function dlClick() {
-    //TODO: 
+    if (fidx>0) {
+      alert(" Oops, to be implemented soon ! ")
+      return
+    }
+    //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
+    if (fstatus!==0) alert(" Saving operation in progress, try later. ")
+    setFStatus(1) //enter file prep state
+    let dtype=norm ? 'rpkm' : 'counts'
+    if (fidx==1) dtype='tpm'
+    buildRSE(filename, samples, fTypes[fidx], dtype)
+			 .then( res => {
+				 console.log("res=", res)
+				 return res.json()
+			  } )
+			 .then( fn => {
+					// 1st row: header, 2nd row: data = filename
+					let fname=""
+					if (fn.length>1) fname=fn[1][0]
+          console.log("fn prepared:", fname)
+					if (fname) {
+						 setSaved('saved.')
+             setFStatus(0)
+					   //simulate a link->click to download the file:
+					   saveRStagedFile(fname)
+					}
+			 })
   }
-  const [fstatus, setFStatus]=useState(0)
-  return( <div>
-    <Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
-         className={  fstatus ? "blink-anim" : null }> <b>{ fstatus ? "..." : " " }</b> </Label>
-   <Button id="bsave" className="btn-sm app-btn" disabled={fstatus!==0} onClick={dlClick}>Download</Button>
-   </div>
-  )
+
+  useEffect( ()=>{
+    setSaved("")
+    setFStatus(0)
+  }, [prefix, fext, norm, datasets, samples])
+  // Button: disabled={fstatus!==0}  ?
+  let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "RP10M" : "(RPKM)") : "";
+  let disabled=(norm==0 && fidx==1)
+  return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
+     <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
+          style="font-size:90%;min-height:22px;">
+        <Col className="pl-0" style="min-width:25rem;"><b>{ftNames[fidx]}</b> data {ctype}</Col>
+        <Col className="d-flex justify-content-center m-0 p-0">
+            <div class="m-0 p-0" style="position:relative">
+            {(fstatus==1) ? <div style="position:relative;">
+                    <div class="spinner-bars"><span></span><span></span><span></span><span></span><span></span></div>
+                            </div>
+             : <div class="red-info-text" style="position:relative;top:1px;">
+               {(fstatus<0) ? <span style="position:relative;font-size:14px;line-height:15px;top:3px;margin-left:-6px;" > &nbsp; &nbsp;Error! </span> :
+                              <span style="color:#777;position:relative;top:2px;"> {saved} </span> }
+               </div>
+            }
+            </div>
+        </Col>
+     </Row>
+
+     <Row className="form-group d-flex justify-content-between flex-nowrap mt-0 pt-0 pb-1" style="font-size:90%;">
+      <Col className="pl-0 align-self-begin overflow-hidden text-nowrap"
+           style="color:#666;min-width:25rem;background-color:#f4f4f4">
+        {filename} </Col>
+        <Col className="d-flex align-self-begin justify-content-end">
+         <Row>
+          <Button id="bsave" className="btn-sm app-btn" disabled={disabled} onClick={dlClick}>Export</Button>
+        </Row>
+      </Col>
+    </Row>
+   </Col>)
 }
 
 
-export function DlgDownload( props ) {
-  
-    let dlurl='/pgdb/adl'
   /*
-  const fetcher = (...args) => fetch(url, {
-   method: 'post',
-   headers: {
-     "Content-Type": "application/json"
-   },
-   body: JSON.stringify(props.payload)
-    }).then(res => res.json())
-
-  const { data, error } = useSWR(url, fetcher, { suspense: true })
+    data can be retrieved by calling props.getData():
+      {
+         datasets: [ ] (array of dataset names)
+         samples: [  ] array of sample_ids
+      }
+      data should be retrieved only once when the dialog is shown the first time
   */
 
-  const [status, setStatus] = useState('');
-  const [prefix, setPrefix] = useState('dataset_');
+export function DlgDownload( props ) {
+
+  const [prefix, setPrefix] = useState('seldata_');
   const [fext, setFext] = useState('rda')
   const [norm, setNorm] = useState(0)
+  const [numsamples, setNumSamples] = useState(0)
+  const [ds0, setDs0] = useState('')
+  const refData=useRef( {
+      datasets : null,
+      samples : null
+  })
+
+  const m=refData.current;
+
+  function afterOpen() {
+    console.log(" ~~~~ afterOpen called, props=",props)
+    if (props.getData)  {
+      const data=props.getData()
+      if (data.datasets) {
+        m.datasets=data.datasets
+        setDs0(m.datasets[0])
+        setPrefix(`${m.datasets[0]}_`)
+      }
+      if (data.samples)  {
+        m.samples=data.samples
+        setNumSamples(m.samples.length)
+      }
+    }
+  }
 
   function onFmtChange(e) {
     setFext((e.target.id=="r1")?'rda':'csv.gz')
@@ -57,28 +139,17 @@ export function DlgDownload( props ) {
     setNorm((e.target.id=="n0")? 0:1)
   }
 
-  function downloadRSE(rse_type, fname) {
-   axios({ method: 'post',
-      url: '/user',  timeout: 80000, // wait 80 seconds
-      data: props.payload  //data MUST be in props.payload  (sample list)
-    })
-    .then( (res) => { console.log(res) })
-    .catch((error) => { console.log(error) })
-  }
-
- 
   function prefixChange( {target}) { setPrefix(target.value); }
-
-  return (<DlgModal { ...props} title="Download data" justClose="1" width="50em">
-    <Row className="form-group d-flex justify-content-center flex-nowrap mb-0 pb-0" style="font-size:90%;">
-      <Col xs="3" className="d-flex justify-content-end mr-0 pr-2">
-              <Label className="pt-2 float-right">File prefix:</Label>
+  return (<DlgModal { ...props} title="Export expression data" justClose="1" onShow={afterOpen} width="50em">
+    <Row className="form-group d-flex justify-content-center flex-nowrap mb-1" style="font-size:90%;">
+      <Col className="d-flex justify-content-between m-0 p-0">
+              <Label className="frm-label text-nowrap">File name:</Label>&nbsp;
+              <Input id="fpre" className="frm-input" onChange={prefixChange} value={prefix} />
       </Col>
-      <Col xs="3" className="ml-0 pl-0 d-flex justify-content-start">
-             <Input id="fpre" onChange={prefixChange} value={prefix} />
-      </Col>
-      <Col className="ml-0 pl-0 d-flex justify-content-start ">
-        File format: &nbsp;
+    </Row>
+    <Row className="form-group d-flex justify-content-center flex-nowrap mt-0 pt-0 mb-0 pb-0" style="font-size:90%;">
+      <Col className="d-flex-column justify-content-start ml-4 pl-4">
+        <Row>Format</Row>
         <FormGroup tag="fieldset" onChange={onFmtChange}>
           <FormGroup check>
             <Label check>
@@ -92,36 +163,25 @@ export function DlgDownload( props ) {
            </FormGroup>
          </FormGroup>
       </Col>
-    </Row>
-    <Row className="d-flex justify-content-center mt-0 pt-0" style="font-size:90%;">
+      <Col className="d-flex-column justify-content-start">
+      <Row>Values</Row>
        <FormGroup tag="fieldset" onChange={onNormChange}>
           <FormGroup check>
             <Label check>
-              <Input type="radio" id="n0" name="norm" checked={(norm==0)} /> raw counts
+              <Input type="radio" id="n0" name="norm" checked={(norm==0)} />raw counts
             </Label>
             </FormGroup>
             <FormGroup check>
             <Label check>
-              <Input type="radio" id="n1" name="norm" checked={(norm==1)} /> normalized (RPKM/TPM)
+              <Input type="radio" id="n1" name="norm" checked={(norm==1)} />normalized
             </Label>
            </FormGroup>
          </FormGroup>
-    </Row>
-    <Row className="form-group pt-0 mt-0" style="font-size:90%;min-height:2em;">
-      { norm ? <>
-      <Col xs="4" className="pr-0 mr-0 align-self-center" style="max-width:9em;">Restrict to genes:</Col>
-      <Col xs="8" className="pl-0 ml-0 mx-auto mr-0 pr-0"><Input placeholder="GRIN2A,GRIN2B,SP4" /></Col>
-      </> : null }
+      </Col>
     </Row>
 
-     { fNames.map( (it, i) =>
-           <Row key={it} className="form-group d-flex justify-content-end" style="font-size:90%;">
-              <Col xs="4" key={i+1} className="align-self-center">{f2Name(it)} data</Col>
-              <Col xs="4" key={i} className="align-self-center" style="color:#666;"> {`${prefix}${it}.${fext}`} </Col>
-              <Col xs="3" key={i+2} className="align-self-center">
-                    <Button className="btn app-btn">Download</Button> </Col>
-           </Row>
-         )}
+    { fTypes.map( (it, i) =>
+      <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} samples={m.samples} /> )}
   </DlgModal>
  )
 }

@@ -3,6 +3,7 @@ import preact from "@preact/preset-vite";
 //const host = process.env.HOME;
 const host = require('os').hostname()
 process.env.VITE_HOST=host;
+
 let auth_proxy='http://gdebsrv:16443'
 let mail_proxy='http://gdebsrv:16244'
 let pgdb_proxy='http://localhost:4095'
@@ -22,6 +23,7 @@ export default defineConfig(({ command, mode }) => {
 
   if (devmode)
      console.log("~~~~~~~ DEV mode: vite proxy set to VITE_NODESRV =", nodemw_srv)
+
   else
      console.log("~~~~~~~ Build mode: VITE_NODESRV =", nodemw_srv)
 

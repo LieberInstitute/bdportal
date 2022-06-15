@@ -86,12 +86,13 @@ function TrPanel( ) {
 		} )
 
   const fileSaving= (fDlPath=='..')
-	return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"  
-	style="width:20rem;min-height:4rem;">
-		{/*  */}
-		<Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
+	return (<Row className="m-0 p-0 ml-3 mr-2 trinfo justify-content-center align-items-center red-info-text"
+	                 style="width:20rem;min-height:4rem;">
+
+		{/*<Label style="position:relative;padding-right:4px;text-align:right;top:3px;width:13rem;"
 			className={  fileSaving ? "blink-anim" : null }> { fileSaving ? "preparing..." : (fDlPath.length>2 ? fDlPath : " ")} </Label>
 		<Button id="bsave" className="btn-sm app-btn" disabled={fileSaving} onClick={bSaveClick}>Save</Button>&nbsp;
+		*/}
 		<div class="position-fixed p-1" style="z-index: 15; top: 4em; right: 12em;">
 		<div id="regSelInfo" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
 			<div class="toast-header-sm">

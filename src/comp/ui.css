@@ -20,6 +20,28 @@ to be made available everywhere in the app
 .bblue { border: 1px solid blue; }
 .byellow { border: 1px solid yellow; }
 
+.frm-input {
+  padding: 2px !important;
+  font-size: 16px;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+/* add this to divs/spans to prevent cursor text selection */
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.frm-label {
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
 /* the 1 row wrapping the 3 layout columns */
 .row3Cols {
   /* margin-bottom:10px; */

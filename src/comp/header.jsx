@@ -2,7 +2,7 @@ import './header.css';
 import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem } from 'reactstrap'
 import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
-import { APP_BASE_URL, MW_SERVER, AUTH_SERVER } from '../appcfg'
+import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
 //import axios from 'axios'
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
@@ -109,7 +109,7 @@ function ServerStatus( ) {
 }, [])
   return (
   <div style={{ position: "absolute", "font-size": "70%", color:"red", top:"4px" }}>
-     {status} [{pgstatus}]
+   {status} [{pgstatus}] <span style="color:#a88;position:relative;font-size:11px;top:0px;">{COMMIT_HASH}-{COMMIT_DATE}</span>
   </div>)
 }
 

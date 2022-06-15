@@ -10,6 +10,9 @@ const devmode=(import.meta.env.DEV===true)
 //export const MW_SERVER= 'http://srv16.lieber.local:4095'
 export const MW_SERVER = devmode ? '' : import.meta.env.VITE_NODESRV
 export const AUTH_SERVER='http://srv16.lieber.local:16600'
+export const COMMIT_DATE = import.meta.env.VITE_COMMIT_DATE.substring(2)
+export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH
+
 //console.log("#-#-#-#-#-#-#-#- appcfg: mode=", import.meta.env.MODE, " base_url:", import.meta.env.BASE_URL)
 console.log("#-#-#-#-#-#-#-#-  meta.env", import.meta.env) // process.env.NODE_ENV)
 console.log("#-#-#-#-#-#-#-#-  MW_SERVER =", MW_SERVER) // process.env.NODE_ENV)

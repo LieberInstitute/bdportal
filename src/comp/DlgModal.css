@@ -11,6 +11,15 @@
   border: 1px solid blue;
 }
 
+.mdlg-header {
+  background-color: #ddd;
+}
+.mdlg-title {
+  font-size:18px;
+  line-height:140%;
+  color:#222;
+}
+
 .dlgmodal-overlay {
     position: fixed;
     top: 0;
@@ -21,7 +30,7 @@
     background-color: #000;
     opacity: .5;
   }
-  
+
   .dlgmodal-wrapper {
     position: fixed;
     top: 0;
@@ -33,7 +42,7 @@
     overflow-y: auto;
     outline: 0;
   }
-  
+
   .dlgmodal {
     z-index: 100;
     background: #eee;
@@ -43,27 +52,28 @@
     max-width: 40rem;
     padding: 2rem;
   }
-  
+
+
   .dlgmodal-header {
     position:relative;
     top:-2rem;
     margin:4px;
-    border: 1px solid blue;    
+    border: 1px solid blue;
     justify-content: normal;
   }
-  
+
   .dlgmodal-close-button {
     position:relative;
     margin-right:1rem;
     font-size: 1.4rem;
-    font-weight: 700;    
+    font-weight: 700;
     color: #000;
     opacity: .3;
     cursor: pointer;
     /* border: none; */
     border: 1px solid red;
   }
-  
+
   .dlgmodal-content {
     border:1px solid green;
     width:100%;
