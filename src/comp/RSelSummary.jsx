@@ -295,7 +295,6 @@ useEffect( ()=> {
      sampleIDs.push(r[1]) //  [ br_idx, sample_id, ds_idx, reg_idx, proto ]
    })
    data.samples=sampleIDs
-   console.log("getSelSampleData called, ret:", data)
    return data
   }
 

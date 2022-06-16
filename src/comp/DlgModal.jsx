@@ -28,8 +28,7 @@ import './DlgModal.css';
                   must be a function returning a boolean; when false
                   then the dialog will NOT close!
        onClose   : function to be called every time the dialog is closed
-
-       ???onShow   : function to be called every time the dialog is first shown
+       onShow   : function to be called every time the dialog is shown
                  (to initialize data etc.)
 
 
@@ -43,7 +42,8 @@ export function DlgModal ( props ) {
       pxratio: 1
     }) //keep track of mouse down state
 
-  const mRef=useRef(null)
+  const dlgRef=useRef(null)
+  const hRef=useRef(null) //header ref
 
   const title=props.title ? props.title : " "
 
@@ -64,64 +64,63 @@ export function DlgModal ( props ) {
     }
   }
 
-  const handleDrag = (movementX, movementY) => {
-      const panel = $("#dlgModal")
-      if (!panel) return;
-      // const { x, y } = panel[0].getBoundingClientRect();
-      const { top, left } = panel.offset()
-      console.log(`(top,left)=(${top}, ${left}) => mvX,Y=${movementX},${movementY}`)
-      const nleft=left + movementX;
-      const ntop = top + movementY;
-      panel.css( {left: `${nleft}px`, top: `${ntop}px`} )
-      //panel.style.left = `${x + movementX}px`;
-      //panel.style.top = `${y + movementY}px`;
-  };
-
-  function handleMouseUp() {
-    m.mouseDown=false
-    window.removeEventListener('mouseup', handleMouseUp);
-    window.removeEventListener('mousemove', handleMouseMove);
-  }
-
-  /*
-  useEffect(() => {
-    return () => { //cleanup ?
-      console.log(" .. drag handlers useEffect cleanup")
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
- */
-
- function handleMouseMove(e) {
-   const ratio = window.devicePixelRatio
-   console.log(" ratio = ", ratio)
-   handleDrag(e.movementX / ratio, e.movementY / ratio)
- }
-
-
- useEffect(()=>{
+   useEffect(()=>{
     //auto focus on the first input field!
     /*
      const tinput = $(".modal-body").find("input[type='text']:enabled:visible:first");
      if (tinput) tinput.focus()
     */
-    //const modal=$("#dlgModal")
-    //modal.draggable({ handle: ".modal-header" })
-    //modal.resizable()
-    //from bootstrap docs:
  })
 
-  function handleMouseDown() {
-    m.mouseDown=true
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('mousemove', handleMouseMove);
- }
-
-
  function afterOpen() {
+    $(hRef.current).on('mousedown touchstart', (edown)=> {
+          // if (not_focused?) return?
+          edown.stopPropagation()
+          edown.preventDefault()
+          //const drg=$(this) // or $(edown.target) ?
+          const drg=$(edown.target)
+          // href/dlg.addClass("dragging") ?
+          let x = edown.pageX - drg.offset().left,
+              y = edown.pageY - drg.offset().top;
+          console.log(` ~~~ start drag: x,y=${x},${y} (pageX,Y=${edown.pageX},${edown.pageY}, ofs-x,y=${drg.offset().left},${drg.offset().top})`)
+          //handling drag (mouse move)
+          $(document).on('mousemove.dragmdlg touchmove.dragmdlg', (e) => {
+             e.stopPropagation();
+             e.preventDefault();
+             if (e.originalEvent.touches && e.originalEvent.touches.length) {
+               e = e.originalEvent.touches[0];
+             } else if (e.originalEvent.changedTouches && e.originalEvent.changedTouches.length) {
+               e = e.originalEvent.changedTouches[0];
+             }
+             let mdlg=drg.closest('.modal-dialog')
+             let nx=e.pageX - x, ny=e.pageY - y
+             const xbound=80-mdlg.width()
+             if (nx<xbound) nx=xbound;
+             const ww=$(window).width()-40;
+             if (nx>ww) nx=ww;
+             if (ny<0) ny=0;
+             const wh=$(window).height()-40;
+             if (ny>wh) ny=wh;
+             mdlg.offset({ left: nx, top: ny })
+          })
+        //handling drag ending:
+        $(document).on('mouseup.dragmdlg touchend.dragmdlg touchcancel.dragmdlg', ()=> {
+             $(document).off('.dragmdlg')
+        })
+    })
+    $(hRef.current).on('dragstart', (e)=>e.preventDefault() );
+
     if (props.onShow)
-       props.onShow()
+           props.onShow()
  }
+
+ function afterClose() {
+    console.log("~~~~~~~~~~~~~~~~ afterClose() called!")
+    $(document).off('.dragmdlg')
+    $(hRef.current).off('mousedown touchstart dragstart')
+    if (props.onClose) props.onClose()
+ }
+
  function handleClose() {
     if (props.onClose) props.onClose()
     //this is called even when ESC is pressed!
@@ -129,9 +128,9 @@ export function DlgModal ( props ) {
  }
  //  <ModalHeader toggle={props.toggle}>{title}</ModalHeader>
  // onMouseDown={handleMouseDown}
- return (<Modal id="dlgModal" ref={mRef} focus={true} fade={false} backdrop="static"
-                isOpen={props.isOpen} toggle={handleClose} onOpened={afterOpen}>
-     <div className="modal-header pt-1 mt-0 mdlg-header noselect"  style="height:32px;">
+ return (<Modal id="dlgModal" ref={dlgRef} focus={true} fade={false} backdrop="static"
+                isOpen={props.isOpen} toggle={handleClose} onOpened={afterOpen} onClosed={afterClose}>
+     <div className="modal-header pt-1 mt-0 mdlg-header noselect" ref={hRef} style="height:32px;">
         <div className="modal-title mdlg-title">{title}</div>
         <div type="button" tabindex="-1" className="close" data-dismiss="modal"
           aria-label="Close" onClick={handleClose}>
