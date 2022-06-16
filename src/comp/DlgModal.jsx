@@ -82,7 +82,6 @@ export function DlgModal ( props ) {
           // href/dlg.addClass("dragging") ?
           let x = edown.pageX - drg.offset().left,
               y = edown.pageY - drg.offset().top;
-          console.log(` ~~~ start drag: x,y=${x},${y} (pageX,Y=${edown.pageX},${edown.pageY}, ofs-x,y=${drg.offset().left},${drg.offset().top})`)
           //handling drag (mouse move)
           $(document).on('mousemove.dragmdlg touchmove.dragmdlg', (e) => {
              e.stopPropagation();
@@ -115,7 +114,6 @@ export function DlgModal ( props ) {
  }
 
  function afterClose() {
-    console.log("~~~~~~~~~~~~~~~~ afterClose() called!")
     $(document).off('.dragmdlg')
     $(hRef.current).off('mousedown touchstart dragstart')
     if (props.onClose) props.onClose()
