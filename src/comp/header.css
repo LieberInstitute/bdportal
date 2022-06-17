@@ -71,8 +71,13 @@
 	 /* border: 1px solid red;  */
 	 color: #888;
 	 z-index:auto;
-	 /*cursor: default;
-	  pointer-events:none; */
+  /* prevent text selection/cursor */  
+  -webkit-touch-callout: none; /* iOS Safari */
+   -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Old versions of Firefox */
+       -ms-user-select: none; /* Internet Explorer/Edge */
+           user-select: none; /* Non-prefixed version */
  }
 
  .navtab.enabled {

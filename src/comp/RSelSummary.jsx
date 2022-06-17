@@ -48,7 +48,7 @@ function LoadBrList(props) {
   const loaded=num ? "subjects loaded" : "No subjects loaded.";
   const btcap=num ? "Clear BrNums" : "Upload BrNums";
   return(
-  <Row className="p-1 mb-3 d-flex justify-content-start align-items-center">
+  <Row className="p-1 mb-1 d-flex justify-content-start align-items-center">
     <Button id="b1" className="btn-sm app-btn" onClick={brListClick}>{btcap}</Button>&nbsp;
       {(num>0) && <span class="lg-flt">{num}</span> }
         <span style="padding:2px 2px;font-size:90%">{loaded}</span>
@@ -75,7 +75,7 @@ function RSelSummary( props ) {
   //let showsel = true;
   let showDlButton=(selXType && dsflt.size>0); //only set for RNAseq - must have a dataset selected!
   const mixprotos = [];
-
+  const selDatasets=getSelDatasets()
   if (showsel)  {
     for (let i=1;i<countData.proto.length;i++)
        if (countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
@@ -91,14 +91,14 @@ function RSelSummary( props ) {
        <div style="width:3rem" />
      <Button onClick={downloadCSV}>Import list</Button>
     */
-    return (<><Row className="d-flex flex-nowrap justify-content-between pt-4">
+    return (<Row className="d-flex flex-nowrap justify-content-between pt-4">
       <Button className="btn-light btn-sm app-btn btn-download flex-nowrap " onClick={toggleModal}>
        Download</Button>
        <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isModalShowing}  toggle={toggleModal} />
        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
        <Button className="btn-light btn-sm app-btn flex-nowrap ">
        Request Genotypes</Button>
-   </Row></>)
+     </Row>)
   }
 
    /*
@@ -309,7 +309,8 @@ useEffect( ()=> {
 
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
   const selbrCount=dtBrXsel.size
-
+  const selDslabel = (selDatasets && selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
+  
   return (<Col className="pl-0 ml-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
@@ -322,16 +323,17 @@ useEffect( ()=> {
                        :  <><b>{XBrs.size}</b> sequenced brains (out of <b>{totalBrCount}</b> total)</>
                       }
         </div> */}
-
-        <div class="red-info-text" style="line-height:200%;">
-          {showsel ?<span>&nbsp;</span>:<span>Apply a selection to see subject summaries.</span> }
-        </div>
+        { (!showsel) && 
+           <div class="red-info-text">
+              <span style="line-height:200%;">Apply a selection to see subject summaries.</span> 
+           </div> 
+        }
 
         {/*  (selXType && showsel && regflt) ?  regTable()  : null */}
 
         {showsel && <>
-          { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;border-bottom:1px solid #ddd;">
-                     <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
+          { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
+                     <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects selected
                      </Row> :
                      <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
                         style="font-size:1rem;border-bottom:1px solid #ddd;">
@@ -342,14 +344,26 @@ useEffect( ()=> {
           { subjXTable() }
         </Row> </>}
         {/* showsel && <Row className="flex-nowrap flex-row justify-content-center" style={{paddingTop: "1em" }} > */}
-        <Row className="flex-nowrap flex-row justify-content-center" style={{paddingTop: "1em" }} >
+        <Row className="flex-nowrap flex-row justify-content-center mt-2 pt-1" 
+                   style="padding-top:1em;border-top:1px solid #ddd;" >
              { showDlButton ? <Col className="d-flex flex-column">
-
-               <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center" style={{fontSize:"1rem"}}>
-                 <span class="flex-fill"> Selected samples: </span>
+             <Col className="d-flex flex-column">
+              <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center mt-1" style={{fontSize:"1rem"}}>
                        <span className="sel-total"> {numsmp ? numsmp : 0} </span>
+                       <span class="flex-fill"> samples selected </span>
               </Row>
-
+              <Row className="d-flex flex-nowrap align-items-begin align-self-center justify-content-center" style={{fontSize:"1rem"}}>
+                <Col>
+                 <span>from </span>
+                </Col>
+                <Col>
+                {selDatasets.map( (ds, i) => 
+                   <Row key={i}><b>{ds}</b></Row>
+                )}
+                                 
+                </Col>
+              </Row>
+             </Col>
               <Row className="p-2 m-2">
                     { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
                     text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />

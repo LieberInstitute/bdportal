@@ -6,8 +6,8 @@ import '../../comp/ui.css';
 import './style.css';
 
 import {useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
-	applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetRef,
-  applyBrList, clearBrListFilter, getBrListFilter} from '../../comp/RDataCtx'
+	applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation,
+  applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters} from '../../comp/RDataCtx'
 
 import {FltMList} from '../../comp/FltMList'
 import {Row, Col, Button, Label, Input, CustomInput} from 'reactstrap'
@@ -19,6 +19,7 @@ const RnaSelect = ({ style }) => {
 	const [, , , dataLoaded] = useRData()
   const notifyUpdate = useFltCtxUpdate();
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [ updating, setUpdating ] = useState(false) // dataset selection/switching is instant, disable clicking while updating
 
   //const [brloaded, setBrLoaded] = useState(0)
 
@@ -96,7 +97,7 @@ const RnaSelect = ({ style }) => {
   }
 
   function onDatasetClick(dix, fid, sel) {
-    let ref=getDatasetRef(0, dix)
+    let ref=getDatasetCitation(0, dix)
     const dt=$('#dset-info-content')
     if (sel && sel.length>1) {
       //dt.html('<span class="dset-info-warn"> Warning: selecting samples from more than one dataset! </span>');
@@ -104,11 +105,18 @@ const RnaSelect = ({ style }) => {
       $("#dsMultiWarn").toast('show')
       return
     }
+    const nsi=$("#no-sel-info")
     if (ref && ref.length>0) {
+        //hide the no-sel-info panel       
+        if (nsi) nsi.hide()
         const refhtml=prepRefHtml(ref)
         dt.html(refhtml);
         dt.show()
-    } else { dt.html("");dt.hide() }
+    } else { 
+       dt.html("");
+       dt.hide()
+       if (nsi) nsi.show()
+    }
   }
 
   const dtaSex=getFilterData('sex')
@@ -119,17 +127,27 @@ const RnaSelect = ({ style }) => {
 	const dtaDset=getFilterData('dset')
 	const dtaReg=getFilterData('reg')
   const brloaded=getBrListFilter().size
-
+  const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with brloaded=",brloaded)
   return(<div class="col-12 d-flex flex-nowrap flex-column">
-<Row className="pt-0 mt-0 justify-content-center flex-nowrap">
-  <Col xs="3" className="d-flex pl-1 ml-1 colDemo justify-content-start" >
-   <Button outline color="danger" className="mt-0 btn-sm align-self-center" onClick={resetFilters}
-	 	    data-toggle="tooltip" title="Clear all selection filters"
-			  style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>
+<Row className="pt-0 mt-0 justify-content-center flex-nowrap">    
+  <Col xs="3" className="d-flex-column pl-1 ml-1 colDemo justify-content-start" >
+   <Row className="ml-1">
+    { showsel ? <span class="red-info-text">&nbsp;</span> : 
+         <span class="red-info-text" style="overflow:visible;min-width:39rem;"> 
+         &nbsp;<span id="no-sel-info" style="position:absolute;top:26px;left:64px;min-width:38rem;">
+          Apply a selection in a category panel in order to limit the sample selection in that category.
+         </span>
+         </span> }
+   </Row> 
+   <Row className="d-flex">
+   <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
+	 	     data-toggle="tooltip" title="Clear all selection filters"
+			   style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>   
+   </Row>
   </Col>
   <Col className="pl-0 pt-0 mt-1 align-self-start" style="max-width:26rem;min-width:26rem;">
-     <div id="dset-info"><div id="dset-info-content"> </div></div>
+     <div id="dset-info"><div id="dset-info-content">testing here </div></div>
   </Col>
   <Col xs="4" className="d-flex flex-fill" style="z-index:-1;" >
   </Col>

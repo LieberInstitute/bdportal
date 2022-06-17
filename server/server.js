@@ -346,4 +346,4 @@ app.get('/pgplrinit', (req, res)=> {
 
 
 //adding some fake dummy sub-tabs for the RNASeq entry
-app.listen(app_port, () => console.log('listening on port ', app_port))
+app.listen(app_port, () => console.log('listening on port', app_port))

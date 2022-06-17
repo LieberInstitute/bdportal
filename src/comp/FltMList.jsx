@@ -41,7 +41,6 @@ const id2name = { dx : "Diagnosis", age: "Age", race: "Ancestry",
     reg : "Brain region", sex: "Sex" , dset: " Datasets ",
     proto : "Protocol", pub : "Public" };
 
-
 //filtering multi-select list component
 //props = { id, type, width, height, horiz, toggle, htoggle, nocollapse, data, filter, onApply}
 
@@ -450,7 +449,7 @@ export function FltMList( props ) {
       </span>
       </li>) } ))
   }
-  let addclass="lg-panel"
+  let addclass="noselect lg-panel"
   if (isToggle) addclass=`${addclass} lg-collapsed`
   if (props.class) addclass=`${addclass} ${props.class}`
 

@@ -366,6 +366,13 @@ to be made available everywhere in the app
   border: 1px solid #fbfbfb;
   border-right: 1px solid #c8c8c8;
   border-bottom: 1px solid #c8c8c8;
+  /* prevent text selection/cursor */  
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version */ 
 }
 
 .lg-panel:not(.lg-collapsed) {

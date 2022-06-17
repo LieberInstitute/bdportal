@@ -67,7 +67,7 @@ export const dtaNames = {
     ageRanges:   [[0], [0.01, 15.99],[16, 64.99], [AGE_LAST_RANGE] ]
 };
 
-export function getDatasetRef(xt, dix) {
+export function getDatasetCitation(xt, dix) {
   return dtaNames.dsetRef[xt][dix]
 }
 
@@ -1619,7 +1619,7 @@ export function FltCtxProvider (props) {
     //-- this should be called by the context consumer (filter being changed)
     //   to signal an update of dtCounts after that filter is applied
     function filterUpdated(fId) { //flip update and set fId
-      console.log(`FltCtxProvider: requested update of [${fltUpdInfo}] by "${fId}"`);
+      //console.log(`FltCtxProvider: requested update of [${fltUpdInfo}] by "${fId}"`);
       notifyFltChange( s => [ fId,  !s[1]]);
     }
     //if (!fltUpdInfo) return null;
