@@ -40,6 +40,20 @@ function errpool() {
     return false;
 }
 
+function clog(a, b, c, d, e) {
+  const dtime=new Date().toLocaleString()
+  let str=''  
+  if (typeof a !== 'undefined' && String(a).length) {
+      str+=String(a);
+      [b,c,d,e].forEach( (it) => {
+        if (typeof it !== 'undefined' && String(it).length) {
+          str+=' ';str+=String(it)
+        }  
+      })
+  }
+  console.log(`[${dtime}]:${str}`)
+}
+
 module.exports = {
     init:  (credentials) => { 
          pool= new Pool({ ...credentials,
@@ -47,21 +61,23 @@ module.exports = {
               max: 30 //max 30 clients at once!
             }); 
         },
+    clog: (a,b,c,d,e) => clog(a,b,c,d,e),
     query: (text, params, callback) => {
       const qrycfg={ text, values: params, rowMode: 'array' };
       if (errpool()) {
           return callback(ERR_NOPOOL, null);
       }
+
       const start = Date.now()
-      console.log(`>> [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`+
-      " Recvd query: ", text)
+      clog(`dbpool [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`,
+            "recvd query: ", text)
       return pool.query(qrycfg, (err, res) => {
         const duration = Date.now() - start;
         if (err) {
-            console.log('query-error:', { query:text, error:err.message} );
+            clog(`query-error: [${text}] : ${err.message}}]`);
         } else {
           //console.log('query', { query:text, duration, rows: res.rowCount })
-          console.log(`  << [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`+
+          clog(`  << [total:${pool.totalCount}, idle:${pool.idleCount}, W:${pool.waitingCount}]`+
           ` done (${duration}) query: `, text)
         }
         //callback(err, res) //caller should use res.rows
@@ -77,7 +93,7 @@ module.exports = {
         const start = Date.now()
         const res = await pool.query(qrycfg)
         const duration = Date.now() - start
-        console.log('executed query', { text, duration, rows: res.rowCount })
+        //console.log('executed query', { text, duration, rows: res.rowCount })
         return res
       },
 

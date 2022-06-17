@@ -51,7 +51,7 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
   //}
 }
 const auth_url = `${auth_srv}/auth`;
-console.log(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
+db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
 
 const jwt_shh =  process.env.JWTSHH
 
@@ -80,16 +80,6 @@ const db_creds = {
 const app = express();
 
 db.init(db_creds);
-
-/* Use a self-calling function so we can use async / await.
-(async () => {
-  const poolResult = await poolNowTest();
-  console.log("Time with pool: " + poolResult.rows[0]["now"]);
-
-  const clientResult = await clientNowTest();
-  console.log("Time with client: " + clientResult.rows[0]["now"]);
-})();
-*/
 
 // Connect with a connection pool.
 function poolTest() {
@@ -144,7 +134,7 @@ app.post('/auth', (req, res) => {
     password: req.body.password,
   }).then(authres=> {
     //{signed_user:, token:}
-    console.log("response data:", authres.data)
+    //console.log("response data:", authres.data)
     res.status(200).json(authres.data);
     //log authentication here
     //updateLog(db, req.body.username, 'AUTH')
@@ -305,7 +295,7 @@ function queryDsetList(res, dtype) {
 
 // ----  route with sub-routes/terms
 app.get(['/pgdb/:qry/:dtype','/pgdb/:qry'] , (req, res)=> {
-    console.log(`got pg query: ${req.params.qry}`);
+    db.clog(`got pg query: ${req.params.qry}`);
     //possible subpages: sel (default), ex, rep
     switch (req.params.qry) {
       case 'dsets': queryDatasets(res, req.params.dtype);
@@ -324,9 +314,8 @@ app.get('/rstaging/:fpath', (req, res)=> {
   let relpath=req.params.fpath
   //convert relpath
   relpath=relpath.replace(/\|/g, '/')
-  console.log(`~~vv~~ got rstaging query: ${relpath}`);
+  db.clog('~~ got rstaging query:', relpath);
   let fpath=path.join(r_filedir, relpath);
-  //console.log("     trying to load: ", fpath);
   if (fs.existsSync(fpath)) {
       //console.log(`calling res.download(${fpath})`)
       res.download(fpath)
@@ -334,8 +323,8 @@ app.get('/rstaging/:fpath', (req, res)=> {
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
 })
 
-app.get('/ruthere', (req, res)=> {
-    console.log('#>>> ping /ruthere received')
+app.get('/ruthere', (req, res)=> {    
+    db.clog(' ping /ruthere received')
     res.send("online");
 })
 
@@ -357,4 +346,4 @@ app.get('/pgplrinit', (req, res)=> {
 
 
 //adding some fake dummy sub-tabs for the RNASeq entry
-app.listen(app_port, () => console.log(`Server listening on port ${app_port}`))
+app.listen(app_port, () => console.log('listening on port ', app_port))
