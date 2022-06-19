@@ -78,7 +78,8 @@ export function DlgModal ( props ) {
           edown.stopPropagation()
           edown.preventDefault()
           //const drg=$(this) // or $(edown.target) ?
-          const drg=$(edown.target)
+          //const drg=$(edown.target)
+          const drg=$(hRef.current)
           // href/dlg.addClass("dragging") ?
           let x = edown.pageX - drg.offset().left,
               y = edown.pageY - drg.offset().top;

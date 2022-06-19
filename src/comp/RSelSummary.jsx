@@ -310,7 +310,7 @@ useEffect( ()=> {
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
   const selbrCount=dtBrXsel.size
   const selDslabel = (selDatasets && selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
-  
+
   return (<Col className="pl-0 ml-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
@@ -323,17 +323,17 @@ useEffect( ()=> {
                        :  <><b>{XBrs.size}</b> sequenced brains (out of <b>{totalBrCount}</b> total)</>
                       }
         </div> */}
-        { (!showsel) && 
+        { (!showsel) &&
            <div class="red-info-text">
-              <span style="line-height:200%;">Apply a selection to see subject summaries.</span> 
-           </div> 
+              <span style="line-height:200%;">Apply a selection to see subject summaries.</span>
+           </div>
         }
 
         {/*  (selXType && showsel && regflt) ?  regTable()  : null */}
 
         {showsel && <>
           { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
-                     <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects selected
+                     <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
                      </Row> :
                      <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
                         style="font-size:1rem;border-bottom:1px solid #ddd;">
@@ -343,24 +343,24 @@ useEffect( ()=> {
         <Row className="flex-nowrap align-self-center pt-0 mt-0">
           { subjXTable() }
         </Row> </>}
-        {/* showsel && <Row className="flex-nowrap flex-row justify-content-center" style={{paddingTop: "1em" }} > */}
-        <Row className="flex-nowrap flex-row justify-content-center mt-2 pt-1" 
-                   style="padding-top:1em;border-top:1px solid #ddd;" >
+        {/* Row: border-top:1px solid #ddd; */}
+        <Row className="flex-nowrap flex-row justify-content-center mt-2 pt-1"
+                   style="padding-top:1em;" >
              { showDlButton ? <Col className="d-flex flex-column">
              <Col className="d-flex flex-column">
               <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center mt-1" style={{fontSize:"1rem"}}>
                        <span className="sel-total"> {numsmp ? numsmp : 0} </span>
-                       <span class="flex-fill"> samples selected </span>
+                       <span class="flex-fill"> selected samples </span>
               </Row>
               <Row className="d-flex flex-nowrap align-items-begin align-self-center justify-content-center" style={{fontSize:"1rem"}}>
                 <Col>
-                 <span>from </span>
+                 <span>{selDslabel}:</span>
                 </Col>
                 <Col>
-                {selDatasets.map( (ds, i) => 
+                {selDatasets.map( (ds, i) =>
                    <Row key={i}><b>{ds}</b></Row>
                 )}
-                                 
+
                 </Col>
               </Row>
              </Col>
