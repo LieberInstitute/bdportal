@@ -46,7 +46,7 @@ function LoadBrList(props) {
   }
 
   const loaded=num ? "subjects loaded" : "No subjects loaded.";
-  const btcap=num ? "Clear BrNums" : "Upload BrNums";
+  const btcap=num ? "Clear BrNums" : "Load BrNums";
   return(
   <Row className="p-1 mb-1 d-flex justify-content-start align-items-center">
     <Button id="b1" className="btn-sm app-btn" onClick={brListClick}>{btcap}</Button>&nbsp;

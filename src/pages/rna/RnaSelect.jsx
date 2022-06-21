@@ -107,12 +107,12 @@ const RnaSelect = ({ style }) => {
     }
     const nsi=$("#no-sel-info")
     if (ref && ref.length>0) {
-        //hide the no-sel-info panel       
+        //hide the no-sel-info panel
         if (nsi) nsi.hide()
         const refhtml=prepRefHtml(ref)
         dt.html(refhtml);
         dt.show()
-    } else { 
+    } else {
        dt.html("");
        dt.hide()
        if (nsi) nsi.show()
@@ -130,20 +130,20 @@ const RnaSelect = ({ style }) => {
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with brloaded=",brloaded)
   return(<div class="col-12 d-flex flex-nowrap flex-column">
-<Row className="pt-0 mt-0 justify-content-center flex-nowrap">    
+<Row className="pt-0 mt-0 justify-content-center flex-nowrap">
   <Col xs="3" className="d-flex-column pl-1 ml-1 colDemo justify-content-start" >
    <Row className="ml-1">
-    { showsel ? <span class="red-info-text">&nbsp;</span> : 
-         <span class="red-info-text" style="overflow:visible;min-width:39rem;"> 
+    { showsel ? <span class="red-info-text">&nbsp;</span> :
+         <span class="red-info-text" style="overflow:visible;min-width:39rem;">
          &nbsp;<span id="no-sel-info" style="position:absolute;top:26px;left:64px;min-width:38rem;">
           Apply a selection in a category panel in order to limit the sample selection in that category.
          </span>
          </span> }
-   </Row> 
+   </Row>
    <Row className="d-flex">
    <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
 	 	     data-toggle="tooltip" title="Clear all selection filters"
-			   style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>   
+			   style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>
    </Row>
   </Col>
   <Col className="pl-0 pt-0 mt-1 align-self-start" style="max-width:26rem;min-width:26rem;">
@@ -172,12 +172,12 @@ const RnaSelect = ({ style }) => {
 	 <Row className="mt-0 pt-0">
 			<Col>
        <Row>
-		       <FltMList id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-shad lg-sq"
+		       <FltMList id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-inset lg-sq"
              data={dtaDset} filter={getFilterSet} onApply={applyFilter} updateFilter onClickItem={onDatasetClick} />
 		   </Row>
        <Row className="d-flex justify-content-start flex-nowrap">
           <Col className="p-0 m-0" style="max-width:15.2em;">
-          <FltMList id="reg" width="14rem" height="8.1rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
+          <FltMList id="reg" width="14rem" height="10.7rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
           </Col>
          <Col className="p-0 m-0">
            <FltMList id="proto" type="toggle" nobars width="10.4em" data={dtaProto} filter={getFilterSet} onApply={applyFilter} updateFilter />

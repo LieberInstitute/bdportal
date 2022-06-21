@@ -32,6 +32,7 @@ import './FltMList.css'
 
  CSS classes:
    class="fl-shad"      : floating panels with shadow
+   class="fl-inset"     : inset panels, no shadow, flat title
    class = "lg-shrink"  : smaller item fonts (e.g. for protocol toggler)
 
 */

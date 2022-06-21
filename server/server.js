@@ -173,15 +173,18 @@ app.post('/mail', (req, res) => {
 
 app.post('/pgdb/adl', (req, res) => {
    let feature=req.body.feature || 'g'
+   feature=feature.substring(0,1)
    let filetype=req.body.filetype || 'rse'
+   let fxt= filetype.substring(0,1)=='r' ? '' : filetype.substring(0,1)
    let fname=req.body.fname || 'ftmp'
    let dtype=req.body.dtype || 'counts'
    let sarr=req.body.samples
+   let glst=req.boby.genes || []
    if (sarr.length===0) res.status(500).send(
        { error: ':user error', message: " empty sample list provided"}
    )
-   db.query('select save_rse_gene($1, $2, $3)',
-         [fname, sarr, dtype ], (err, dbrows)=>{
+   db.query('select save_rse($1, $2, 1, $3, $4, $5)',
+            [fname, sarr, glst, feature, dtype, fxt ], (err, dbrows)=>{
       if (err) {
         res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
       }
@@ -323,7 +326,7 @@ app.get('/rstaging/:fpath', (req, res)=> {
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
 })
 
-app.get('/ruthere', (req, res)=> {    
+app.get('/ruthere', (req, res)=> {
     db.clog(' ping /ruthere received')
     res.send("online");
 })

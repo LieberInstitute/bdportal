@@ -16,26 +16,31 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
-  const ds0= (datasets && datasets.length)? datasets[0] : "nope"
+  const ds0= (datasets && datasets.length)? datasets[0] : ""
+  const numds=(datasets && datasets.length)? datasets.length : 0
   const numsamples =  (samples && samples.length)? samples.length : 0
 
   const filename = `${prefix}${fTypes[fidx]}_n${numsamples}.${fext}`
 
+
+
   function dlClick() {
-    if (fidx>0) {
-      alert(" Oops, to be implemented soon ! ")
-      return
-    }
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
     if (fstatus!==0) alert(" Saving operation in progress, try later. ")
     setFStatus(1) //enter file prep state
     let dtype=norm ? 'rpkm' : 'counts'
     if (fidx==1) dtype='tpm'
-    buildRSE(filename, samples, fTypes[fidx], dtype)
+    let glst=[]
+    if (genes) {
+      if (typeof genes == 'function')
+         glst=genes() //retrieve the gene list from parent
+      else if (Array.isArray(genes)) glst=genes
+    }
+    buildRSE(filename, samples, fTypes[fidx], dtype, fext, glst)
 			 .then( res => {
 				 console.log("res=", res)
 				 return res.json()
@@ -60,7 +65,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples}) {
   }, [prefix, fext, norm, datasets, samples])
   // Button: disabled={fstatus!==0}  ?
   let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "RP10M" : "(RPKM)") : "";
-  let disabled=(norm==0 && fidx==1)
+  let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
           style="font-size:90%;min-height:22px;">
@@ -116,7 +121,7 @@ export function DlgDownload( props ) {
 
   const m=refData.current;
 
-  function afterOpen() {    
+  function afterOpen() {
     if (props.getData)  {
       const data=props.getData()
       if (data.datasets) {
@@ -137,6 +142,29 @@ export function DlgDownload( props ) {
   function onNormChange(e) {
     setNorm((e.target.id=="n0")? 0:1)
   }
+
+  function getGenes() {
+    //TODO: parse gene list, check genes in the database
+    let glst=$('#inglst').val()
+    glst=glst.trim()
+    glst=glst.split(/[,|;:.\s]+/)
+    return glst
+  }
+
+
+  function glstUse() {
+    //TODO:  check genes in the database
+    let glst=$('#inglst').val()
+    glst=glst.trim()
+    glst=glst.split(/[,|;:.\s]+/)
+    //check list against the database
+  }
+
+  function glstClear() {
+    $('#inglst').val("")
+  }
+
+  const glstDisabled=false;
 
   function prefixChange( {target}) { setPrefix(target.value); }
   return (<DlgModal { ...props} title="Export expression data" justClose="1" onShow={afterOpen} width="50em">
@@ -180,12 +208,17 @@ export function DlgDownload( props ) {
     </Row>
     { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-2" style="font-size:90%;">
       <Col xs="3" className="p-0 m-0 align-self-begin text-nowrap" style="min-width:6.2rem;top:3px;">Restrict to genes:</Col>
-      <Col className="pl-1 ml-0 mx-auto mr-0 pr-0"><Input className="frm-input" style="font-size:14px;" />
-      <Label style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
+      <Col className="pl-1 ml-0 mr-1 pr-1">
+              <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;width:19rem;" />
+              <Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;" onClick={glstClear}>&#x2715;</Button>
+        <Row className="d-flex justify-content-between align-content-center p-0 m-0 mt-1">
+          <Label className="align-self-center p-0 m-0" style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
+          <Button id="bglst" className="btn-sm app-btn align-self-center" disabled={glstDisabled} onClick={glstUse}>Check</Button>
+        </Row>
       </Col>
       </Row> : null }
     { fTypes.map( (it, i) =>
-      <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} samples={m.samples} /> )}
+      <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} samples={m.samples} genes={getGenes} /> )}
   </DlgModal>
  )
 }
