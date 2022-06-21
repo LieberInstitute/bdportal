@@ -26,7 +26,7 @@ const RnaSelect = ({ style }) => {
   useEffect( ()=>{
     $('[data-toggle="tooltip"]').tooltip({ delay:{show:800, hide:100 }, trigger : 'hover'})
     //$("body").tooltip({ selector: '[data-toggle=tooltip]' });
-    $('.toast').toast({ delay: 4000 })
+    $('.toast').toast({ delay: 8000 })
   }, [])
 
   useEffect( ()=> {

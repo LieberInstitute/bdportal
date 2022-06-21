@@ -227,7 +227,7 @@ export function FltMList( props ) {
       return (!objEq(m.appliedStates, m.onlyStates))
   }
 
-  function onOnlyClick() { //also applies the filter!
+  function onOnlyCancelAll() { //also applies the filter!
     if (showAgeRange) {
       props.ageRange.length=0
     }
@@ -250,10 +250,12 @@ export function FltMList( props ) {
     let oitems=ol.find('.lg-only-item')
     oitems.off('click')
     oitems.remove()
+    const selChanging=filterChanged()
+    const itClass=selChanging ? 'lg-only-item lg-only-item-ch' : 'lg-only-item';
     if (Object.keys(m.onlyStates).length) {
         ol.append(
           Object.keys(m.onlyStates).map( k=>Number(m.idMap[k]) ).sort((a,b)=>a-b).map(
-            k => `<span class="lg-only-item" key=${k} id="o${m.fltData[k][3]}">${m.fltData[k][0]}</span>`
+            k => `<span class="${itClass}" key=${k} id="o${m.fltData[k][3]}">${m.fltData[k][0]}</span>`
           ))
         ol.show()
         oitems=ol.find('.lg-only-item')
@@ -263,7 +265,7 @@ export function FltMList( props ) {
           //console.log(" id=", id, " list idx:", m.idMap[id])
           const t=$(e.target).closest('.lg-panel').find('.lg-item')[m.idMap[id]]
           unselectItem($(t), id)
-          applyFilter()
+          //applyFilter() //-- no
         })
     } else if (showAgeRange) {
          let [amin, amax]=props.ageRange
@@ -275,7 +277,7 @@ export function FltMList( props ) {
          }
          ol.append(`<span class="lg-only-item" key="ar" id="oar">${amin} - ${amax} ${pre}</span>`)
          ol.show()
-         ol.find('.lg-only-item').on('click', () => { onOnlyClick() })
+         ol.find('.lg-only-item').on('click', () => { onOnlyCancelAll() })
     }
   }
 
@@ -298,9 +300,10 @@ export function FltMList( props ) {
     if (forbidMulti)  { // deselect all!
        m.onlyStates={}
        t.siblings().removeClass('lg-sel')
+       return
     }
-    t.addClass('lg-sel')
     m.onlyStates[id]=1
+    t.addClass(filterChanged()? 'lg-sel lg-sel-ch' : 'lg-sel')
     if (!isToggle) showOnlyItems()
     showApplyButton()
   }
@@ -368,9 +371,9 @@ export function FltMList( props ) {
       applyFilter() //onlyStates string is applied, call props.onApply() handler
       if (isToggle || noCollapse)  return
 
-      if (Object.keys(m.onlyStates).length>0)
-              collapse()
-         else unCollapse()
+      //if (Object.keys(m.onlyStates).length>0) collapse()
+      //else unCollapse()
+      if (Object.keys(m.onlyStates).length==0) collapse()
   }
 
   function onSelUndo() {
@@ -424,7 +427,8 @@ export function FltMList( props ) {
   }
 
   function isSel(oid) {
-    return (m.onlyStates[oid]>0) ? 'lg-sel' : ''
+    const fltch=filterChanged()
+    return (m.onlyStates[oid]>0) ? (fltch ? 'lg-sel lg-sel-ch'  : 'lg-sel') : ''
   }
 
   function lockStatus(pd) {
@@ -499,7 +503,7 @@ export function FltMList( props ) {
            <div class="lg-bottomshade"> </div>
           </ul> }
         <div class="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
-           <span class="lg-only-lb" onClick={onOnlyClick}>&#x2715;</span>
+           <span class="lg-only-lb" onClick={onOnlyCancelAll}>&#x2715;</span>
 
         </div>
        </div>

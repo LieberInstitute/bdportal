@@ -136,7 +136,13 @@ border-radius: 4px;
 
 .lg-item.lg-sel {
   font-weight:bold;
-  background-color: #ffe2e6;
+  background-color: #fff0f0;
+  color:#9d1848;
+}
+.lg-item.lg-sel.lg-sel-ch {
+  color: currentcolor;
+  font-weight:normal;
+  background-color: #faeaea;
 }
 
 .lg-item-th { /* left-side container, need click-through */

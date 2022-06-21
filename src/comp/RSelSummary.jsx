@@ -49,7 +49,7 @@ function LoadBrList(props) {
   const btcap=num ? "Clear BrNums" : "Load BrNums";
   return(
   <Row className="p-1 mb-1 d-flex justify-content-start align-items-center">
-    <Button id="b1" className="btn-sm app-btn" onClick={brListClick}>{btcap}</Button>&nbsp;
+    <Button id="b1" className="btn-sm app-btn" onClick={brListClick}  data-toggle="tooltip" title="Limit selection to a list of Br#s">{btcap}</Button>&nbsp;
       {(num>0) && <span class="lg-flt">{num}</span> }
         <span style="padding:2px 2px;font-size:90%">{loaded}</span>
     <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}

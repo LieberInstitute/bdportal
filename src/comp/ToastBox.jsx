@@ -10,7 +10,7 @@ export function ToastBox({ id, title, show, text }) {
      return (
       <div class="position-fixed p-1" style="z-index: 200; top: 2em; right: 40em;">
       <div id={id} class={vclass} role="alert" aria-live="assertive"
-           aria-atomic="true" data-delay="2000" style="opacity:1;background-color: rgba(255,255,255,0.95);">
+           aria-atomic="true" data-delay="6000" style="opacity:1;background-color: rgba(255,255,255,0.95);">
         <div class="toast-header-sm">
           {/* <img src="..." class="rounded mr-2" alt="..." /> */}
           <strong class="mr-auto" style="color:#777;">{title}</strong>

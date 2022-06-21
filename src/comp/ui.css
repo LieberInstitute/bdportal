@@ -590,9 +590,14 @@ border-bottom:1px solid #ececec;
   cursor: pointer;
 }
 
+.lg-only-item-ch {
+  background-color: #ed7898;
+  /* color:#333; */
+}
+
 .lg-only-item:hover {
   background-color: #888;
-  color: #ccc;
+  color: #ddd;
 }
 
 .lg-apply {
