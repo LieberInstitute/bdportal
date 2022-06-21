@@ -64,7 +64,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
     setFStatus(0)
   }, [prefix, fext, norm, datasets, samples])
   // Button: disabled={fstatus!==0}  ?
-  let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "RP10M" : "(RPKM)") : "";
+  let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
   let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"

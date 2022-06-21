@@ -144,6 +144,19 @@ to be made available everywhere in the app
   color:#c68;
 }
 
+
+.red-text {
+  color:#ed1848;
+}
+
+.red-text-darker {
+  color:#ad1838;
+}
+
+.red-text-dark2 {
+  color:#812;
+}
+
 /* custom check box style in LIBD palette for ReactStrap: to be used like this
 <Label className="ckbox-label" >
      <CustomInput type="checkbox" id="ckDisable" onChange={toggleDisable} />
@@ -362,7 +375,7 @@ to be made available everywhere in the app
   overflow: hidden;
   padding:0;
   margin:6px;
-  border-radius:8px;
+  border-radius:4px;
   border: 1px solid #fbfbfb;
   border-right: 1px solid #c8c8c8;
   border-bottom: 1px solid #c8c8c8;
@@ -505,7 +518,7 @@ border-bottom:1px solid #ececec;
   overflow-wrap: normal;
   /* border:1px solid #f6f6f6;*/
   border-top:1px solid #ececec;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 4px 4px;
 }
 
 .lg-panel.lg-collapsed .lg-only {
@@ -583,21 +596,22 @@ border-bottom:1px solid #ececec;
   margin: 2px 2px;
   color: white;
   background-color: #ed1848;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .lg-only-item {
   cursor: pointer;
 }
 
-.lg-only-item-ch {
-  background-color: #ed7898;
-  /* color:#333; */
-}
-
 .lg-only-item:hover {
   background-color: #888;
   color: #ddd;
+}
+
+.lg-only-item-ch, .lg-toggler .lg-item.lg-sel.lg-sel-ch {
+  /*  background-color: #ad7898; */
+    background-color: #d29498;
+    color:#ffffff;
 }
 
 .lg-apply {

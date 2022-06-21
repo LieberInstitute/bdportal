@@ -362,9 +362,7 @@ if (m.slState.fetal) {
 } else if (m.slState.vmin<0) {
      selRange = `fetal - ${m.slState.vmax}`
     }
-
-//console.log(" ... AgeRange rendering with current range:",  m.currentRange, ' applied:', m.appliedRange, ' rangeRW:', rangeRW)
-
+const lgOnlyClass=showApply ? "lg-only-item lg-only-item-ch" : "lg-only-item";
 const caption=props.title || "Age range"
 //key={m.renderKey}
 //style={ showApply ? { display:"inline"} : { display: "none"}}
@@ -420,7 +418,7 @@ return (<div class="lg-panel" ref={refDom} style={{ width : (props.width ? props
     </div>
     { showOnlyFilter && <div className="lg-only">
         <span class="lg-only-lb" onClick={onOnlyClick}>&#x2715;</span>
-        <span class="lg-only-item" onClick={onOnlyClick}>{selRange}</span>
+        <span class={lgOnlyClass} onClick={onOnlyClick}>{selRange}</span>
         </div> }
   </div>)
 }

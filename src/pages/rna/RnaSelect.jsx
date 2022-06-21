@@ -99,14 +99,18 @@ const RnaSelect = ({ style }) => {
   function onDatasetClick(dix, fid, sel) {
     let ref=getDatasetCitation(0, dix)
     const dt=$('#dset-info-content')
+    const nsi=$("#no-sel-info")
     if (sel && sel.length>1) {
       //dt.html('<span class="dset-info-warn"> Warning: selecting samples from more than one dataset! </span>');
       //dt.show()
+       dt.html("");
+       dt.hide()
+       if (nsi) nsi.show()
       $("#dsMultiWarn").toast('show')
       return
     }
-    const nsi=$("#no-sel-info")
-    if (ref && ref.length>0) {
+    if (sel.length<=1) $("#dsMultiWarn").toast('hide');
+    if (sel.length && ref && ref.length>0) {
         //hide the no-sel-info panel
         if (nsi) nsi.hide()
         const refhtml=prepRefHtml(ref)

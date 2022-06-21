@@ -139,9 +139,10 @@ border-radius: 4px;
   background-color: #fff0f0;
   color:#9d1848;
 }
+
 .lg-item.lg-sel.lg-sel-ch {
   color: currentcolor;
-  font-weight:normal;
+  font-weight:bold;
   background-color: #faeaea;
 }
 
@@ -175,7 +176,7 @@ border-radius: 4px;
   margin: 2px 2px;
   color: white;
   background-color: #ed1848;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .lg-item-counts {
@@ -214,7 +215,8 @@ border-radius: 4px;
 
 .lg-item-bar-v {
   float:right;
-  background-color: #e4e4e4;
+  /* background-color: #e4e4e4; */
+  background-color: #eeecec;
   margin:0 auto;
 }
 

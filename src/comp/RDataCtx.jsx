@@ -1479,6 +1479,24 @@ export function getSelDatasets() {
    return dsnames
 }
 
+//get non-zero non-filtered regions and their counts for the current exp type
+export function getRegionCounts() {
+   const regdata=[] // array of [regname, smpcount]
+   if (rGlobs.selXType===0) return regdata;
+   const xt=rGlobs.selXType;
+   if (dtFilters.reg.size) {
+    dtFilters.reg.forEach( ri => {
+       const rc=dtCounts.reg[xt][ri];
+       if (rc>0) regdata.push( [dtaNames.reg[ri], rc])
+    })
+   } else { //no region filter, show all non-zero
+      dtCounts.reg[xt].forEach((rc, ri) => {
+        if (rc>0) regdata.push( [dtaNames.reg[ri], rc])
+      })
+   }
+   return regdata
+}
+
 export function getBrSelData(showSmpCounts) {
 //returns an array with rows of data for brains in dtBrAllsel
 // if showSmpCounts is an array, it has experiment data types
@@ -1650,7 +1668,7 @@ export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, gls
                            filetype:fext,
                            dtype:assayType })
   };
-  console.log(" -- sending req body:", reqOpts.body)
+  //console.log(" -- sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
 }
 

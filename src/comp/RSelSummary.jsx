@@ -3,7 +3,7 @@ import {useState, useEffect} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
    dtaBrains, XBrs, anyActiveFilters, clearFilters,
-   getBrSelData, getSelDatasets, dtBrXsel } from './RDataCtx';
+   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
      Row, Col, Button, Label, Alert} from 'reactstrap';
@@ -310,7 +310,9 @@ useEffect( ()=> {
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
   const selbrCount=dtBrXsel.size
   const selDslabel = (selDatasets && selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
+  const nRegions=showDlButton ? getRegionCounts() : []
 
+  const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
   return (<Col className="pl-0 ml-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
@@ -344,27 +346,42 @@ useEffect( ()=> {
           { subjXTable() }
         </Row> </>}
         {/* Row: border-top:1px solid #ddd; */}
-        <Row className="flex-nowrap flex-row justify-content-center mt-2 pt-1"
+        <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100"
                    style="padding-top:1em;" >
              { showDlButton ? <Col className="d-flex flex-column">
-             <Col className="d-flex flex-column">
-              <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center mt-1" style={{fontSize:"1rem"}}>
-                       <span className="sel-total"> {numsmp ? numsmp : 0} </span>
-                       <span class="flex-fill"> selected samples </span>
+             <Col className="w-100">
+              <Row className="w-auto ml-4 mr-4 justify-content-center mt-1"
+                    style="border-bottom:1px solid #ddd;font-size:1rem">
+                       <span><span className="sel-total"> {numsmp ? numsmp : 0} </span>
+                             <span> selected samples </span>
+                       </span>
               </Row>
-              <Row className="d-flex flex-nowrap align-items-begin align-self-center justify-content-center" style={{fontSize:"1rem"}}>
-                <Col>
-                 <span>{selDslabel}:</span>
-                </Col>
-                <Col>
-                {selDatasets.map( (ds, i) =>
-                   <Row key={i}><b>{ds}</b></Row>
-                )}
-
-                </Col>
-              </Row>
-             </Col>
-              <Row className="p-2 m-2">
+              <Row className="d-flex justify-content-center">
+                <Row className="d-flex justify-content-center w-100 flex-nowrap" >
+                   <Col className="d-flex flex-nowrap align-self-center justify-content-end">
+                     <span>{selDslabel}:</span>
+                   </Col>
+                   <Col className="d-flex-row justify-content-start"><b>
+                    {selDatasets.map( (ds, i) =>
+                      <Row key={i} className="red-text-darker">{ds}</Row>
+                    )}
+                    </b>
+                  </Col>
+               </Row>
+               <Row className="d-flex flex-row justify-content-center w-100 flex-nowrap">
+                   {/*<Col className="d-flex-column flex-nowrap align-self-center justify-content-end bgreen"
+                      style="font-size: 0.95rem">
+                    <span style="white-space: nowrap;">{regLabel}:</span>
+                    </Col>*/}
+                   <Col className="mt-1" style="font-size: 0.9rem;text-align:center;">
+                      {nRegions.map( (ds, i) =>
+                    <span key={i}>{i>0 && <span>, </span>}{ds[0]}&nbsp;({ds[1]})</span>
+                    )}
+                  </Col>
+               </Row>
+             </Row>
+            </Col>
+            <Row className="p-2 m-2">
                     { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
                     text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
                     }

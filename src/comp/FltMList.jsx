@@ -299,18 +299,28 @@ export function FltMList( props ) {
     const forbidMulti=(isToggle & !(fakeToggle && ctrl))
     if (forbidMulti)  { // deselect all!
        m.onlyStates={}
-       t.siblings().removeClass('lg-sel')
-       return
+       t.siblings().removeClass('lg-sel lg-sel-ch')
     }
     m.onlyStates[id]=1
-    t.addClass(filterChanged()? 'lg-sel lg-sel-ch' : 'lg-sel')
+    t.addClass('lg-sel')
+    if (filterChanged()) {
+      t.siblings('.lg-sel').addClass('lg-sel-ch')
+      t.addClass('lg-sel-ch')
+    } else {
+      t.siblings('.lg-sel').removeClass('lg-sel-ch')
+    }
     if (!isToggle) showOnlyItems()
     showApplyButton()
   }
 
   function unselectItem(t, id) {
-   t.removeClass('lg-sel')
+   t.removeClass('lg-sel lg-sel-ch')
    delete m.onlyStates[id]
+   if (filterChanged()) {
+     t.siblings('.lg-sel').addClass('lg-sel-ch')
+   } else {
+     t.siblings('.lg-sel').removeClass('lg-sel-ch')
+   }
    if (!isToggle) showOnlyItems()
    showApplyButton()
   }
@@ -329,8 +339,10 @@ export function FltMList( props ) {
     }
     const id=parseInt(t[0].id)
     if (isNaN(id)) return
-    if (m.onlyStates[id]) unselectItem(t, id);
-                  else    {
+    if (m.onlyStates[id]) {
+               unselectItem(t, id);
+               if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
+            }   else    {
                     selectItem(t, id, e.ctrlKey);
                     if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
                   }
