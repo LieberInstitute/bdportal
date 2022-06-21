@@ -101,7 +101,7 @@ function poolTest() {
 //app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); //parse JSON-encoded POST requests
 //to allow parsing of url-encoded POST requests (application/x-www-form-urlencoded):
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 //extend : false -- means only strings and arrays are being parsed
 //       : true     any encoded (nested) objects can be decoded, more work
 // Allow CORS requests
@@ -172,19 +172,29 @@ app.post('/mail', (req, res) => {
 });
 
 app.post('/pgdb/adl', (req, res) => {
-   let feature=req.body.feature || 'g'
-   feature=feature.substring(0,1)
-   let filetype=req.body.filetype || 'rse'
-   let fxt= filetype.substring(0,1)=='r' ? '' : filetype.substring(0,1)
-   let fname=req.body.fname || 'ftmp'
-   let dtype=req.body.dtype || 'counts'
-   let sarr=req.body.samples
-   let glst=req.boby.genes || []
+   let body=req.body
+   let feature=body.feature || 'g';
+   feature=feature.charAt(0).toLowerCase();
+   let filetype=body.filetype || 'rse';
+   let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
+   let glst=body.genes
+   //console.log(" received req.body:", body, "   glst=", glst)
+   let fname=body.fname;
+   //let glst=req.boby.genes;
+   const garr=(glst)?glst.split(',') : []
+   let dtype=body.dtype || 'counts';
+   let sarr=body.samples;
    if (sarr.length===0) res.status(500).send(
        { error: ':user error', message: " empty sample list provided"}
    )
-   db.query('select save_rse($1, $2, 1, $3, $4, $5)',
-            [fname, sarr, glst, feature, dtype, fxt ], (err, dbrows)=>{
+   //const glst=['RIN2A','GRIN2B','SP4']
+   const qry=(glst) ? "select save_rse($1, $2, 1, $3, $4, $5, $6)" :
+   "select save_rse($1, $2, 1, '{}', $3, $4, $5)";
+   const qparms=(glst) ? [fname, sarr, garr, feature, dtype, fxt ] :
+                         [fname, sarr, feature, dtype, fxt ] ;
+   // [fname, sarr, glst, feature, dtype, fxt ]
+   db.query(qry, qparms
+            , (err, dbrows)=>{
       if (err) {
         res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
       }

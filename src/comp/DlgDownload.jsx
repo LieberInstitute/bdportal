@@ -42,14 +42,14 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
     }
     buildRSE(filename, samples, fTypes[fidx], dtype, fext, glst)
 			 .then( res => {
-				 console.log("res=", res)
+				 //console.log("res=", res)
 				 return res.json()
 			  } )
 			 .then( fn => {
 					// 1st row: header, 2nd row: data = filename
 					let fname=""
 					if (fn.length>1) fname=fn[1][0]
-          console.log("fn prepared:", fname)
+          //console.log("fn prepared:", fname)
 					if (fname) {
 						 setSaved('saved.')
              setFStatus(0)
@@ -146,6 +146,7 @@ export function DlgDownload( props ) {
   function getGenes() {
     //TODO: parse gene list, check genes in the database
     let glst=$('#inglst').val()
+    if (!glst) return []
     glst=glst.trim()
     glst=glst.split(/[,|;:.\s]+/)
     return glst

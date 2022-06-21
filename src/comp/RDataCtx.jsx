@@ -1637,15 +1637,20 @@ export function FltCtxProvider (props) {
 export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, glst) {
 	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
 	if (!feat) feat='g' //feature type
-  if (!glst) glst=[]
+  console.log(" received glst: ", glst)
+  //if (!glst)
+  let lstgenes=glst.join()
 	feat=feat.charAt(0).toLowerCase()
 	if (feat=='t') assayType='tpm'
 	const reqOpts = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ type: 'rna', fname: f_name,  feature:feat, samples:sarr,
-		filetype:fext, genes:glst, dtype:assayType })
+                           genes: lstgenes,
+                           filetype:fext,
+                           dtype:assayType })
   };
+  console.log(" -- sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
 }
 
