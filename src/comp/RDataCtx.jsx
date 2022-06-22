@@ -1466,17 +1466,18 @@ export function updateCounts() {
   //console.log(dtXCounts.proto);
 }
 
-//simply return the names of datasets in the filter
-// for the current experiment type
+// for the current experiment type, return the names of selected datasets 
+// in the filter + their dtCounts : array of [dset_name, dset_counts]
+// 
 export function getSelDatasets() {
-   const dsnames=[]
-   if (rGlobs.selXType===0) return dsnames;
-   if (dtFilters.dset.size===0) return dsnames;
+   const dsinfo=[]
+   if (rGlobs.selXType===0) return dsinfo;
+   if (dtFilters.dset.size===0) return dsinfo;
    const xt=rGlobs.selXType-1
    dtFilters.dset.forEach( di => {
-     dsnames.push(dtaNames.dset[xt][di])
+     dsinfo.push([ dtaNames.dset[xt][di], dtCounts.dset[di]])
    })
-   return dsnames
+   return dsinfo
 }
 
 //get non-zero non-filtered regions and their counts for the current exp type

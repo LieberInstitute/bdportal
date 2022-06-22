@@ -138,11 +138,18 @@ export function FltMList( props ) {
       // when props.filter is given, this will override the current onlyStates and appliedStates!
       // in order to avoid this, any re-render should ONLY happen after
       // onApplyClick() updated the filter data backend (props.filter and props.data)
+      /* 
       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
       dtFilter.forEach( e => m.onlyStates[e]=1 )
-      m.appliedStates=Object.assign({}, m.onlyStates)
+      m.appliedStates=Object.assign({}, m.onlyStates) // make a full copy of m.OnlyStates
       //now this update should take care of showing the right filter selection
+      */
+      //if (fid=='dx') console.log(" ~~~~~ FltMlist Dx update with dtFilter:", dtFilter)
+      m.appliedStates={}
+      dtFilter.forEach( e => m.appliedStates[e]=1 )
   }
+  
+
 
   const showAgeRange=(fid=='age' && props.ageRange && props.ageRange.length===2)
   useEffect(()=> {
@@ -360,7 +367,7 @@ export function FltMList( props ) {
 
   function unCollapse() {
     if (isToggle) return
-    const jc=$(refDom.current)
+    const jc=$(refDom.current)    
     const t=jc.find('.lg-title');
     if (t) {
         const p=jc.find('.lg-lst')
@@ -385,7 +392,7 @@ export function FltMList( props ) {
 
       //if (Object.keys(m.onlyStates).length>0) collapse()
       //else unCollapse()
-      if (Object.keys(m.onlyStates).length==0) collapse()
+      if (Object.keys(m.onlyStates).length==0) unCollapse()
   }
 
   function onSelUndo() {

@@ -2,13 +2,6 @@
   so it affects all controls
 */
 
-.bred {  border: 1px solid red; }
-.bpink { border: 1px solid pink; }
-.bgreen { border: 1px solid green; }
-.bblue { border: 1px solid blue; }
-.byellow { border: 1px solid yellow; }
-.bpurple { border: 1px solid purple; }
-
 .tbl {
   text-align:left;
 }

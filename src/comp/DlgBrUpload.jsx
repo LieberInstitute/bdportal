@@ -1,6 +1,6 @@
 import $ from "jquery";
 import './ui.css'
-import {useState} from "preact/hooks"
+import {useState, useRef} from "preact/hooks"
 import {Row, Col, Button, Label, Input, Alert} from 'reactstrap'
 import { DlgModal } from './DlgModal';
 
@@ -14,13 +14,22 @@ export function DlgBrUpload( props ) {
   const [alertVisible, setAlertVisible] = useState(false);
   function onAlertDismiss() { setAlertVisible(false) }
 
+  const refData=useRef( {
+     showInfo: true
+  })
+  
+  const m=refData.current;
+
   function showAlert(msg, sec) {
+      m.showInfo=false
      if (!msg) msg = "No valid BrNum entries found."
      setAlertVisible(true)
      setAlertMsg(msg)
-     if (!sec) sec=5;
+     if (!sec) sec=6;
      setTimeout( ()=>{ setAlertVisible(false) }, sec*1000 )
   }
+
+  
 
   function parseBrNums(txt) {
     let lines=txt.trim().split(/\r?\n/);
@@ -49,6 +58,8 @@ export function DlgBrUpload( props ) {
   }
 
   function handleFileChosen(file) {
+    m.showInfo=false
+    setAlertVisible(false)
     fileReader = new FileReader();
     fileReader.onloadend = handleFileRead;
     fileReader.readAsText(file);
@@ -59,6 +70,15 @@ export function DlgBrUpload( props ) {
    //and and file upload button
    function checkListValid( ) {
      return brList.length>0;
+   }
+   
+   function afterShow() {
+      m.showInfo=false
+   }
+
+   function onClose() {
+     setAlertVisible(false)
+     m.showInfo=true
    }
 
    function onSubmit( ) {
@@ -77,12 +97,15 @@ export function DlgBrUpload( props ) {
      if (props.onSubmit) props.onSubmit(brList)
      return true
    }
-
+   
    return (
     <DlgModal {... props} title="BrNum list" button="Apply list" buttonClose="Cancel"
-         onSubmit={onSubmit}>
+         onSubmit={onSubmit} onClose={onClose} onShow={afterShow}>
       <Row className="d-flex m-0 p-0 justify-content-center align-items-center" style="min-height:52px;">
-       {alertVisible && <Alert id="alInvalid" className="mb-0" color="danger" isOpen={alertVisible}
+        { m.showInfo && <span id="infoTxt" class="red-info-text text-center">Upload a text file with Br#s from your computer or type/paste 
+          the list of Br#s in the box below. Only <i>"Br"</i>-prefixed tokens are recognized. </span>
+        }
+       {alertVisible && <Alert id="alInvalid" className="mb-0 app-alert" color="danger" isOpen={alertVisible}
           toggle={ onAlertDismiss } style="font-size:90%">
            {alertMsg}
        </Alert>}

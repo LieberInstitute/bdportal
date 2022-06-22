@@ -12,11 +12,11 @@ export function ToastBox({ id, title, show, text, autohide }) {
       <div class="position-fixed p-1" style="z-index: 200; top: 2em; right: 34em;min-width:24em;">
       <div id={id} class={vclass} role="alert" aria-live="assertive" data-autohide={autohide}
            aria-atomic="true" data-delay="7000" style="opacity:1;background-color: rgba(255,255,255,0.94);">
-        <div class="toast-header-sm text-center">
+        <div class="toast-header-sm noselect text-center">
           {/* <img src="..." class="rounded mr-2" alt="..." /> */}
           <strong class="w-100" style="color:#777;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{title}</strong>
           {/* <small>11 mins ago</small> */}
-          <button type="button" class="ml-2 mb-1 mr-1 close" data-dismiss="toast" aria-label="Close">
+          <button type="button" class="ml-2 mb-1 mr-1 close app-btn-close" data-dismiss="toast" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>

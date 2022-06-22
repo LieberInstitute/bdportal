@@ -75,7 +75,13 @@ function RSelSummary( props ) {
   //let showsel = true;
   let showDlButton=(selXType && dsflt.size>0); //only set for RNAseq - must have a dataset selected!
   const mixprotos = [];
-  const selDatasets=getSelDatasets()
+  const selDsInfo=getSelDatasets()
+  const selDatasets=[]
+  if (selDsInfo && selDsInfo.length) {
+     selDsInfo.forEach( (ds)=>{
+        if (ds[1]>0) selDatasets.push(ds)
+     })
+  }
   if (showsel)  {
     for (let i=1;i<countData.proto.length;i++)
        if (countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
@@ -288,7 +294,11 @@ useEffect( ()=> {
 
   function getSelSampleData() { // return { datasets: [], samples: []}
    const data={ }
-   data.datasets=getSelDatasets()
+   const dsinfo=getSelDatasets()
+   data.datasets=[]
+   dsinfo.forEach( dsd => {
+      if (dsd[1]>0) data.datasets.push(dsd[0])
+    })
    const sampleIDs=[]
    const xt=0 //RNAseq data type, rGlobs.selXType-1
    xdata[xt].forEach( (r,i)=>{
@@ -309,11 +319,11 @@ useEffect( ()=> {
 
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
   const selbrCount=dtBrXsel.size
-  const selDslabel = (selDatasets && selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
+  const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
 
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
-  return (<Col className="pl-0 ml-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
+  return (<Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
 
@@ -346,26 +356,26 @@ useEffect( ()=> {
           { subjXTable() }
         </Row> </>}
         {/* Row: border-top:1px solid #ddd; */}
-        <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100"
-                   style="padding-top:1em;" >
+        <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100">
              { showDlButton ? <Col className="d-flex flex-column">
-             <Col className="w-100">
-              <Row className="w-auto ml-4 mr-4 justify-content-center mt-1"
-                    style="border-bottom:1px solid #ddd;font-size:1rem">
-                       <span><span className="sel-total"> {numsmp ? numsmp : 0} </span>
-                             <span> selected samples </span>
+             <Col className="w-100 mt-0 pt-0">
+              <Row className="w-auto ml-4 mr-4 justify-content-center mt-1 mb-2"
+                    style="padding-top:4px;border-top:1px solid #ddd;font-size:1rem">
+                       <span><span style="color:#923"> <b>{numsmp ? numsmp : 0}</b></span>
+                             <span> &nbsp;samples </span>
                        </span>
               </Row>
-              <Row className="d-flex justify-content-center">
+              <Row className="d-flex justify-content-center m-0">
                 <Row className="d-flex justify-content-center w-100 flex-nowrap" >
-                   <Col className="d-flex flex-nowrap align-self-center justify-content-end">
+                   {/* <Col className="d-flex flex-nowrap align-self-center justify-content-end bblue"> */}
+                   <Col className="col-auto">
                      <span>{selDslabel}:</span>
                    </Col>
-                   <Col className="d-flex-row justify-content-start"><b>
-                    {selDatasets.map( (ds, i) =>
-                      <Row key={i} className="red-text-darker">{ds}</Row>
+                   {/* <Col className="d-flex-row justify-content-start"> */}
+                   <Col className="col-auto">
+                     {selDatasets.map( (ds, i) =>
+                      <Row key={i}><b>{ds[0]}</b>&nbsp;({ds[1]})</Row>
                     )}
-                    </b>
                   </Col>
                </Row>
                <Row className="d-flex flex-row justify-content-center w-100 flex-nowrap">
@@ -374,41 +384,38 @@ useEffect( ()=> {
                     <span style="white-space: nowrap;">{regLabel}:</span>
                     </Col>*/}
                    <Col className="mt-1" style="font-size: 0.9rem;text-align:center;">
-                      {nRegions.map( (ds, i) =>
-                    <span key={i}>{i>0 && <span>, </span>}{ds[0]}&nbsp;({ds[1]})</span>
+                      {nRegions.map( (r, i) =>
+                    <span key={i}>{i>0 && <span>, </span>}{r[0]}&nbsp;({r[1]})</span>
                     )}
                   </Col>
                </Row>
              </Row>
             </Col>
-            <Row className="p-2 m-2">
-                    { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
-                    text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
-                    }
-              </Row>
-              <Row className="d-flex flex-fill flex-nowrap justify-content-center">
-                 <Col className="d-flex justify-content-center">
+            <Row className="d-flex flex-nowrap justify-content-center mt-3">
+                 <Col className="col-auto mr-3">
                      <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleModal}>
-                       Download</Button>
+                       Export</Button> 
                     { restrictedDatasets.length ?
                       <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
                       <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} /> }
                  </Col>
-                 <Col className="d-flex justify-content-center">
+                 <Col className="col-auto ml-3">
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>
 
                  </Col>
-              </Row>
-            </Col> : <Col> {selXType ? <div className="mx-auto">
+            </Row>
+            { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
+                   text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
+            }
+          </Col> : <Col> {selXType ? <div className="mx-auto">
                           <span class="red-info-text"> Apply a dataset selection to access samples. </span>
                        </div> : <> { showsel && brSaveSection()} </>
 
                        }
-              </Col>
-             }
-         </Row>
-
-      </Col>
+                   </Col>
+          }
+       </Row>
+     </Col>
   )
 }
 

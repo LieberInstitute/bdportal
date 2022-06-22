@@ -19,8 +19,10 @@ const RnaSelect = ({ style }) => {
 	const [, , , dataLoaded] = useRData()
   const notifyUpdate = useFltCtxUpdate();
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
-  const [ updating, setUpdating ] = useState(false) // dataset selection/switching is instant, disable clicking while updating
+  const [ clearCounter, setClearCounter ]=useState(0)
+  //const [ updating, setUpdating ] = useState(false) // when dataset selection/switching is instant, disable clicking while updating
 
+    
   //const [brloaded, setBrLoaded] = useState(0)
 
   useEffect( ()=>{
@@ -43,6 +45,7 @@ const RnaSelect = ({ style }) => {
   function resetFilters() {
     clearDsetInfo()
     clearFilters()
+    setClearCounter( clearCounter+1 )
     notifyUpdate('clear')
     //simply triggers refresh, but for some components we want to trigger remount
   }
@@ -132,11 +135,11 @@ const RnaSelect = ({ style }) => {
 	const dtaReg=getFilterData('reg')
   const brloaded=getBrListFilter().size
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
-  //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with brloaded=",brloaded)
+  console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with dtaDx=",dtaDx)
   return(<div class="col-12 d-flex flex-nowrap flex-column">
-<Row className="pt-0 mt-0 justify-content-center flex-nowrap">
-  <Col xs="3" className="d-flex-column pl-1 ml-1 colDemo justify-content-start" >
-   <Row className="ml-1">
+<Row className="pt-0 mt-0 pb-0 mb-0 justify-content-center flex-nowrap">
+  <Col xs="3" className="d-flex-column m-0 p-0 pl-1 ml-1 colDemo justify-content-start" >
+   <Row className="m-0 p-0 ml-1">
     { showsel ? <span class="red-info-text">&nbsp;</span> :
          <span class="red-info-text" style="overflow:visible;min-width:39rem;">
          &nbsp;<span id="no-sel-info" style="position:absolute;top:26px;left:64px;min-width:38rem;">
@@ -144,13 +147,13 @@ const RnaSelect = ({ style }) => {
          </span>
          </span> }
    </Row>
-   <Row className="d-flex">
+   <Row className="mb-0 pb-0 pl-3">
    <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
 	 	     data-toggle="tooltip" title="Clear all selection filters"
 			   style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>
    </Row>
   </Col>
-  <Col className="pl-0 pt-0 mt-1 align-self-start" style="max-width:26rem;min-width:26rem;">
+  <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">
      <div id="dset-info"><div id="dset-info-content">testing here </div></div>
   </Col>
   <Col xs="4" className="d-flex flex-fill" style="z-index:-1;" >
@@ -160,31 +163,31 @@ const RnaSelect = ({ style }) => {
 	<Col xs="3" className="colDemo" >
    <Col className="d-flex flex-column col-vscroll"  >
     <Row className="d-flex justify-content-start">
-      <FltMList id="dx" width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+      <FltMList key={`dx${clearCounter}`} id="dx" width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
     </Row>
     <Row className="d-flex justify-content-start">
-      <FltMList id="sex" type="htoggle" width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
+      <FltMList key={`sx${clearCounter}`} id="sex" type="htoggle" width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
     </Row>
-    <AgeDualPanel width="15em" onAgeSelection={onAgeSelection} />
+    <AgeDualPanel key={`age${clearCounter}`}  width="15em" onAgeSelection={onAgeSelection} />
     <Row className="d-flex justify-content-start">
-      <FltMList id="race" width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
+      <FltMList key={`race${clearCounter}`} id="race" width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
     </Row>
    </Col>
   </Col>
   {/*  middle column -- protocol, datasets and regions */}
   <Col className="pt-0 mt-0 align-self-start" style="max-width:26rem">
 	 <Row className="mt-0 pt-0">
-			<Col>
-       <Row>
-		       <FltMList id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-inset lg-sq"
+			<Col className="pt-0 mt-0">
+       <Row className="pt-0 mt-0">
+		       <FltMList key={`ds${clearCounter}`} id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-inset lg-sq"
              data={dtaDset} filter={getFilterSet} onApply={applyFilter} updateFilter onClickItem={onDatasetClick} />
 		   </Row>
        <Row className="d-flex justify-content-start flex-nowrap">
           <Col className="p-0 m-0" style="max-width:15.2em;">
-          <FltMList id="reg" width="14rem" height="10.7rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
+          <FltMList key={`reg${clearCounter}`} id="reg" width="14rem" height="10.7rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
           </Col>
          <Col className="p-0 m-0">
-           <FltMList id="proto" type="toggle" nobars width="10.4em" data={dtaProto} filter={getFilterSet} onApply={applyFilter} updateFilter />
+           <FltMList key={`prot${clearCounter}`} id="proto" type="toggle" nobars width="10.4em" data={dtaProto} filter={getFilterSet} onApply={applyFilter} updateFilter />
          </Col>
        </Row>
 		  </Col>
