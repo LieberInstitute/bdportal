@@ -171,6 +171,28 @@ app.post('/mail', (req, res) => {
   });
 });
 
+
+app.post('/pgdb/gcheck', (req, res) => {
+   let body=req.body
+   let dtype=body.dtype
+   let glst=body.genelist
+   let annset=body.annset || 'gencode25'
+   //console.log( "received glst as:", glst )
+   if (glst.length===0) res.status(500).send(
+       { error: ':user error', message: " empty gene list provided"}
+      )
+   db.query("select g.id, g.gene_id, g.name, g.type from ann_dsets a, genes g "+
+      ` where a.name ILIKE '${annset}%' and g.name=ANY($1)`, [ glst ]
+            , (err, dbrows)=>{
+      if (err) {
+        res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+      }
+      else {
+        res.json(dbrows);
+      }
+   });
+});
+
 app.post('/pgdb/adl', (req, res) => {
    let body=req.body
    let feature=body.feature || 'g';

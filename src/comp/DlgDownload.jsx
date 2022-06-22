@@ -3,7 +3,8 @@ import { DlgModal } from './DlgModal';
 import './spinners.css';
 import {useState, useRef, useEffect} from "preact/hooks";
 import {Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
-import {buildRSE, saveRStagedFile} from './RDataCtx';
+import {buildRSE, saveRStagedFile, checkGeneList} from './RDataCtx';
+import {ToastBox} from './ToastBox';
 //import axios from 'axios';
 
 const  fTypes=['gene', 'tx', 'ex', 'jx']; //feature types
@@ -26,8 +27,6 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
 
   const filename = `${prefix}${fTypes[fidx]}_n${numsamples}.${fext}`
 
-
-
   function dlClick() {
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
     if (fstatus!==0) alert(" Saving operation in progress, try later. ")
@@ -36,8 +35,15 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
     if (fidx==1) dtype='tpm'
     let glst=[]
     if (genes) {
-      if (typeof genes == 'function')
-         glst=genes() //retrieve the gene list from parent
+      if (typeof genes == 'function') {
+         const genelist=genes() //retrieve the gene list from parent as a comma-delimited list
+         if (genelist) {
+            if (Array.isArray(genelist)) glst=genelist
+            else if (genelist.length>1) { //assume prepared string, comma delimited}
+              glst=genelist.split(',')
+            }
+         }
+      }
       else if (Array.isArray(genes)) glst=genes
     }
     buildRSE(filename, samples, fTypes[fidx], dtype, fext, glst)
@@ -111,17 +117,23 @@ export function DlgDownload( props ) {
 
   const [prefix, setPrefix] = useState('seldata_');
   const [fext, setFext] = useState('rda')
-  const [norm, setNorm] = useState(0)
+  const [geneList, setGeneList] = useState('')
+  const [geneCheckInfo, setGeneCheckInfo]=useState('')
+  const [norm, setNorm] = useState(1)
   const [numsamples, setNumSamples] = useState(0)
   const [ds0, setDs0] = useState('')
   const refData=useRef( {
       datasets : null,
-      samples : null
+      samples : null,
+      lastGeneList: '' //last gene list checked
+
   })
+
 
   const m=refData.current;
 
   function afterOpen() {
+    setGeneCheckInfo('')
     if (props.getData)  {
       const data=props.getData()
       if (data.datasets) {
@@ -143,28 +155,78 @@ export function DlgDownload( props ) {
     setNorm((e.target.id=="n0")? 0:1)
   }
 
-  function getGenes() {
-    //TODO: parse gene list, check genes in the database
+  function glstCheck() {
+    //TODO:  check genes in the database
+    setGeneCheckInfo('')
     let glst=$('#inglst').val()
-    if (!glst) return []
     glst=glst.trim()
-    glst=glst.split(/[,|;:.\s]+/)
-    return glst
+    if (glst!==geneList) setGeneList(glst)
+    if (glst.length<2) return;
+    const garr=glst.split(/[,|;:.\s]+/)
+    //check list against the database
+    let guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i).sort();
+    glst=guniq.join(',')
+    if (glst!==m.lastGeneList) {
+      m.lastGeneList=glst;
+      checkGeneList(guniq, 'gencode25')
+      .then( res => {
+        //console.log("res=", res)
+        return res.json()
+      } )
+      .then( dt => {
+        // 1st row: header, 2nd row: data = id, gene_id, symbol, type
+        let rglst=null
+        let gmiss=[]
+        if (dt.length>1) {
+          rglst= dt.slice(1).map( (v)=>v[2] )
+          rglst=rglst.filter((item, i, ar) => ar.indexOf(item) === i).sort()
+          guniq.forEach( (v)=> {
+               if (rglst.indexOf(v)<0) gmiss.push(v)
+            })
+        }
+        const msg= gmiss.length ? `Could not recognize: ${gmiss.join(', ')}` :
+                          'All given genes names were recognized.';
+        console.log(" gene check msg: ", msg)
+        setGeneCheckInfo(msg)
+      })
+   }
+   return glst
   }
 
+  function onCheckGeneList() {
+    const glst=glstCheck()
+    if (glst!=geneList) setGeneList(glst)
+  }
 
-  function glstUse() {
-    //TODO:  check genes in the database
-    let glst=$('#inglst').val()
-    glst=glst.trim()
-    glst=glst.split(/[,|;:.\s]+/)
-    //check list against the database
+  useEffect( ()=> {
+    if (geneCheckInfo.length>1)  {
+       $("#tsGeneCheck").toast('show')
+       //setTimeout( ()=> {setGeneCheckInfo('')}, 500 )
+    }
+  },[geneCheckInfo])
+
+
+  function handleEnter(e) {
+    const key=e.key.toLowerCase()
+    if ( key === "enter" || key === "tab") {
+      const form = e.target.form;
+      const index = [...form].indexOf(e.target);
+      form.elements[index + 1].focus();
+      e.preventDefault();
+      glstCheck();
+    }
   }
 
   function glstClear() {
-    $('#inglst').val("")
+    setGeneList("")
+    //$('#inglst').val("")
   }
 
+  function onExitGeneList() {
+    let glst=$('#inglst').val()
+    glst=glst.trim()
+    if (glst!==geneList) setGeneList(glst)
+  }
   const glstDisabled=false;
 
   function prefixChange( {target}) { setPrefix(target.value); }
@@ -210,16 +272,20 @@ export function DlgDownload( props ) {
     { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-2" style="font-size:90%;">
       <Col xs="3" className="p-0 m-0 align-self-begin text-nowrap" style="min-width:6.2rem;top:3px;">Restrict to genes:</Col>
       <Col className="pl-1 ml-0 mr-1 pr-1">
-              <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;width:19rem;" />
+              <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;width:19rem;"
+                 value={geneList} onKeyDown={handleEnter} onBlur={onExitGeneList} />
               <Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;" onClick={glstClear}>&#x2715;</Button>
         <Row className="d-flex justify-content-between align-content-center p-0 m-0 mt-1">
           <Label className="align-self-center p-0 m-0" style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
-          <Button id="bglst" className="btn-sm app-btn align-self-center" disabled={glstDisabled} onClick={glstUse}>Check</Button>
+          <Button id="bglst" className="btn-sm app-btn align-self-center" disabled={glstDisabled} onClick={onCheckGeneList}>Check</Button>
         </Row>
       </Col>
       </Row> : null }
     { fTypes.map( (it, i) =>
-      <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} samples={m.samples} genes={getGenes} /> )}
+      <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
+           samples={m.samples} genes={glstCheck} />
+     )}
+     { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
   </DlgModal>
  )
 }

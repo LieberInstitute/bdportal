@@ -1652,10 +1652,20 @@ export function FltCtxProvider (props) {
 }
 
 //////////////  --- data prep & fetching functions:
+export async function checkGeneList(glst, annotation) {
+  if (!annotation) annotation='Gencode25'
+	const reqOpts = {
+		   method: 'POST',
+		   headers: { 'Content-Type': 'application/json' },
+		   body: JSON.stringify({ dtype: 'genelist', annset: annotation, genelist: glst })
+  };
+  //console.log(" -- sending req body:", reqOpts.body)
+  return fetch(`${MW_SERVER}/pgdb/gcheck`, reqOpts)
+}
+
 export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, glst) {
 	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
 	if (!feat) feat='g' //feature type
-  console.log(" received glst: ", glst)
   //if (!glst)
   let lstgenes=glst.join()
 	feat=feat.charAt(0).toLowerCase()
