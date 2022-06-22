@@ -39,7 +39,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, onStatusC
     let dtype=norm ? 'rpkm' : 'counts'
     if (fidx==1) dtype='tpm'
     let glst=[]
-    if (genes) {
+    if (norm && genes) {
       if (typeof genes == 'function') {
          const genelist=genes() //retrieve the gene list from parent as a comma-delimited list
          if (genelist) {
@@ -170,7 +170,9 @@ export function DlgDownload( props ) {
   function glstCheck() {
     //TODO:  check genes in the database
     setGeneCheckInfo('')
+    if (norm==0) return;
     let glst=$('#inglst').val()
+    if (!glst) return;
     glst=glst.trim()
     if (glst!==geneList) setGeneList(glst)
     if (glst.length<2) return;
