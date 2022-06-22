@@ -1686,7 +1686,8 @@ export async function saveRStagedFile(relpath, newfname) {
   const a = document.createElement('a');
   //make sure relpath replaces / with | :
   relpath=relpath.replace(/\//g, '|')
-  a.href = `${MW_SERVER}/rstaging/${relpath}`;
+  const href=`${MW_SERVER}/rstaging/${relpath}`
+  a.href = href ;
   if (newfname && newfname.length) {
      //NOTE: download attribute only honored for links to resources with the same origin !!
      a.download = newfname;
@@ -1698,4 +1699,5 @@ export async function saveRStagedFile(relpath, newfname) {
   a.click();
   //a.remove();
   document.body.removeChild(a); //FF needed this
+  return href;
 }

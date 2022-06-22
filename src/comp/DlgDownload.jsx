@@ -17,7 +17,7 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, onStatusChange, getAllStatus}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
@@ -29,8 +29,13 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
 
   function dlClick() {
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
-    if (fstatus!==0) alert(" Saving operation in progress, try later. ")
+    const exporting=getAllStatus() //bitmap with all exporting status
+    if (fstatus!==0 || exporting) {
+      $("#tsExporting").toast('show')
+       return;
+    }
     setFStatus(1) //enter file prep state
+    if (onStatusChange) onStatusChange(fidx, 1)
     let dtype=norm ? 'rpkm' : 'counts'
     if (fidx==1) dtype='tpm'
     let glst=[]
@@ -57,10 +62,10 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
 					if (fn.length>1) fname=fn[1][0]
           //console.log("fn prepared:", fname)
 					if (fname) {
-						 setSaved('saved.')
              setFStatus(0)
+             if (onStatusChange) onStatusChange(fidx, 0)
 					   //simulate a link->click to download the file:
-					   saveRStagedFile(fname)
+             saveRStagedFile(fname).then( href=>setSaved(href) )
 					}
 			 })
   }
@@ -70,6 +75,11 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
     setFStatus(0)
   }, [prefix, fext, norm, datasets, samples])
   // Button: disabled={fstatus!==0}  ?
+  function savedLnk() {
+    if (saved.length<1) return null;
+    return (<a href={saved}>Saved.</a>)
+  }
+
   let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
   let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
@@ -83,7 +93,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes}) {
                             </div>
              : <div class="red-info-text" style="position:relative;top:1px;">
                {(fstatus<0) ? <span style="position:relative;font-size:14px;line-height:15px;top:3px;margin-left:-6px;" > &nbsp; &nbsp;Error! </span> :
-                              <span style="color:#777;position:relative;top:2px;"> {saved} </span> }
+                              <span style="color:#777;position:relative;top:2px;"> {savedLnk()} </span> }
                </div>
             }
             </div>
@@ -122,6 +132,7 @@ export function DlgDownload( props ) {
   const [norm, setNorm] = useState(1)
   const [numsamples, setNumSamples] = useState(0)
   const [ds0, setDs0] = useState('')
+  const [exporting, setExporting]=useState(0) //bitfield for primitive monitoring of exporting in progress
   const refData=useRef( {
       datasets : null,
       samples : null,
@@ -134,6 +145,7 @@ export function DlgDownload( props ) {
 
   function afterOpen() {
     setGeneCheckInfo('')
+    setExporting(0)
     if (props.getData)  {
       const data=props.getData()
       if (data.datasets) {
@@ -185,7 +197,7 @@ export function DlgDownload( props ) {
             })
         }
         const msg= gmiss.length ? `Could not recognize: ${gmiss.join(', ')}` :
-                          'All given genes names were recognized.';
+                          'All given genes were recognized.';
         console.log(" gene check msg: ", msg)
         setGeneCheckInfo(msg)
       })
@@ -220,6 +232,17 @@ export function DlgDownload( props ) {
   function glstClear() {
     setGeneList("")
     //$('#inglst').val("")
+  }
+
+  function onExportStatus(fidx, status) { //fidx must be 0,1,2,3 | status is 1 only if exporting, set back to 0 when done
+        let v=exporting;
+        if (status) {  v|=(1<<fidx) }
+               else {  v&= ~(1<<fidx) }
+        setExporting(v)
+  }
+
+  function getExportingStatus() { //children inquire about other exporting activity
+      return exporting;
   }
 
   function onExitGeneList() {
@@ -269,7 +292,7 @@ export function DlgDownload( props ) {
          </FormGroup>
       </Col>
     </Row>
-    { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-2" style="font-size:90%;">
+    { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-3" style="font-size:90%;">
       <Col xs="3" className="p-0 m-0 align-self-begin text-nowrap" style="min-width:6.2rem;top:3px;">Restrict to genes:</Col>
       <Col className="pl-1 ml-0 mr-1 pr-1">
               <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;width:19rem;"
@@ -283,9 +306,10 @@ export function DlgDownload( props ) {
       </Row> : null }
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
-           samples={m.samples} genes={glstCheck} />
+           samples={m.samples} genes={glstCheck} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
      )}
      { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
+     { (exporting>0) && <ToastBox id="tsExporting" title=" Info " text="Export operation in progress, please wait." /> }
   </DlgModal>
  )
 }
