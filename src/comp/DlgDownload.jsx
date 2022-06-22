@@ -17,7 +17,7 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, onStatusChange, getAllStatus}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt, onStatusChange, getAllStatus}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
@@ -73,7 +73,8 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, onStatusC
   useEffect( ()=>{
     setSaved("")
     setFStatus(0)
-  }, [prefix, fext, norm, datasets, samples])
+  }, [prefix, fext, norm, datasets, samples, genestxt]) //genestxt is only there to indicate change
+
   // Button: disabled={fstatus!==0}  ?
   function savedLnk() {
     if (saved.length<1) return null;
@@ -308,7 +309,7 @@ export function DlgDownload( props ) {
       </Row> : null }
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
-           samples={m.samples} genes={glstCheck} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
      )}
      { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
      { (exporting>0) && <ToastBox id="tsExporting" title=" Info " text="Export operation in progress, please wait." /> }
