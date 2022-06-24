@@ -241,7 +241,7 @@ to be made available everywhere in the app
   text-align: center;
   line-height:80%;
   font-size:80%;
-  margin-top:6px;
+  /* margin-top:6px; */
   padding: 2px 4px;
   border-radius:4px;
   background-color:#eee;
@@ -259,7 +259,7 @@ to be made available everywhere in the app
   z-index:0;
   position:absolute;
   left:-10px;
-  top:-2px;
+  /* top:-2px; */
   min-width:38rem;
   /* border: 1px solid #ccc; */
 }
