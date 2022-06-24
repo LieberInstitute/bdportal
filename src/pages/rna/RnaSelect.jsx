@@ -20,9 +20,12 @@ const RnaSelect = ({ style }) => {
   const notifyUpdate = useFltCtxUpdate();
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [ clearCounter, setClearCounter ]=useState(0)
+
+  const [showHelp, setShowHelp ] = useState(true)
+
   //const [ updating, setUpdating ] = useState(false) // when dataset selection/switching is instant, disable clicking while updating
 
-    
+
   //const [brloaded, setBrLoaded] = useState(0)
 
   useEffect( ()=>{
@@ -102,27 +105,27 @@ const RnaSelect = ({ style }) => {
   function onDatasetClick(dix, fid, sel) {
     let ref=getDatasetCitation(0, dix)
     const dt=$('#dset-info-content')
-    const nsi=$("#no-sel-info")
+    //const nsi=$("#help-msg")
     if (sel && sel.length>1) {
       //dt.html('<span class="dset-info-warn"> Warning: selecting samples from more than one dataset! </span>');
       //dt.show()
        dt.html("");
        dt.hide()
-       if (nsi) nsi.show()
+       //if (nsi) nsi.show()
       $("#dsMultiWarn").toast('show')
       return
     }
     if (sel.length<=1) $("#dsMultiWarn").toast('hide');
     if (sel.length && ref && ref.length>0) {
-        //hide the no-sel-info panel
-        if (nsi) nsi.hide()
+        //hide the help-msg panel
+        //if (nsi) nsi.hide()
         const refhtml=prepRefHtml(ref)
         dt.html(refhtml);
         dt.show()
     } else {
        dt.html("");
        dt.hide()
-       if (nsi) nsi.show()
+       //if (nsi) nsi.show()
     }
   }
 
@@ -135,22 +138,27 @@ const RnaSelect = ({ style }) => {
 	const dtaReg=getFilterData('reg')
   const brloaded=getBrListFilter().size
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
-  console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with dtaDx=",dtaDx)
+  //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with dtaDx=",dtaDx)
   return(<div class="col-12 d-flex flex-nowrap flex-column">
 <Row className="pt-0 mt-0 pb-0 mb-0 justify-content-center flex-nowrap">
-  <Col xs="3" className="d-flex-column m-0 p-0 pl-1 ml-1 colDemo justify-content-start" >
-   <Row className="m-0 p-0 ml-1">
-    { showsel ? <span class="red-info-text">&nbsp;</span> :
-         <span class="red-info-text" style="overflow:visible;min-width:39rem;">
-         &nbsp;<span id="no-sel-info" style="position:absolute;top:26px;left:64px;min-width:38rem;">
-          Apply a selection in a category panel in order to limit the sample selection in that category.
-         </span>
-         </span> }
-   </Row>
-   <Row className="mb-0 pb-0 pl-3">
-   <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
+  <Col xs="2" className="d-flex flex-column m-0 p-0 pl-1 ml-1 colDemo align-self-stretch justify-content-center " >
+   <Row className="d-flex position-relative mb-0 pb-0 pl-0 justify-content-start align-self-stretch">
+    <Col xs="7" className="d-flex justify-content-start align-items-center pr-0 mr-0">
+      <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
 	 	     data-toggle="tooltip" title="Clear all selection filters"
 			   style="line-height:80%;font-size:80%;margin-top:6px;">Clear</Button>
+    </Col>
+    <Col className="d-flex m-0 p-0 ml-1 align-self-start position-relative" style="min-height:3rem;">
+       <Row className="d-flex justify-content-start align-items-center">
+                     <Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={ ()=> setShowHelp(!showHelp) }
+            data-toggle="tooltip" title="Toggle help text display">?</Button>
+       { showHelp ? <div id="help-msg" class="app-help-panel">
+              Choose sample selection criteria in the category panels below. <br />
+              Click <span class="bt-apply" style="padding:2px;">Apply</span> to restrict sample selection by the highlighted items in that category.
+           </div> : null }
+        </Row>
+
+   </Col>
    </Row>
   </Col>
   <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">

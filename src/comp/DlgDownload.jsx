@@ -7,7 +7,7 @@ import {buildRSE, saveRStagedFile, checkGeneList} from './RDataCtx';
 import {ToastBox} from './ToastBox';
 //import axios from 'axios';
 
-const  fTypes=['gene', 'tx', 'ex', 'jx']; //feature types
+const  fTypes=['Gene', 'Tx', 'Exon', 'Jxn']; //feature types
 const ftNames=['Gene', 'Transcript', 'Exon', 'Junction']
 
 /* Matrix/Assay download row + control(spinner + Button)
@@ -21,7 +21,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
-  const ds0= (datasets && datasets.length)? datasets[0] : ""
+  //const ds0= (datasets && datasets.length)? datasets[0] : ""
   const numds=(datasets && datasets.length)? datasets.length : 0
   const numsamples =  (samples && samples.length)? samples.length : 0
 
@@ -51,7 +51,8 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
       }
       else if (Array.isArray(genes)) glst=genes
     }
-    buildRSE(filename, samples, fTypes[fidx], dtype, fext, glst)
+    const ftype=fTypes[fidx].charAt(0).toLowerCase;
+    buildRSE(filename, samples, ftype, dtype, fext, glst)
 			 .then( res => {
 				 //console.log("res=", res)
 				 return res.json()
@@ -132,7 +133,7 @@ export function DlgDownload( props ) {
   const [geneCheckInfo, setGeneCheckInfo]=useState('')
   const [norm, setNorm] = useState(1)
   const [numsamples, setNumSamples] = useState(0)
-  const [ds0, setDs0] = useState('')
+ // const [ds0, setDs0] = useState('')
   const [exporting, setExporting]=useState(0) //bitfield for primitive monitoring of exporting in progress
   const refData=useRef( {
       datasets : null,
@@ -151,8 +152,9 @@ export function DlgDownload( props ) {
       const data=props.getData()
       if (data.datasets) {
         m.datasets=data.datasets
-        setDs0(m.datasets[0])
-        setPrefix(`${m.datasets[0]}_`)
+        //setDs0(m.datasets[0])
+        const fprefix=m.datasets.join('.')
+        setPrefix(`${fprefix}_`)
       }
       if (data.samples)  {
         m.samples=data.samples

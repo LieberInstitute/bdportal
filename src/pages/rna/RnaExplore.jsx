@@ -84,10 +84,10 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
   <Col xs="1" className="d-flex p-0 m-0 colExpNav justify-content-start" >
 		 <Nav vertical tabs>
 		 <NavItem>
-        <NavLink className="app-navlnk" id="1" active={nav==1} onClick={clickNav} href="#">Gene Age Plots</NavLink>
+        <NavLink className="app-navlnk" id="1" active={nav==1} onClick={clickNav} href="#">Age Plot</NavLink>
      </NavItem>
      <NavItem>
-        <NavLink className="app-navlnk" id="2" active={nav==2} onClick={clickNav} href="#">Gene boxplots</NavLink>
+        <NavLink className="app-navlnk" id="2" active={nav==2} onClick={clickNav} href="#">Gene Boxplots</NavLink>
      </NavItem>
      <NavItem>
 		   <NavLink className="app-navlnk">more to come..</NavLink>
