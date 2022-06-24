@@ -19,7 +19,10 @@ import { DlgBrUpload } from './DlgBrUpload'
 import { rowCSV, rowTSV }  from './gutils';
 import { navigateTo, hrefTo, currentPageTab} from './header';
 
-// props.onBrList() callback being passed the brlist array
+/*  BrList loader component:
+     props.brloaded   : number of BrNums loaded
+     props.onBrList() : callback being passed the brlist array
+*/
 function LoadBrList(props) {
   // shows a button and a info Label
 
@@ -55,10 +58,14 @@ function LoadBrList(props) {
     <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
       title="Confirm" />
   </Row>)
-
-
 }
-//props.onBrList
+
+/* main RSelSummary multi-panel component
+   props.browse : bool flag indicator of the Browse tab context
+   props.brloaded : passed on to LoadBrList component 
+   props.onBrList : passed on to LoadBrList component 
+   props.selsheet : passed down from RnaSelect page to DlgDownload dialog
+*/
 function RSelSummary( props ) {
   // props.onBrList() handler
   // props.brloaded can receive back the updated brlist count
@@ -397,7 +404,7 @@ useEffect( ()=> {
                        Export</Button> 
                     { restrictedDatasets.length ?
                       <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
-                      <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} /> }
+                      <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} selsheet={props.selsheet} /> }
                  </Col>
                  <Col className="col-auto ml-3">
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>

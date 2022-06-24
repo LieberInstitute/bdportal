@@ -142,9 +142,9 @@ to be made available everywhere in the app
   color:#ad1838;
 }
 
-.red-info-text {
+.red-info-text, .app-help-panel {
   font-size:80%;
-  color:#c68;
+  color:#845;
 }
 
 .red-text {
@@ -259,10 +259,8 @@ to be made available everywhere in the app
   z-index:0;
   position:absolute;
   left:-10px;
-  top:4px;
+  top:-2px;
   min-width:38rem;
-  font-size:80%;
-  color:#b68;
   /* border: 1px solid #ccc; */
 }
 
@@ -424,7 +422,7 @@ to be made available everywhere in the app
   padding:0;
   margin:6px;
   border-radius:4px;
-  border: 1px solid #f8f8f8;
+  border: 1px solid #fafafa;
   border-right: 1px solid #c8c8c8;
   border-bottom: 1px solid #c8c8c8;
   /* prevent text selection/cursor */
@@ -456,7 +454,7 @@ to be made available everywhere in the app
   /*border: 1px solid #ccc;
   background-color: #fff;*/
   border:none;
-  border-top: 1px solid #f8f8f8;
+  border-top: 1px solid #fafafa;
   background: none;
 }
 

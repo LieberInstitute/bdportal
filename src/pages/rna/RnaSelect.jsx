@@ -138,6 +138,13 @@ const RnaSelect = ({ style }) => {
 	const dtaReg=getFilterData('reg')
   const brloaded=getBrListFilter().size
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
+  
+  // prep selection sheet as per R.'s instructions
+  const selectionSheet=[]
+  selectionSheet.push(['Diagnosis', 'Diagnosis_selected', 'Ancestry', 'Ancestry_selected', 
+       'Sex', 'Sex_selected', 'Age', 'Age_selected', 'Brain_Region', 'Brain_Region_selected', 
+       'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected'])
+
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with dtaDx=",dtaDx)
   return(<div class="col-12 d-flex flex-nowrap flex-column">
 <Row className="pt-0 mt-0 pb-0 mb-0 justify-content-center flex-nowrap">
@@ -154,7 +161,8 @@ const RnaSelect = ({ style }) => {
             data-toggle="tooltip" title="Toggle help text display">?</Button>
        { showHelp ? <div id="help-msg" class="app-help-panel">
               Choose sample selection criteria in the category panels below. <br />
-              Click <span class="bt-apply" style="padding:2px;">Apply</span> to restrict sample selection by the highlighted items in that category.
+              Click <span class="bt-apply" style="padding:0 2px;margin:2px;">Apply</span> to restrict sample selection to the highlighted items in that panel.<br />
+              No applied filters in a panel means no sample selection restrictions in that category. 
            </div> : null }
         </Row>
 
@@ -204,7 +212,7 @@ const RnaSelect = ({ style }) => {
   {/* -- right column: selection summary -- */}
   <Col xs="4" className="d-flex flex-fill" >
 		 <Row className="pt-0 mt-0 d-flex flex-fill flex-grow-1 justify-content-center align-items-start">
-				 <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} />
+				 <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} selsheet={selectionSheet} />
   	 </Row>
   </Col>
   <ToastBox id="dsMultiWarn" title="Warning" text="Batch effect should be considered when selecting samples from multiple datasets." />

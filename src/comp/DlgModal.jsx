@@ -127,8 +127,10 @@ export function DlgModal ( props ) {
  }
  //  <ModalHeader toggle={props.toggle}>{title}</ModalHeader>
  // onMouseDown={handleMouseDown}
- return (<Modal id="dlgModal" ref={dlgRef} focus={true} fade={false} backdrop="static"
-                isOpen={props.isOpen} toggle={handleClose} onOpened={afterOpen} onClosed={afterClose}>
+  //console.log(" ---- passed width = ", props.width)
+  return (<Modal id="dlgModal" ref={dlgRef} focus={true} fade={false} backdrop="static"
+           isOpen={props.isOpen} toggle={handleClose} onOpened={afterOpen} onClosed={afterClose}
+           width={props.width} style={ props.width ? { minWidth: props.width } : null }>
      <div className="modal-header pt-1 mt-0 mdlg-header noselect" ref={hRef} style="height:32px;">
         <div className="modal-title mdlg-title">{title}</div>
         <div type="button" tabindex="-1" className="close" data-dismiss="modal"

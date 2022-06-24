@@ -4,6 +4,8 @@ import './spinners.css';
 import {useState, useRef, useEffect} from "preact/hooks";
 import {Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
 import {buildRSE, saveRStagedFile, checkGeneList} from './RDataCtx';
+import {saveFile, rowCSV, rowTSV} from "./gutils";
+
 import {ToastBox} from './ToastBox';
 //import axios from 'axios';
 
@@ -17,18 +19,21 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt, onStatusChange, getAllStatus}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt, onStatusChange, getAllStatus, selsheet}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
   //const ds0= (datasets && datasets.length)? datasets[0] : ""
   const numds=(datasets && datasets.length)? datasets.length : 0
   const numsamples =  (samples && samples.length)? samples.length : 0
-
-  const filename = `${prefix}${fTypes[fidx]}_n${numsamples}.${fext}`
+  const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'selInfo' : 'metadata')
+  if (fidx==4) fext='csv'; // selsheet
+  const filename = `${prefix}_${ftype}_n${numsamples}.${fext}`
 
   function dlClick() {
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
+    //return;
+    // ^^^^ just for testing
     const exporting=getAllStatus() //bitmap with all exporting status
     if (fstatus!==0 || exporting) {
       $("#tsExporting").toast('show')
@@ -51,24 +56,36 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
       }
       else if (Array.isArray(genes)) glst=genes
     }
-    const ftype=fTypes[fidx].charAt(0).toLowerCase;
-    buildRSE(filename, samples, ftype, dtype, fext, glst)
-			 .then( res => {
-				 //console.log("res=", res)
-				 return res.json()
-			  } )
-			 .then( fn => {
-					// 1st row: header, 2nd row: data = filename
-					let fname=""
-					if (fn.length>1) fname=fn[1][0]
-          //console.log("fn prepared:", fname)
-					if (fname) {
-             setFStatus(0)
-             if (onStatusChange) onStatusChange(fidx, 0)
-					   //simulate a link->click to download the file:
-             saveRStagedFile(fname).then( href=>setSaved(href) )
-					}
-			 })
+    if (fidx<4)  {
+      const ctype=fTypes[fidx].charAt(0).toLowerCase();
+      buildRSE(filename, samples, ctype, dtype, fext, glst)
+  			 .then( res => {
+  				 //console.log("res=", res)
+  				 return res.json()
+  			  } )
+  			 .then( fn => {
+  					// 1st row: header, 2nd row: data = filename
+  					let fname=""
+  					if (fn.length>1) fname=fn[1][0]
+            //console.log("fn prepared:", fname)
+  					if (fname) {
+               setFStatus(0)
+               if (onStatusChange) onStatusChange(fidx, 0)
+  					   //simulate a link->click to download the file:
+               saveRStagedFile(fname).then( href=>setSaved(href) )
+  					}
+  			 })
+      return;
+     }
+     if (fidx==4) { //save selsheet as csv
+      if (selsheet) {
+        let fdata=""
+        const fmt=1 //could be TSV as well
+        if (fmt==1) selsheet.forEach( row => fdata+=rowCSV(row) )
+          else selsheet.forEach( row => fdata+=rowTSV(row) )
+        saveFile(fdata,  filename)
+    }
+     }
   }
 
   useEffect( ()=>{
@@ -81,34 +98,41 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
     if (saved.length<1) return null;
     return (<a href={saved}>Saved.</a>)
   }
-
-  let ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
+  let fcaption='', ctype=''
+  if (fidx<4) {
+    ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
+    fcaption=`${ftNames[fidx]} data ${ctype}`
+  } else {
+    if (fidx==4) fcaption='Selection datasheet'
+  }
+     
   let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
           style="font-size:90%;min-height:22px;">
-        <Col className="pl-0" style="min-width:25rem;"><b>{ftNames[fidx]}</b> data {ctype}</Col>
-        <Col className="d-flex justify-content-center m-0 p-0">
-            <div class="m-0 p-0" style="position:relative">
-            {(fstatus==1) ? <div style="position:relative;">
-                    <div class="spinner-bars"><span></span><span></span><span></span><span></span><span></span></div>
-                            </div>
-             : <div class="red-info-text" style="position:relative;top:1px;">
-               {(fstatus<0) ? <span style="position:relative;font-size:14px;line-height:15px;top:3px;margin-left:-6px;" > &nbsp; &nbsp;Error! </span> :
-                              <span style="color:#777;position:relative;top:2px;"> {savedLnk()} </span> }
-               </div>
-            }
+        <Col className="col-auto pl-0" style="color:#222;">{fcaption}</Col>
+        <Col className="d-flex justify-content-end m-0 p-0">
+            <div class="d-flex flex-row align-items-center justify-content-end m-0 p-0" style="position:relative;width:10rem;">
+              <div style="width:56px;height:16px;position:relative;font-size:14px;padding-right:4px;">
+               {(fstatus==1) ? <div class="spinner-bars" style="position:relative;top:-2px;">
+                                   <span></span><span></span><span></span><span></span><span></span>
+                               </div>
+                   : (fstatus<0) ? <span style="text-align:center;color:#c45;position:relative;top:-2px;" > &nbsp; &nbsp;Error! </span>
+                                 : <span style="text-align:center;color:#777;position:relative;top:-2px;left:8px;"> {savedLnk()} </span> 
+               }
+             </div>
             </div>
         </Col>
      </Row>
 
      <Row className="form-group d-flex justify-content-between flex-nowrap mt-0 pt-0 pb-1" style="font-size:90%;">
-      <Col className="pl-0 align-self-begin overflow-hidden text-nowrap"
+      <Col className="pl-0 pr-1 mr-1 flex-fill align-self-begin overflow-hidden text-nowrap"
            style="color:#666;min-width:25rem;background-color:#f4f4f4">
-        {filename} </Col>
-        <Col className="d-flex align-self-begin justify-content-end">
+        {filename} 
+      </Col>
+      <Col className="d-flex align-self-begin justify-content-end">
          <Row>
-          <Button id="bsave" className="btn-sm app-btn" disabled={disabled} onClick={dlClick}>Export</Button>
+          <Button id="bsave" className="btn-sm app-btn" disabled={disabled} onClick={dlClick}>{fidx<4 ? "Export" : "Save"}</Button>
         </Row>
       </Col>
     </Row>
@@ -123,6 +147,9 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
          samples: [  ] array of sample_ids
       }
       data should be retrieved only once when the dialog is shown the first time
+
+
+      props.selsheet : selection datasheet passed down from RSelSummary
   */
 
 export function DlgDownload( props ) {
@@ -258,7 +285,7 @@ export function DlgDownload( props ) {
   const glstDisabled=false;
 
   function prefixChange( {target}) { setPrefix(target.value); }
-  return (<DlgModal { ...props} title="Export expression data" justClose="1" onShow={afterOpen} width="50em">
+  return (<DlgModal { ...props} title="Export expression data" justClose="1" onShow={afterOpen} width="38rem">
     <Row className="form-group d-flex justify-content-center flex-nowrap mb-1" style="font-size:90%;">
       <Col className="d-flex justify-content-between m-0 p-0">
               <Label className="frm-label text-nowrap">File name:</Label>&nbsp;
@@ -266,7 +293,7 @@ export function DlgDownload( props ) {
       </Col>
     </Row>
     <Row className="form-group d-flex justify-content-center flex-nowrap mt-0 pt-0 mb-0 pb-0" style="font-size:90%;">
-      <Col className="d-flex-column justify-content-start ml-4 pl-4">
+      <Col className="d-flex-column align-items-center justify-content-center ml-4 pl-4">
         <Row>Format</Row>
         <FormGroup tag="fieldset" onChange={onFmtChange}>
           <FormGroup check>
@@ -281,7 +308,7 @@ export function DlgDownload( props ) {
            </FormGroup>
          </FormGroup>
       </Col>
-      <Col className="d-flex-column justify-content-start">
+      <Col className="d-flex-column justify-content-center align-items-center">
       <Row>Values</Row>
        <FormGroup tag="fieldset" onChange={onNormChange}>
           <FormGroup check>
@@ -298,17 +325,25 @@ export function DlgDownload( props ) {
       </Col>
     </Row>
     { norm ? <Row className="form-group d-flex justify-content-center flex-nowrap mb-3" style="font-size:90%;">
-      <Col xs="3" className="p-0 m-0 align-self-begin text-nowrap" style="min-width:6.2rem;top:3px;">Restrict to genes:</Col>
-      <Col className="pl-1 ml-0 mr-1 pr-1">
-              <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;width:19rem;"
+      <Col className="col-auto p-0 m-0 ml-1 align-self-begin text-nowrap" style="top:3px;">Restrict to genes:</Col>
+      <Col className="pl-1 ml-0 mr-0 pr-0">
+        <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0">
+              <Col className="flex-fill p-0 m-0">
+              <Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;"
                  value={geneList} onKeyDown={handleEnter} onBlur={onExitGeneList} />
-              <Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;" onClick={glstClear}>&#x2715;</Button>
+              </Col><Col className="p-0 m-0 ml-1">
+              <Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:-4px;" onClick={glstClear}>&#x2715;</Button>
+              </Col>
+        </Row>      
         <Row className="d-flex justify-content-between align-content-center p-0 m-0 mt-1">
           <Label className="align-self-center p-0 m-0" style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
           <Button id="bglst" className="btn-sm app-btn align-self-center" disabled={glstDisabled} onClick={onCheckGeneList}>Check</Button>
         </Row>
       </Col>
       </Row> : null }
+
+      <MxDlRow fidx={4} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
+           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
            samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
