@@ -13,12 +13,19 @@ import './FltMList.css'
               is should be updated with the applied selection!
    updateFilter="yes/1/true" -- updates the Set given at props.filter when user selection
                          is applied
- Esthetics/basic func:
-   height, width : override
-   toggle, htoggle, faketoggle : make it a toggle-type list, with no footer section
-                              (only htoggle arranges items horizontally)
-                      faketoggle is a quasi-toggle that still allows multi-item selection with ctrl+click!
+ Important props controlling display and some UI functionality:
+   height, width : override dimensions
+   type=
+      toggle, htoggle : a non-collapsable, non-scrollable panel showing all items at once,
+               with no footer section so items are highlighted/selected directly;
+               htoggle arranges items horizontally (all in a single a row)
+      tglist, faketoggle: is a no-footer item list (but still scrollable) that shows selections
+                the same way like a toggle list and only allows multi-item selection with ctrl+click
+   radio:  if this attr is present it makes the list behave like a "radio" button group,
+           where only one item can be selected at a time (or none)
+           tglist/faketoggle partially implements this functionality
    horiz : show items in a horizontal list (impractical for more than a few items)
+   undo : if present, show a "undo" button to restore previous selection (only for non-toggle lists)
    title : provide a different title caption than the id of the component
    sort : if present, sort decreasingly by counts
    notitleclick : if present, click on title caption does not collapse (for collapsible)
@@ -81,6 +88,7 @@ export function FltMList( props ) {
     appliedStates:{}, //appliedStates - string map last applied
     idMap:{}, //mapping origIdx to its row index in current fltData
     jqCreated: false,
+    userApply: false, //if since creation the user clicked the Apply button
     btnApply: null,
     btnUndo: null,
     lHeight: 0 //calculated list height
@@ -91,8 +99,9 @@ export function FltMList( props ) {
   const m=refData.current
 
   const fid=props.id; // id must be one of the recognized ones in id2name !
-  const isToggle=(props.type && props.type.indexOf('toggle')>=0);
-  const fakeToggle=(props.type=='ftoggle' || props.type=='faketoggle')
+  const fakeToggle=(props.type=='tglist' || props.type=='faketoggle')
+  const isToggle=(props.type && (fakeToggle || props.type.indexOf('toggle')>=0))
+  const isRadio=props.radio || fakeToggle
 
   // if a filter was given, it's the parent responsibility to keep it updated after onApply!
   // when dtFilter, the object will render selection according to this filter
@@ -138,7 +147,7 @@ export function FltMList( props ) {
       // when props.filter is given, this will override the current onlyStates and appliedStates!
       // in order to avoid this, any re-render should ONLY happen after
       // onApplyClick() updated the filter data backend (props.filter and props.data)
-      /* 
+      /*
       m.onlyStates={} // or for (const k in m.onlyStates) delete m.onlyStates[k]
       dtFilter.forEach( e => m.onlyStates[e]=1 )
       m.appliedStates=Object.assign({}, m.onlyStates) // make a full copy of m.OnlyStates
@@ -148,7 +157,7 @@ export function FltMList( props ) {
       m.appliedStates={}
       dtFilter.forEach( e => m.appliedStates[e]=1 )
   }
-  
+
 
 
   const showAgeRange=(fid=='age' && props.ageRange && props.ageRange.length===2)
@@ -164,10 +173,11 @@ export function FltMList( props ) {
       //-- do I need this for every render?
       firstRender(dom) //, notifyUpdate);
       m.btnApply = dom.find('.lg-apply')
-      m.btnUndo = dom.find('.btn-undo')
+
       //console.log(`FltMList ${fid} creating with filter size: ${dtFilter.size}`);
       //dom.find('.coll-glyph').html(arrowLeft)
       if (!isToggle) {
+         if (props.undo) m.btnUndo = dom.find('.btn-undo')
         // add scrolling shading
         //if (dtFilter.size===0) unCollapse(dom);
         // after every render:
@@ -206,10 +216,11 @@ export function FltMList( props ) {
    }
 
   function applyFilter(noupdate) {
-    if (Object.keys(m.onlyStates).length===m.fltData.length) {
+
+    /* if (Object.keys(m.onlyStates).length===m.fltData.length) {
         //the silly case when all items are selected!
         m.onlyStates={}
-    }
+    }*/
     m.appliedStates=Object.assign({}, m.onlyStates)
     if (dtFilter && props.updateFilter) { //auto-update of filter Set requested
       dtFilter.clear()
@@ -234,12 +245,12 @@ export function FltMList( props ) {
       return (!objEq(m.appliedStates, m.onlyStates))
   }
 
-  function onOnlyCancelAll() { //also applies the filter!
+  function onClickClearAll() { //also applies the filter!
     if (showAgeRange) {
       props.ageRange.length=0
     }
     deselectAll(true)
-    onApplyClick()
+    doApply()
   }
 
   function deselectAll(noupd) {
@@ -284,28 +295,38 @@ export function FltMList( props ) {
          }
          ol.append(`<span class="lg-only-item" key="ar" id="oar">${amin} - ${amax} ${pre}</span>`)
          ol.show()
-         ol.find('.lg-only-item').on('click', () => { onOnlyCancelAll() })
+         ol.find('.lg-only-item').on('click', () => { onClickClearAll() })
     }
   }
 
   function showApplyButton() {
     const ch=filterChanged()
+    const numonly=Object.keys(m.onlyStates).length;
     const undo=(ch && Object.keys(m.appliedStates).length>0)
     if (ch) {
-      if (undo) m.btnUndo.show()
-      else m.btnUndo.hide()
+      if (m.btnUndo) {
+         if (undo) m.btnUndo.show()
+             else m.btnUndo.hide()
+      }
+      let atxt='Apply'
+      if (numonly==0) {
+        atxt='&#x2715;'
+        if (isToggle) $(refDom.current).find('.lg-tdismiss').hide()
+      } //else if (isToggle) $(refDom.current).find('.lg-tdismiss').show()
+      m.btnApply.html(atxt)
       m.btnApply.show()
     }
-     else {
-       m.btnUndo.hide()
+     else  {
+      if (isToggle) $(refDom.current).find('.lg-tdismiss').show(numonly>0)
+      if (m.btnUndo) m.btnUndo.hide()
        m.btnApply.hide()
      }
   }
 
   function selectItem(t, id, ctrl) {
-    const forbidMulti=(isToggle & !(fakeToggle && ctrl))
-    if (forbidMulti)  { // deselect all!
-       m.onlyStates={}
+    const forbidMulti=(isRadio && !(fakeToggle && ctrl))
+    if (forbidMulti)  {
+       m.onlyStates={} //deselect all first!
        t.siblings().removeClass('lg-sel lg-sel-ch')
     }
     m.onlyStates[id]=1
@@ -346,13 +367,13 @@ export function FltMList( props ) {
     }
     const id=parseInt(t[0].id)
     if (isNaN(id)) return
-    if (m.onlyStates[id]) {
-               unselectItem(t, id);
-               if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
-            }   else    {
-                    selectItem(t, id, e.ctrlKey);
-                    if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
-                  }
+    if (m.onlyStates[id] && (!isRadio || (fakeToggle&& (Object.keys(m.onlyStates).length===1 || e.ctrlKey)) ) ) {
+          unselectItem(t, id);
+          if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
+    } else {
+          selectItem(t, id, e.ctrlKey);
+          if (props.onClickItem) props.onClickItem(id, fid, Object.keys(m.onlyStates))
+    }
   }
 
   function checkScrollShader(jscroller) {
@@ -367,7 +388,7 @@ export function FltMList( props ) {
 
   function unCollapse() {
     if (isToggle) return
-    const jc=$(refDom.current)    
+    const jc=$(refDom.current)
     const t=jc.find('.lg-title');
     if (t) {
         const p=jc.find('.lg-lst')
@@ -386,7 +407,11 @@ export function FltMList( props ) {
     //t.find('.coll-glyph').html(arrowDown);
   }
 
-  function onApplyClick() { //when clicking the Apply button
+  function onClickApply() {
+    m.userApply=true
+    doApply()
+  }
+  function doApply() { //when clicking the Apply button
       applyFilter() //onlyStates string is applied, call props.onApply() handler
       if (isToggle || noCollapse)  return
 
@@ -494,20 +519,22 @@ export function FltMList( props ) {
   const titleClass= fid=='dset' ? "lg-title lg-dset-title" : "lg-title"
   const toggleClass = isHoriz ? "lg-toggler d-flex justify-content-around" :
                                 "lg-toggler";
+  const numhl=Object.keys(m.onlyStates).length //number of highlighted items
+  const showTDismiss=(isToggle && numhl>0) //to display the clear/dismiss button in the caption of toggle panels
   return (
        <div class={addclass} ref={refDom} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
         <div class={titleClass}>
           <span onClick={titleNoClick ? null : toggleCollapse} class={titleNoClick ? "lg-tcaption" : "lg-tcaption lg-clickable" }>
-          {caption}</span>
+           {caption} <span class="lg-tdismiss" onClick={onClickClearAll} key={String(Date.now()-10).substring(4)}
+                   style={ showTDismiss ? { display:"inline-block"} : { display: "none"}}>&#x2715;</span>
+          </span>
           <span class="float-right d-flex justify-content-center align-items-center">
-             <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)}
+             {(!isToggle && props.undo) && <span class="btn-undo" onClick={onSelUndo} key={String(Date.now()-10).substring(4)}
                   style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
-             <span class="lg-apply" onClick={onApplyClick} key={String(Date.now()).substring(4)}
-                 style={ showApply ? { display:"inline"} : { display: "none"}}>
-                 Apply</span>
-             { !noCollapse &&
-                 <span className="coll-glyph" onClick={toggleCollapse}> </span>
              }
+             <span class="lg-apply" onClick={onClickApply} key={String(Date.now()).substring(4)}
+                 style={ showApply ? { display:"inline"} : { display: "none"}}> Apply </span>
+             { !noCollapse && <span className="coll-glyph" onClick={toggleCollapse}> </span> }
            </span>
         </div>
           { isToggle ? <ul class={toggleClass} onClick={onClickList}
@@ -522,7 +549,7 @@ export function FltMList( props ) {
            <div class="lg-bottomshade"> </div>
           </ul> }
         <div class="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
-           <span class="lg-only-lb" onClick={onOnlyCancelAll}>&#x2715;</span>
+           <span class="lg-only-lb" onClick={onClickClearAll}>&#x2715;</span>
 
         </div>
        </div>
