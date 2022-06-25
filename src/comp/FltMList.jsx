@@ -171,7 +171,7 @@ export function FltMList( props ) {
         m.jqCreated=true;
       }
       //-- do I need this for every render?
-      firstRender(dom) //, notifyUpdate);
+      //firstRender(dom) //, notifyUpdate);
       m.btnApply = dom.find('.lg-apply')
 
       //console.log(`FltMList ${fid} creating with filter size: ${dtFilter.size}`);
@@ -433,22 +433,6 @@ export function FltMList( props ) {
                  else unCollapse()
   }
 
-  function firstRender(dom) {
-    if (fid==='proto' && !isHoriz) {
-      dom.find('.lg-item').css({ "font-size":"14px"})
-      dom.find('.lg-count').css({ "font-size":"13px"})
-      //dom.find('.lg-title').css({ "line-height":"1.2rem", "font-size":"110%"})
-    }
-   /*
-    if (fid==='dset') {
-      // dom.find('.lg-clickable').css({"text-align":"center", width:"70%", "padding-left":"6rem"});
-      dom.find('.lg-title span').css({color:"#d01848", "text-align":"center"});
-     } */
-
-
-    return dom;
-  }
-
   function scrollShader(t, lh, vh) {
     const y = t.scrollTop();
     const l = t.closest('.lg-panel').find('.lg-lst');
@@ -481,12 +465,21 @@ export function FltMList( props ) {
                       <span class="lg-item-pub"> </span>
   }
 
+
+   /*
+   if (fid==='proto' && !isHoriz) {
+      dom.find('.lg-item').css({ "font-size":"14px"})
+      dom.find('.lg-count').css({ "font-size":"13px"})
+    }
+    */
+
   function renderItems() {
     const showBars = !isHoriz && (typeof props.nobars == 'undefined')
     //if (fid=="sex")
    //  console.log("renderItems() called with m.onlyStates=", Object.keys(m.onlyStates))
+    let itclass = isHoriz ? 'lg-item-h': (fid==='proto' ? 'lg-it-proto' : '')
     return (m.fltData.map( (d)=>{
-      return (<li class={`d-flex justify-content-between lg-item ${isHoriz?'lg-item-h':''} ${isSel(d[3])}`}
+      return (<li class={`d-flex justify-content-between lg-item ${itclass} ${isSel(d[3])}`}
         id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
       <span class="lg-item-th">{lockStatus(d[2])}{d[0]}</span>
       { isHoriz && <span class="lg-spacer"> </span>}
