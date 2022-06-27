@@ -350,14 +350,14 @@ export const dtBrXCounts = {
 */// -- filters, always dynamic, for the currently selected experiment type
 export const dtFilters = {
    reg: new Set(),
-    dx: new Set(),
-    proto: new Set(), // 1, 2 , 3
+   dx: new Set(),
+   proto: new Set(), // 1, 2 , 3
    dset: new Set(),
    age: new Set(),
    ageRange: [], // when set and has exactly 2 values, overrides age Set!
 
    race: new Set(), //this has a set of race indexes
-   sex: new Set(), //can have only one member: 1 or 2
+   sex: new Set(), //can have 1,2 
    //--
    brSet:new Set(), //user provided list of bridx
    brXtX: new Set(),  //only used in Brain Matrix for brain set intersections
@@ -800,7 +800,7 @@ export function getFilterCond(fid) {
 //simply call updateCounts, the filter sets in dtFilters were already set!
 //should be called by onApply() of FltMList, set filters are already applied
 //
-  export function applyFilterSet(fid) {
+  export function applyFilterSet(oset, fid) {
   if (fid==='reg') {
     console.log("WARNING: brXtX filter cleared, did you mean that? *************")
     dtFilters.brXtX.clear() //CHECKME ??
@@ -1301,14 +1301,14 @@ export function updateCounts() {
         if (dtFilters.race.size && !dtFilters.race.has(r))
           filterBits |= fltbit_Race;
 
-        if (dtFilters.sex.size && !dtFilters.sex.has(s))
+        if (dtFilters.sex.size==1 && !dtFilters.sex.has(s))
            filterBits |= fltbit_Sex;
 
         if (selXType) {
           if (dtFilters.dset.size && !dtFilters.dset.has(ds))
            filterBits |= fltbit_Dset;
-
-          if (dtFilters.proto.size && !dtFilters.proto.has(p))
+         
+          if (dtFilters.proto.size && dtFilters.proto.size !== dtaNames.proto[xt].length && !dtFilters.proto.has(p))
            filterBits |= fltbit_Proto;
         }
         //let ax=0;
@@ -1436,7 +1436,7 @@ export function updateCounts() {
        if (dtFilters.race.size && !dtFilters.race.has(r))
          filterBits |= fltbit_Race;
 
-       if (dtFilters.sex.size && !dtFilters.sex.has(s))
+       if (dtFilters.sex.size==1 && !dtFilters.sex.has(s))
          filterBits |= fltbit_Sex;
        if (dtFilters.age.size) { //any age filter set?
           if (ax===0) ax=age2RangeIdx(a);

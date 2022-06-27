@@ -1,7 +1,7 @@
 import $ from 'jquery'
 import {useEffect, useRef, useState, useReducer } from 'preact/hooks'
-import './ui.css'
 import './FltMList.css'
+import './ui.css'
 /* Core functionality props:
    data = function or object that provides the items with ids and counts
           ATTN: every re-render will reload these data
@@ -54,6 +54,7 @@ const id2name = { dx : "Diagnosis", age: "Age", race: "Ancestry",
 
 /* props.getData should be or return an array of
    [ itemLabel, itemBadgeValue, lockStatus, item_index, itemOrigCounts, tooltip_fullname ]
+        0            1               2           3           4             5
   is 2nd param is given to , the list should have only items with itemOrigCounts > 0
 */
 
@@ -152,13 +153,15 @@ export function FltMList( props ) {
       dtFilter.forEach( e => m.onlyStates[e]=1 )
       m.appliedStates=Object.assign({}, m.onlyStates) // make a full copy of m.OnlyStates
       //now this update should take care of showing the right filter selection
-      */
-      //if (fid=='dx') console.log(" ~~~~~ FltMlist Dx update with dtFilter:", dtFilter)
+      */     
       m.appliedStates={}
       dtFilter.forEach( e => m.appliedStates[e]=1 )
+
+     if (!m.jqCreated) { //first render (!mounting)
+        m.onlyStates=Object.assign({}, m.appliedStates)
+     }
+
   }
-
-
 
   const showAgeRange=(fid=='age' && props.ageRange && props.ageRange.length===2)
   useEffect(()=> {
@@ -167,7 +170,7 @@ export function FltMList( props ) {
       }
       const dom=$(refDom.current)
       if (!m.jqCreated) {
-        //firstRender(dom)
+        // -- after first render:
         m.jqCreated=true;
       }
       //-- do I need this for every render?
@@ -197,12 +200,12 @@ export function FltMList( props ) {
   /*
   useEffect( () => {
     //const dom=$(refDom.current) //points to the container div of this component
-     if (fid==='dx')
-      console.log(' 000000000>>> Dx FltMList mounting ! ')
-    return ()=>{
-      if (fid==='dx')
-       console.log(' xxxxxxxxx<<< Dx FltMList dismounting ! ')
-    }
+    
+    //if (fid=='sex') console.log(` 000000000 >>> ${fid} FltMList mounting ! `)
+    //return ()=>{  if (fid=='sex')
+    //   console.log(`  xxxxxxxxx <<< ${fid} FltMList dismounting ! `)
+    // }
+
   }, []); */
 
 
@@ -236,7 +239,7 @@ export function FltMList( props ) {
     //notifyUpdate(fid); //broadcast the new counts update to other components
   }
 
-  function filterChanged() { //show the apply button
+  function filterChanged() { //test to determine if the Apply button should be shown
       if (Object.keys(m.appliedStates).length===0 &&
           (Object.keys(m.onlyStates).length===m.fltData.length)) {
             //deal with the silly case when all items are selected!
@@ -245,11 +248,17 @@ export function FltMList( props ) {
       return (!objEq(m.appliedStates, m.onlyStates))
   }
 
-  function onClickClearAll() { //also applies the filter!
+  function onClickClearAll(e) { //also applies the filter!
     if (showAgeRange) {
       props.ageRange.length=0
     }
     deselectAll(true)
+    /*
+    $(e.target).tooltip('hide')
+    setTimeout( ()=>{
+      $('[data-toggle="tooltip"]').tooltip({ delay: { show: 800, hide: 100 }, trigger: 'hover' })
+    },1000)
+    */
     doApply()
   }
 
@@ -313,7 +322,7 @@ export function FltMList( props ) {
         atxt='&#x2715;'
         if (isToggle) $(refDom.current).find('.lg-tdismiss').hide()
       } //else if (isToggle) $(refDom.current).find('.lg-tdismiss').show()
-      m.btnApply.html(atxt)
+      m.btnApply.html(`<span>${atxt}</span>`)
       m.btnApply.show()
     }
      else  {
@@ -409,9 +418,16 @@ export function FltMList( props ) {
 
   function onClickApply() {
     m.userApply=true
-    doApply()
+    doApply()    
   }
+
   function doApply() { //when clicking the Apply button
+    //$('[data-toggle="lg-tooltip"]').tooltip("hide")
+      $(refDom.current).find('[data-toggle="tooltip"]').tooltip('hide')
+      setTimeout( ()=> {
+        //console.log(" 888888888888 reinit tooltips ")
+        $(refDom.current).find('[data-toggle="tooltip"]').tooltip({ delay: { show: 800, hide: 100 }, trigger: 'hover' })
+      }, 1000)
       applyFilter() //onlyStates string is applied, call props.onApply() handler
       if (isToggle || noCollapse)  return
 
@@ -497,12 +513,12 @@ export function FltMList( props ) {
 
   const showOnly = (!isToggle && (Object.keys(m.onlyStates).length>0 || showAgeRange))
   const showApply=filterChanged()
-  //const showApply=true
+  const showApplyContent = () => Object.keys(m.onlyStates).length>0 ? <span>Apply</span> : <span>&#x2715;</span>
   const showSelUndo=(showApply && Object.keys(m.appliedStates).length>0)
   //const showSelUndo=true
   // --- render FltMList ---
-  //if (fid==='dx')
-  //  console.log(">>>>>- rendering Dx FltMlist with onlyStates=", Object.keys(m.onlyStates))
+  //if (fid==='sex')
+  //  console.log(">>>>>- rendering sex FltMlist with onlyStates=", Object.keys(m.onlyStates), " applied=", Object.keys(m.appliedStates))
   //console.log(">>>>>- rendering| onlyStates:", Object.keys(m.onlyStates), " isToggle:",isToggle, ", showOnly:", showOnly)
   //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
 
@@ -526,7 +542,7 @@ export function FltMList( props ) {
                   style={ showSelUndo ? { display:"inline-block"} : { display: "none"}}><img class="btn-undo-icon" /></span>
              }
              <span class="lg-apply" onClick={onClickApply} key={String(Date.now()).substring(4)}
-                 style={ showApply ? { display:"inline"} : { display: "none"}}> Apply </span>
+                 style={ (showApply) ? { display:"inline"} : { display: "none"}}> {showApplyContent()} </span>
              { !noCollapse && <span className="coll-glyph" onClick={toggleCollapse}> </span> }
            </span>
         </div>
@@ -542,7 +558,7 @@ export function FltMList( props ) {
            <div class="lg-bottomshade"> </div>
           </ul> }
         <div class="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
-           <span class="lg-only-lb" onClick={onClickClearAll}>&#x2715;</span>
+           <span class="lg-only-lb" data-toggle="tooltip" title="Dismiss selection" onClick={onClickClearAll}>&#x2715;</span>
 
         </div>
        </div>
