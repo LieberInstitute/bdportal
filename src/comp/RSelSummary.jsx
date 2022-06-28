@@ -2,7 +2,7 @@ import $ from 'jquery';
 import {useState, useEffect} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
-   dtaBrains, XBrs, anyActiveFilters, clearFilters,
+   dtaBrains, XBrs, anyActiveFilters, clearFilters, getFilterSet,
    getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
@@ -11,7 +11,7 @@ import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 import './RSelSummary.css'
 import { DlgDownload } from './DlgDownload';
 import { DlgRequest } from './DlgRequest';
-import { DlgSaveCSV } from './DlgSaveFile';
+import { DlgSaveCSV } from './DlgSaveTable';
 import {ToastBox} from './ToastBox'
 
 import { useModal } from './useModal';
@@ -72,7 +72,8 @@ function RSelSummary( props ) {
   const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
   const [xdata, countData, brCounts] = useRData(); //dtXsel, dtCounts, dtBrCounts
 
-  const [isModalShowing, toggleModal] = useModal();
+  const [dlgSaveBrTable, toggleDlgSaveBrTable] = useModal(); //for saving full Br table
+  const [dlgSaveSubjSum, toggleDlgSaveSubjSum] = useModal(); //for saving subject summary table
   const selXType = rGlobs.selXType;
 
   const xt=selXType ? selXType-1 : 0;
@@ -90,8 +91,9 @@ function RSelSummary( props ) {
      })
   }
   if (showsel)  {
+    const protoset=getFilterSet('proto')
     for (let i=1;i<countData.proto.length;i++)
-       if (countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
+       if (protoset.has(i) && countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
  }
 
  function brSaveSection() {
@@ -105,9 +107,9 @@ function RSelSummary( props ) {
      <Button onClick={downloadCSV}>Import list</Button>
     */
     return (<Row className="d-flex flex-nowrap justify-content-between pt-4">
-      <Button className="btn-light btn-sm app-btn btn-download flex-nowrap " onClick={toggleModal}>
+      <Button className="btn-light btn-sm app-btn btn-download flex-nowrap " onClick={toggleDlgSaveBrTable}>
        Download</Button>
-       <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isModalShowing}  toggle={toggleModal} />
+       <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={dlgSaveBrTable}  toggle={toggleDlgSaveBrTable} />
        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
        <Button className="btn-light btn-sm app-btn flex-nowrap ">
        Request Genotypes</Button>
@@ -165,7 +167,7 @@ useEffect( ()=> {
   */
   function subjTable() {
     return(<>
-      <Col><table className="subjtbl" ><tbody>
+      <Col><table id="subjSummary" className="subjtbl" ><tbody>
       { brCounts.dx.map(  (e,i) => {
            if (i>0 && e>0) return (<tr key={i}>
               <td align="right"> {e} </td> <td align="left">{ dtaNames.dx[i] } </td>
@@ -199,10 +201,12 @@ useEffect( ()=> {
   function subjXTable() {
      //cross tab functionality
      //TODO: can also build CSV (users might want to save this too!)
+     /*
      if (brCounts.cxDxRace.length<2) {
        //console.log(" -- cxDxRace:", brCounts.cxDxRace);
        return subjTable();
      }
+     */
      const dxr=brCounts.cxDxRace
      const c2dx=brCounts.cx2dx
      const dxs=brCounts.cxDxSex
@@ -243,7 +247,7 @@ useEffect( ()=> {
            return(c)
           } )
      }
-     return (<Col className="pt-2"><table className="subjxtbl">
+     return (<Col className="pt-2"><table id="subjSummary" className="subjxtbl">
        <thead>
          <tr><td class="td-blank totals" colspan="2">TOTALS</td> {/* <td class="td-blank">  </td> */}
             {csums.map( (v,i)=> <th key={i}>{v}</th>)}
@@ -315,11 +319,46 @@ useEffect( ()=> {
    return data
   }
 
+  function table2array(tid) {
+    const tbl=document.getElementById(tid)
+    const ret=[] //returning array of rows
+    if (!tbl) return ret
+    const rows=tbl.getElementsByTagName('tr')
+    if (!rows || rows.length==0) return ret
+    for (let i=0;i<rows.length;i++) {
+      const cells=rows[i].querySelectorAll('td,th')
+      const csvrow=[]
+      cells.forEach( td => {
+          csvrow.push(td.innerText);
+          if (td.colSpan>1) {
+            for (let f=1;f<td.colSpan;f++) csvrow.push(' ');
+          }
+        })
+      ret.push(csvrow)
+    }
+    return ret
+  }
+
+  function saveSubjSummary() {
+    const arr=table2array('subjSummary')
+    //console.log(" subjSummary array :", arr)
+
+  }
+
   function clickExploreBtn() {
     const [page, tab]=currentPageTab()
     //tab can be undefined for default/entry page
     //console.log("----}} ExploreBtnClick: ", page, tab)
     navigateTo('rna', 'exp')
+  }
+
+  function showSampleSelWarn() {
+     return (<div className="mx-auto">
+        <span class="red-info-warn">&#9888; </span>
+        <span class="red-info-text">
+          Apply a selection in every panel.
+        </span>
+     </div>)
   }
 
   //console.log("----}} RSelSummary render..", dtBrXsel.size)
@@ -328,8 +367,8 @@ useEffect( ()=> {
   const selbrCount=dtBrXsel.size
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
-
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
+  const arrSubjTotals=[]
   return (<Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
@@ -350,18 +389,24 @@ useEffect( ()=> {
 
         {/*  (selXType && showsel && regflt) ?  regTable()  : null */}
 
-        {showsel && <>
-          { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
-                     <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
-                     </Row> :
-                     <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
-                        style="font-size:1rem;border-bottom:1px solid #ddd;">
-                     <span class="flex-fill"> Selected subjects:&nbsp; </span>
-                       <span style="color:#923;padding:0 2px;padding-right:4px;"><b>{showsel ? numbr : 0}</b></span>
-                     </Row> }
-        <Row className="flex-nowrap align-self-center pt-0 mt-0">
-          { subjXTable() }
-        </Row> </>}
+       { showsel && <>
+            { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
+                      <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
+                      </Row> :
+                      <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
+                          style="font-size:1rem;border-bottom:1px solid #ddd;">
+                      <span class="flex-fill"> Selected subjects:&nbsp; </span>
+                        <span style="color:#923;padding:0 2px;padding-right:4px;"><b>{showsel ? numbr : 0}</b></span>
+            </Row> }
+            <Row className="flex-nowrap align-self-center pt-0 mt-0">
+              { subjXTable(arrSubjTotals) }
+            </Row>
+              <Row className="pt-2">  <Button className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
+                  data-toggle="tooltip" title="Save CSV with subject summary" onClick={toggleDlgSaveSubjSum}>Save summary</Button>
+              <DlgSaveCSV title="Export subject summary table" data={table2array('subjSummary')} fname={`subj_summary_n${numbr}`}
+                                             isOpen={dlgSaveSubjSum}  toggle={toggleDlgSaveSubjSum} />
+            </Row>
+        </> }
         {/* Row: border-top:1px solid #ddd; */}
         <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100">
              { showDlButton ? <Col className="d-flex flex-column">
@@ -398,29 +443,24 @@ useEffect( ()=> {
                </Row>
              </Row>
             </Col>
-            <Row className="d-flex flex-nowrap justify-content-center mt-3">
+            { props.selsheet ?
+              <Row className="d-flex flex-nowrap justify-content-center mt-3">
                  <Col className="col-auto mr-3">
-                     <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleModal}>
+                     <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleDlgSaveBrTable}>
                        Export</Button>
                     { restrictedDatasets.length ?
-                      <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
-                      <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} selsheet={props.selsheet} /> }
+                      <DlgRequest datasets={restrictedDatasets} isOpen={dlgSaveBrTable} toggle={toggleDlgSaveBrTable} /> :
+                      <DlgDownload isOpen={dlgSaveBrTable} toggle={toggleDlgSaveBrTable} getData={getSelSampleData} selsheet={props.selsheet} /> }
                  </Col>
                  <Col className="col-auto ml-3">
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>
-
                  </Col>
-            </Row>
+            </Row> : showSampleSelWarn() }
             { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
                    text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
             }
           </Col> : <Col>
-                   {selXType ? <div className="mx-auto">
-                                  <span class="red-info-text">
-                                     <span class="red-info-warn">&#9888; </span>
-                                      Apply a selection in every panel.
-                                  </span>
-                               </div>
+                   {selXType ? showSampleSelWarn()
                            : <> { showsel && brSaveSection()} </>
 
                        }

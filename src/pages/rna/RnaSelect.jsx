@@ -181,14 +181,11 @@ const RnaSelect = ({ style }) => {
 
 
   // prep selection sheet as per R.'s instructions
-  const selectionSheet = []
-  selectionSheet.push([ 'Diagnosis', 'Diagnosis_selected', 'Sex', 'Sex_selected',
-   'Age', 'Age_selected', 'Ancestry', 'Ancestry_selected', 'Brain_Region', 'Brain_Region_selected',
-    'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected' ])
-   const sscols=[] //array of 2-column tables that will be joined later
-   let allSet=true;
+  let selectionSheet = null
+  const sscols=[] //array of 2-column tables that will be joined later
+  let allSet=true;
    //quick pass to make sure all are set
-   ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
+  ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
       if (!allSet) return
       if (fid==='age' && m.ageRange) {
               const range=getFilterAgeRange()
@@ -217,12 +214,15 @@ const RnaSelect = ({ style }) => {
    })
 
    if (allSet) {
-    //console.log(" sscols :", sscols)
-    arraySMerge(selectionSheet, sscols)
-    //console.log(" selectionSheet :", selectionSheet)
-    //TODO: in DlgDownload -> add genes if any save csv
-   }
-   //TODO: use allSet to display the Export/Explore buttons
+     //console.log(" sscols :", sscols)
+     selectionSheet=[ [ 'Diagnosis', 'Diagnosis_selected', 'Sex', 'Sex_selected',
+     'Age', 'Age_selected', 'Ancestry', 'Ancestry_selected', 'Brain_Region', 'Brain_Region_selected',
+      'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected' ] ];
+     arraySMerge(selectionSheet, sscols)
+     //console.log(" selectionSheet :", selectionSheet)
+     //TODO: in DlgDownload -> add genes if any save csv
+   } else selectionSheet=null
+   //TODO: in RelSummary check props.selsheet to display Export/Explore buttons
 
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with sx fset =",getFilterSet('sex'), "  key =", sxkey)
   return (<div class="col-12 d-flex flex-nowrap flex-column">

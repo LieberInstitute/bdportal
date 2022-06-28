@@ -240,6 +240,7 @@ export function FltMList( props ) {
   }
 
   function filterChanged() { //test to determine if the Apply button should be shown
+      /*
       if (Object.keys(m.appliedStates).length===0 &&
           (Object.keys(m.onlyStates).length===m.fltData.length)) {
             //deal with the silly case when all items are selected - set filter to all
@@ -251,6 +252,7 @@ export function FltMList( props ) {
             }
             return false;
       }
+      */
       return (!objEq(m.appliedStates, m.onlyStates))
   }
 

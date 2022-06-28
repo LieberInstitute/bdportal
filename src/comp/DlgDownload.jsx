@@ -79,12 +79,23 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
      }
      if (fidx==4) { //save selsheet as csv
       if (selsheet) {
+        if (glst.length && selsheet.length>1) {
+          const slast=selsheet[0].length-1
+          if (selsheet[0][slast].match(/Gene/i)) {
+            selsheet[1][slast]=glst.join(', ')
+          } else {
+            selsheet[0].push('Gene_list')
+            selsheet[1].push(glst.join(', '))
+          }
+        }
         let fdata=""
-        const fmt=1 //could be TSV as well
+        const fmt=1 //could be TSV as well, for fmt!=1
         if (fmt==1) selsheet.forEach( row => fdata+=rowCSV(row) )
           else selsheet.forEach( row => fdata+=rowTSV(row) )
-        saveFile(fdata,  filename)
-    }
+        setFStatus(0)
+        if (onStatusChange) onStatusChange(fidx, 0) //allow other downloads
+        saveFile(fdata,  filename).then( ()=>setSaved(''))
+       }
      }
   }
 
@@ -105,7 +116,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
   } else {
     if (fidx==4) fcaption='Selection datasheet'
   }
-     
+
   let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
@@ -118,7 +129,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
                                    <span></span><span></span><span></span><span></span><span></span>
                                </div>
                    : (fstatus<0) ? <span style="text-align:center;color:#c45;position:relative;top:-2px;" > &nbsp; &nbsp;Error! </span>
-                                 : <span style="text-align:center;color:#777;position:relative;top:-2px;left:8px;"> {savedLnk()} </span> 
+                                 : <span style="text-align:center;color:#777;position:relative;top:-2px;left:8px;"> {savedLnk()} </span>
                }
              </div>
             </div>
@@ -128,7 +139,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
      <Row className="form-group d-flex justify-content-between flex-nowrap mt-0 pt-0 pb-1" style="font-size:90%;">
       <Col className="pl-0 pr-1 mr-1 flex-fill align-self-begin overflow-hidden text-nowrap"
            style="color:#666;min-width:25rem;background-color:#f4f4f4">
-        {filename} 
+        {filename}
       </Col>
       <Col className="d-flex align-self-begin justify-content-end">
          <Row>
@@ -181,7 +192,7 @@ export function DlgDownload( props ) {
         m.datasets=data.datasets
         //setDs0(m.datasets[0])
         const fprefix=m.datasets.join('.')
-        setPrefix(`${fprefix}_`)
+        setPrefix(fprefix)
       }
       if (data.samples)  {
         m.samples=data.samples
@@ -206,7 +217,8 @@ export function DlgDownload( props ) {
     glst=glst.trim()
     if (glst!==geneList) setGeneList(glst)
     if (glst.length<2) return;
-    const garr=glst.split(/[,|;:.\s]+/)
+    const garr=glst.split(/[,|;:.\s]+/).filter(s => s)
+
     //check list against the database
     let guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i).sort();
     glst=guniq.join(',')
@@ -334,7 +346,7 @@ export function DlgDownload( props ) {
               </Col><Col className="p-0 m-0 ml-1">
               <Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:-4px;" onClick={glstClear}>&#x2715;</Button>
               </Col>
-        </Row>      
+        </Row>
         <Row className="d-flex justify-content-between align-content-center p-0 m-0 mt-1">
           <Label className="align-self-center p-0 m-0" style="font-size:13px;color:#777;">e.g. GRIN2A,GRIN2B,SP4</Label>
           <Button id="bglst" className="btn-sm app-btn align-self-center" disabled={glstDisabled} onClick={onCheckGeneList}>Check</Button>
