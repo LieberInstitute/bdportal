@@ -62,8 +62,8 @@ function LoadBrList(props) {
 
 /* main RSelSummary multi-panel component
    props.browse : bool flag indicator of the Browse tab context
-   props.brloaded : passed on to LoadBrList component 
-   props.onBrList : passed on to LoadBrList component 
+   props.brloaded : passed on to LoadBrList component
+   props.onBrList : passed on to LoadBrList component
    props.selsheet : passed down from RnaSelect page to DlgDownload dialog
 */
 function RSelSummary( props ) {
@@ -401,7 +401,7 @@ useEffect( ()=> {
             <Row className="d-flex flex-nowrap justify-content-center mt-3">
                  <Col className="col-auto mr-3">
                      <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleModal}>
-                       Export</Button> 
+                       Export</Button>
                     { restrictedDatasets.length ?
                       <DlgRequest datasets={restrictedDatasets} isOpen={isModalShowing} toggle={toggleModal} /> :
                       <DlgDownload isOpen={isModalShowing} toggle={toggleModal} getData={getSelSampleData} selsheet={props.selsheet} /> }
@@ -414,9 +414,14 @@ useEffect( ()=> {
             { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
                    text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
             }
-          </Col> : <Col> {selXType ? <div className="mx-auto">
-                          <span class="red-info-text"> Apply a dataset selection to access samples. </span>
-                       </div> : <> { showsel && brSaveSection()} </>
+          </Col> : <Col>
+                   {selXType ? <div className="mx-auto">
+                                  <span class="red-info-text">
+                                     <span class="red-info-warn">&#9888; </span>
+                                      Apply a selection in every panel.
+                                  </span>
+                               </div>
+                           : <> { showsel && brSaveSection()} </>
 
                        }
                    </Col>

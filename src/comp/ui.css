@@ -151,6 +151,17 @@ to be made available everywhere in the app
   color:#ed1848;
 }
 
+.red-info-warn {
+  position:relative;
+  font-size:18px;
+  top:2px;
+  color:#ed1848;
+}
+/*
+.red-info-warn::before {
+  content: "\26A0";
+}*/
+
 .red-text-darker {
   color:#ad1838;
 }

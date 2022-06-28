@@ -74,6 +74,16 @@ export function getDatasetCitation(xt, dix) {
 export function geProtoName(xt, pix) {
   return dtaNames.proto[xt][pix]
 }
+
+export function getFilterNames(fid) {
+  if (fid==='dset' || fid=='proto') {
+      let xt=rGlobs.selXType-1;
+      if (xt<0) xt=0; //should throw error!
+      return dtaNames[fid][xt]
+  }
+  return dtaNames[fid]
+}
+
 //map incremental indexes used here to database IDs - found in JSON file
 export const allReg2db = ['reg'] // array of regions.id from db
 export const allDx2db = ['dx'] // array of dx.id from db
@@ -357,7 +367,7 @@ export const dtFilters = {
    ageRange: [], // when set and has exactly 2 values, overrides age Set!
 
    race: new Set(), //this has a set of race indexes
-   sex: new Set(), //can have 1,2 
+   sex: new Set(), //can have 1,2
    //--
    brSet:new Set(), //user provided list of bridx
    brXtX: new Set(),  //only used in Brain Matrix for brain set intersections
@@ -780,7 +790,7 @@ export function getFilterData(fid) {
   return rdata;
 }
 
-//-- retrieve filter set - just a reference to the
+//-- retrieve filter set - returns a direct reference to dtFilters[fid]
 export function getFilterSet(fid) {
   const fltSet=dtFilters[fid] //this MUST be a Set !
   if (fltSet==null)
@@ -1307,7 +1317,7 @@ export function updateCounts() {
         if (selXType) {
           if (dtFilters.dset.size && !dtFilters.dset.has(ds))
            filterBits |= fltbit_Dset;
-         
+
           if (dtFilters.proto.size && dtFilters.proto.size !== dtaNames.proto[xt].length && !dtFilters.proto.has(p))
            filterBits |= fltbit_Proto;
         }
@@ -1466,9 +1476,9 @@ export function updateCounts() {
   //console.log(dtXCounts.proto);
 }
 
-// for the current experiment type, return the names of selected datasets 
+// for the current experiment type, return the names of selected datasets
 // in the filter + their dtCounts : array of [dset_name, dset_counts]
-// 
+//
 export function getSelDatasets() {
    const dsinfo=[]
    if (rGlobs.selXType===0) return dsinfo;
@@ -1701,4 +1711,34 @@ export async function saveRStagedFile(relpath, newfname) {
   //a.remove();
   document.body.removeChild(a); //FF needed this
   return href;
+}
+
+//side merge of 2-column tables in colarrs,
+// under dest array which already has the header (1-row)
+export function arraySMerge(dest, colarrs) {
+   //check consistency
+   if (dest.length!==1) { console.log("Error: no header in dest!");return }
+   let numcols=0;
+   colarrs.forEach( tbl => { numcols+=tbl[0].length} )
+   if (dest[0].length!==numcols)
+     { console.log("Error: mismatch columns in header vs colarrs!");return }
+   let numrows=0
+   colarrs.forEach( tbl => { if (numrows<tbl.length) numrows=tbl.length} )
+   //all arrays will be padded with '' to numrows before merging
+   colarrs.forEach( arr=> {
+    const padrn=numrows-arr.length
+    for (let i=0;i<padrn;i++) {
+      arr.push( arr[0].map( ()=>'') )
+    }
+   })
+   //arrays now have the same number of rows
+   const allrows=[]
+   for (let i=0;i<numrows;i++) {
+     const rr=[]
+     colarrs.forEach((carr)=> {
+       rr.push( ... carr[i] )
+     })
+     allrows.push(rr)
+   }
+   dest.push( ... allrows )
 }

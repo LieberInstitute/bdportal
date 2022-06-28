@@ -64,9 +64,10 @@ export default function AgeDualPanel(props) {
         console.log("NOTICE::::: Age selection cleared!")
         //manual trigger popover to let the user know? or Alert?
         // or better yet -- Toast(!)
-        if (onAgeSel) onAgeSel(ageType) //the caller will find the new age selection in dtFilters.age
     }
      setAgeType(sel)
+     //the caller will find the new age selection in dtFilters.age/ageRange
+     if (onAgeSel) onAgeSel(sel)
   }
 
    function applyAgeBinFilter() {

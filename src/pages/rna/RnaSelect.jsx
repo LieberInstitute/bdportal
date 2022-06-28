@@ -8,8 +8,8 @@ import './style.css';
 import {
   useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
   applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation,
-  applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters
-} from '../../comp/RDataCtx'
+  applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
+  getFilterNames, arraySMerge} from '../../comp/RDataCtx'
 
 import { FltMList } from '../../comp/FltMList'
 import { Row, Col, Button, Label, Input, CustomInput } from 'reactstrap'
@@ -25,9 +25,9 @@ const RnaSelect = ({ style }) => {
   const [showHelp, setShowHelp] = useState(true)
 
   const refData=useRef( {
+    ageRange:false, //default: age bins
     updList: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  }
   })
-
   const m=refData.current
 
   //const [ updating, setUpdating ] = useState(false) // when dataset selection/switching is instant, disable clicking while updating
@@ -61,7 +61,7 @@ const RnaSelect = ({ style }) => {
     //simply triggers refresh, but for some components we want to trigger remount
   }
 
- 
+
   function prepRefHtml(ref) {
     // ref=ref.replace(/\|/g, "<br>")
     let rl = ref.trim().split(/\|/)
@@ -114,13 +114,14 @@ const RnaSelect = ({ style }) => {
     }
   }
 
-  const dtaSex = getFilterData('sex')
+  const dta={ sex : getFilterData('sex'),
   //const dtaAge=getFilterData('age')
-  const dtaDx = getFilterData('dx')
-  const dtaRace = getFilterData('race')
-  const dtaProto = getFilterData('proto')
-  const dtaDset = getFilterData('dset')
-  const dtaReg = getFilterData('reg')
+           dx: getFilterData('dx'),
+          race: getFilterData('race'),
+          proto: getFilterData('proto'),
+          dset : getFilterData('dset'),
+          reg : getFilterData('reg')
+   }
   const brloaded = getBrListFilter().size
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
 
@@ -160,6 +161,7 @@ const RnaSelect = ({ style }) => {
 
   function onAgeSelection(customRange) {
     notifyUpdate(customRange ? 'age-range' : 'age')
+    m.ageRange=customRange
   }
 
   function onBrListLoad(brlist) {
@@ -180,9 +182,47 @@ const RnaSelect = ({ style }) => {
 
   // prep selection sheet as per R.'s instructions
   const selectionSheet = []
-  selectionSheet.push(['Diagnosis', 'Diagnosis_selected', 'Ancestry', 'Ancestry_selected',
-    'Sex', 'Sex_selected', 'Age', 'Age_selected', 'Brain_Region', 'Brain_Region_selected',
-    'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected'])
+  selectionSheet.push([ 'Diagnosis', 'Diagnosis_selected', 'Sex', 'Sex_selected',
+   'Age', 'Age_selected', 'Ancestry', 'Ancestry_selected', 'Brain_Region', 'Brain_Region_selected',
+    'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected' ])
+   const sscols=[] //array of 2-column tables that will be joined later
+   let allSet=true;
+   //quick pass to make sure all are set
+   ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
+      if (!allSet) return
+      if (fid==='age' && m.ageRange) {
+              const range=getFilterAgeRange()
+              if (range.length==2) {
+                sscols.push[ [[`${range[0]}..${range[1]}`],[1]] ]
+              } else allSet=false;
+              return
+      }
+      //regular sets
+      const fset=getFilterSet(fid)
+      //console.log(`checking ${fid}:`, fset)
+      if (fset.size==0) {allSet=false; return}
+      const fnames=getFilterNames(fid)
+      let selarr=[]
+      if (fid==='age') {
+        selarr=fnames.slice(1).map(
+           (n, i) => [ n, fset.has(i+1) ? 1 : 0 ]
+         )
+         sscols.push(selarr)
+         return
+      }
+      selarr=dta[fid].map(
+         fd => [ fnames[fd[3]], fset.has(fd[3]) ? 1 : 0 ]
+        )
+      sscols.push(selarr)
+   })
+
+   if (allSet) {
+    //console.log(" sscols :", sscols)
+    arraySMerge(selectionSheet, sscols)
+    //console.log(" selectionSheet :", selectionSheet)
+    //TODO: in DlgDownload -> add genes if any save csv
+   }
+   //TODO: use allSet to display the Export/Explore buttons
 
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with sx fset =",getFilterSet('sex'), "  key =", sxkey)
   return (<div class="col-12 d-flex flex-nowrap flex-column">
@@ -196,11 +236,11 @@ const RnaSelect = ({ style }) => {
           </Col>
           <Col className="d-flex m-0 p-0 ml-1 align-self-start position-relative" style="min-height:3rem;">
             <Row className="d-flex justify-content-start align-items-center">
-              <Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
-                data-toggle="tooltip" title="Toggle help text display">?</Button>
+              {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
+                data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
-                Choose from every selection category below in order to export samples.<br/> 
-                Click <span class="bt-apply" style="padding:0 2px;margin:2px;">Apply</span> to enact a sample selection.
+              Choose from every selection category below what you would like to export and click
+                <span class="bt-apply" style="padding:0 2px;margin:2px;">Apply</span>
               </div> : null}
             </Row>
 
@@ -217,14 +257,14 @@ const RnaSelect = ({ style }) => {
       <Col xs="3" className="colDemo" >
         <Col className="d-flex flex-column col-vscroll"  >
           <Row className="d-flex justify-content-start">
-            <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+            <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="6.9em" data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
           </Row>
           <Row className="d-flex justify-content-start">
-            <FltMList key={`sx${clearCounter}_${m.updList['sex']}`} id="sex" type="htoggle" width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
+            <FltMList key={`sx${clearCounter}_${m.updList['sex']}`} id="sex" type="htoggle" width="15em" data={dta.sex} filter={getFilterSet} onApply={applyFilter} updateFilter />
           </Row>
           <AgeDualPanel key={`age${clearCounter}_${m.updList['age']}`} width="15em" onAgeSelection={onAgeSelection} />
           <Row className="d-flex justify-content-start" style="margin-top:2px;">
-            <FltMList key={`race${clearCounter}_${m.updList['race']}`} id="race" width="15em" height="5.5rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
+            <FltMList key={`race${clearCounter}_${m.updList['race']}`} id="race" width="15em" height="5.5rem" data={dta.race} filter={getFilterSet} onApply={applyFilter} updateFilter />
           </Row>
         </Col>
       </Col>
@@ -234,14 +274,14 @@ const RnaSelect = ({ style }) => {
           <Col className="pt-0 mt-0">
             <Row className="pt-0 mt-0">
               <FltMList key={`ds${clearCounter}_${m.updList['dset']}`} id="dset" height="11em" width="25em" type="faketoggle" nocollapse class="fl-inset lg-sq"
-                data={dtaDset} filter={getFilterSet} onApply={applyFilter} updateFilter onClickItem={onDatasetClick} />
+                data={dta.dset} filter={getFilterSet} onApply={applyFilter} updateFilter onClickItem={onDatasetClick} />
             </Row>
             <Row className="d-flex justify-content-start flex-nowrap">
               <Col className="p-0 m-0" style="max-width:15.2em;">
-                <FltMList key={`reg${clearCounter}_${m.updList['reg']}`} id="reg" width="14rem" height="18rem" data={dtaReg} filter={getFilterSet} onApply={applyFilter} updateFilter sort />
+                <FltMList key={`reg${clearCounter}_${m.updList['reg']}`} id="reg" width="14rem" height="18rem" data={dta.reg} filter={getFilterSet} onApply={applyFilter} updateFilter />
               </Col>
               <Col className="p-0 m-0">
-                <FltMList key={`prot${clearCounter}_${m.updList['proto']}`} id="proto" type="toggle" nobars width="10.4em" data={dtaProto} filter={getFilterSet} onApply={applyFilter} updateFilter />
+                <FltMList key={`prot${clearCounter}_${m.updList['proto']}`} id="proto" type="toggle" nobars width="10.4em" data={dta.proto} filter={getFilterSet} onApply={applyFilter} updateFilter />
               </Col>
             </Row>
           </Col>

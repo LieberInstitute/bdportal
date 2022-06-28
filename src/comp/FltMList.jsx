@@ -153,7 +153,7 @@ export function FltMList( props ) {
       dtFilter.forEach( e => m.onlyStates[e]=1 )
       m.appliedStates=Object.assign({}, m.onlyStates) // make a full copy of m.OnlyStates
       //now this update should take care of showing the right filter selection
-      */     
+      */
       m.appliedStates={}
       dtFilter.forEach( e => m.appliedStates[e]=1 )
 
@@ -200,7 +200,7 @@ export function FltMList( props ) {
   /*
   useEffect( () => {
     //const dom=$(refDom.current) //points to the container div of this component
-    
+
     //if (fid=='sex') console.log(` 000000000 >>> ${fid} FltMList mounting ! `)
     //return ()=>{  if (fid=='sex')
     //   console.log(`  xxxxxxxxx <<< ${fid} FltMList dismounting ! `)
@@ -242,7 +242,13 @@ export function FltMList( props ) {
   function filterChanged() { //test to determine if the Apply button should be shown
       if (Object.keys(m.appliedStates).length===0 &&
           (Object.keys(m.onlyStates).length===m.fltData.length)) {
-            //deal with the silly case when all items are selected!
+            //deal with the silly case when all items are selected - set filter to all
+            // silently apply a full filter !
+            m.appliedStates=Object.assign({}, m.onlyStates) //object copy
+            if (dtFilter && props.updateFilter) { //auto-update of filter Set requested
+                dtFilter.clear()
+                Object.keys(m.onlyStates).map(Number).forEach( k => dtFilter.add(k) )
+            }
             return false;
       }
       return (!objEq(m.appliedStates, m.onlyStates))
@@ -418,7 +424,7 @@ export function FltMList( props ) {
 
   function onClickApply() {
     m.userApply=true
-    doApply()    
+    doApply()
   }
 
   function doApply() { //when clicking the Apply button
@@ -470,9 +476,11 @@ export function FltMList( props ) {
     }
   }
 
-  function isSel(oid) {
+  function itemClass(oid) {
     const fltch=filterChanged()
-    return (m.onlyStates[oid]>0) ? (fltch ? 'lg-sel lg-sel-ch'  : 'lg-sel') : ''
+    let cl = (m.onlyStates[oid]>0) ? (fltch ? 'lg-sel lg-sel-ch'  : 'lg-sel') : ''
+    if (m.appliedStates[oid]>0) cl=cl.length ? `${cl} lg-applied` : 'lg-applied'
+    return cl
   }
 
   function lockStatus(pd) {
@@ -495,7 +503,7 @@ export function FltMList( props ) {
    //  console.log("renderItems() called with m.onlyStates=", Object.keys(m.onlyStates))
     let itclass = isHoriz ? 'lg-item-h': (fid==='proto' ? 'lg-it-proto' : '')
     return (m.fltData.map( (d)=>{
-      return (<li class={`d-flex justify-content-between lg-item ${itclass} ${isSel(d[3])}`}
+      return (<li class={`d-flex justify-content-between lg-item ${itclass} ${itemClass(d[3])}`}
         id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
       <span class="lg-item-th">{lockStatus(d[2])}{d[0]}</span>
       { isHoriz && <span class="lg-spacer"> </span>}
@@ -507,6 +515,7 @@ export function FltMList( props ) {
       </span>
       </li>) } ))
   }
+
   let addclass="noselect lg-panel"
   if (isToggle) addclass=`${addclass} lg-collapsed`
   if (props.class) addclass=`${addclass} ${props.class}`
