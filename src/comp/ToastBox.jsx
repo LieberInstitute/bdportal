@@ -9,7 +9,8 @@ export function ToastBox({ id, title, show, text, autohide }) {
      autohide=(typeof autohide=='undefined' || autohide == "true" || autohide==1 || autohide=="on") ? "true" : "false";
      const vclass=show ? "toast" : "toast hide"
      return (
-      <div class="position-fixed p-1" style="z-index: 200; top: 2em; right: 34em;min-width:24em;">
+      <div class="position-fixed"
+         style="z-index: 200; top: 1.4rem; left: 23rem;min-width:26em;height:1px;">
       <div id={id} class={vclass} role="alert" aria-live="assertive" data-autohide={autohide}
            aria-atomic="true" data-delay="7000" style="opacity:1;background-color: rgba(255,255,255,0.94);">
         <div class="toast-header-sm noselect text-center">

@@ -19,15 +19,15 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt, onStatusChange, getAllStatus, selsheet}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, genestxt, onStatusChange, getAllStatus, selsheet}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
   //const ds0= (datasets && datasets.length)? datasets[0] : ""
   const numds=(datasets && datasets.length)? datasets.length : 0
   const numsamples =  (samples && samples.length)? samples.length : 0
-  const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'selInfo' : 'metadata')
-  if (fidx==4) fext='csv'; // selsheet
+  const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'Selection' : (fidx==5 ? 'Br_Counts':  'metadata'))
+  if (fidx==4 || fidx==5) fext='csv'; // selsheet, brsum
   const filename = `${prefix}_${ftype}_n${numsamples}.${fext}`
 
   function dlClick() {
@@ -97,7 +97,17 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
         saveFile(fdata,  filename).then( ()=>setSaved(''))
        }
      }
+     if (fidx==5 && brsum) { //save selsheet as csv
+        let fdata=""
+        const fmt=1 //could be TSV as well, for fmt!=1
+        if (fmt==1) brsum.forEach( row => fdata+=rowCSV(row) )
+          else brsum.forEach( row => fdata+=rowTSV(row) )
+        setFStatus(0)
+        if (onStatusChange) onStatusChange(fidx, 0) //allow other downloads
+        saveFile(fdata,  filename).then( ()=>setSaved(''))
+     }
   }
+
 
   useEffect( ()=>{
     setSaved("")
@@ -109,15 +119,17 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
     if (saved.length<1) return null;
     return (<a href={saved}>Saved.</a>)
   }
+
   let fcaption='', ctype=''
   if (fidx<4) {
     ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
     fcaption=`${ftNames[fidx]} data ${ctype}`
   } else {
-    if (fidx==4) fcaption='Selection datasheet'
+    if (fidx==4) fcaption='Selection table'
+     else if (fidx==5) fcaption='Subject totals'
   }
 
-  let disabled=(norm==0 && fidx==1) || (fidx>0 && numds>1)
+  let disabled=(norm==0 && fidx==1) || (numds>1 && fidx>0 && fidx<4)
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
           style="font-size:90%;min-height:22px;">
@@ -159,8 +171,8 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, genestxt,
       }
       data should be retrieved only once when the dialog is shown the first time
 
-
       props.selsheet : selection datasheet passed down from RSelSummary
+      props.getBrSum : callback to retrieve br totals array
   */
 
 export function DlgDownload( props ) {
@@ -174,13 +186,12 @@ export function DlgDownload( props ) {
  // const [ds0, setDs0] = useState('')
   const [exporting, setExporting]=useState(0) //bitfield for primitive monitoring of exporting in progress
   const refData=useRef( {
+      brsum : null,
       datasets : null,
       samples : null,
       lastGeneList: '' //last gene list checked
 
   })
-
-
   const m=refData.current;
 
   function afterOpen() {
@@ -198,6 +209,9 @@ export function DlgDownload( props ) {
         m.samples=data.samples
         setNumSamples(m.samples.length)
       }
+    }
+    if (props.getBrSum) {
+       m.brsum=props.getBrSum()
     }
   }
 
@@ -242,7 +256,6 @@ export function DlgDownload( props ) {
         }
         const msg= gmiss.length ? `Could not recognize: ${gmiss.join(', ')}` :
                           'All given genes were recognized.';
-        console.log(" gene check msg: ", msg)
         setGeneCheckInfo(msg)
       })
    }
@@ -354,8 +367,11 @@ export function DlgDownload( props ) {
       </Col>
       </Row> : null }
 
-      <MxDlRow fidx={4} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
+    <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
            samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+    <MxDlRow fidx={5} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} brsum={m.brsum}
+         samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
            samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />

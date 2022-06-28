@@ -240,7 +240,7 @@ const RnaSelect = ({ style }) => {
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
               Choose from every selection category below what you would like to export and click
-                <span class="bt-apply" style="padding:0 2px;margin:2px;">Apply</span>
+                <span style="color: #ed1848;font-weight: bold;padding:0 2px;margin:2px;border:none !important;">Apply</span>
               </div> : null}
             </Row>
 
@@ -248,7 +248,7 @@ const RnaSelect = ({ style }) => {
         </Row>
       </Col>
       <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">
-        <div id="dset-info"><div id="dset-info-content">testing here </div></div>
+        <div id="dset-info"><div id="dset-info-content"> </div></div>
       </Col>
       <Col xs="4" className="d-flex flex-fill" style="z-index:-1;" >
       </Col>

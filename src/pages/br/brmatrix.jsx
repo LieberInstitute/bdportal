@@ -29,6 +29,7 @@ function TrPanel( ) {
 	//const [dlStatus, setDlStatus] = useState(0); // 0 = nothing, 1 = "preparing the file"
 	const [ fDlPath, setFDlPath ] = useState(""); // ".." : loading, otherwise relative file path
 	const [selcol, selregs, mxvals, dtxs] = useMxSel(); //when Matrix regions are clicked this gets updated
+
 	let nhregs=0; //number of hilighted regions (not necessarily applied!)
 	let clist='';
 	const regions=[];
@@ -128,8 +129,16 @@ const notifyUpdate = useFltCtxUpdate();
 //const [brloaded, setBrLoaded] = useState(0)
 
 const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+const [clearCounter, setClearCounter] = useState(0)
+
 //const [ageRangeState, setAgeRangeState]=useState([0,16,62]); // [ageRangeEnabled, agemin, agemax]
 //console.log(" BrMatrix dataLoaded status: ", dataLoaded)
+const refData=useRef( {
+	ageRange:false, //default: age bins
+	updList: { sex:0, age:0, race:0, dx:0 }
+})
+const m=refData.current
 
 useEffect( ()=>{
 	$('[data-toggle="tooltip"]').tooltip({ delay:{show:800, hide:100 }, trigger : 'hover'})
@@ -149,6 +158,7 @@ function resetFilters() {
   //forceUpdate()
   //setHideNoSeq(false)
   //setHideNoGeno(false)
+	setClearCounter(clearCounter + 1)
   notifyUpdate('clear')
 	//simply triggers refresh, but for some components we want to trigger remount
 }
@@ -179,13 +189,14 @@ applyFilterCond('with_gt', v)
 notifyUpdate('genotyped');
 }
 
-function applyFilter(fid) {
- applyFilterSet(fid)
+function applyFilter(oset, fid) {
+ applyFilterSet(fid) //this calls updateCounts()
  notifyUpdate(fid)
 }
 
 function onAgeSelection(customRange) {
   notifyUpdate(customRange?'age-range':'age')
+	m.ageRange=customRange
 }
 
 //console.log(">>------------- rendering brmatrix page!")
@@ -237,14 +248,16 @@ return(<div class="col-12 d-flex flex-column">
 	<Col xs="3" className="colDemo" >
 	<Col className="d-flex flex-column col-vscroll"  >
 	 <Row className="d-flex justify-content-start">
-		 <FltMList id="dx" width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+		 <FltMList id="dx" key={`dx${clearCounter}_${m.updList['dx']}`}
+		     width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
 	 </Row>
 	 <Row className="d-flex justify-content-start">
-				<FltMList id="sex" type="htoggle" width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
+				<FltMList id="sex"  key={`sx${clearCounter}_${m.updList['sex']}`} type="htoggle"
+				    width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
 	 </Row>
-	 <AgeDualPanel width="15em" onAgeSelection={onAgeSelection} />
+	 <AgeDualPanel key={`age${clearCounter}_${m.updList['age']}`} width="15em" onAgeSelection={onAgeSelection} />
 	 <Row className="d-flex justify-content-start">
-		 <FltMList id="race" width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
+		 <FltMList id="race" key={`race${clearCounter}_${m.updList['race']}`} width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
 	 </Row>
 
 	</Col>

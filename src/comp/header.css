@@ -71,7 +71,7 @@
 	 /* border: 1px solid red;  */
 	 color: #888;
 	 z-index:auto;
-  /* prevent text selection/cursor */  
+  /* prevent text selection/cursor */
   -webkit-touch-callout: none; /* iOS Safari */
    -webkit-user-select: none; /* Safari */
     -khtml-user-select: none; /* Konqueror HTML */
@@ -108,6 +108,7 @@
 	  text-decoration:none !important;
 	  cursor:default;
   }
+
  .navtab a {
 	 color: #f68;
  }

@@ -810,7 +810,7 @@ export function getFilterCond(fid) {
 //simply call updateCounts, the filter sets in dtFilters were already set!
 //should be called by onApply() of FltMList, set filters are already applied
 //
-  export function applyFilterSet(oset, fid) {
+  export function applyFilterSet(fid) {
   if (fid==='reg') {
     console.log("WARNING: brXtX filter cleared, did you mean that? *************")
     dtFilters.brXtX.clear() //CHECKME ??

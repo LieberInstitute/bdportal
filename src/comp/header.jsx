@@ -14,7 +14,7 @@ import { DlgConfirm } from './DlgConfirm';
 import axios from 'axios'
 
 export const navRoutes = {
-  brsel: [1, "Brain Matrix", ["matrix", "Select"], ["browse", "Browse"]],
+  brsel: [1, "Brain set builder", ["matrix", "Select"], ["browse", "Browse"]],
   rna: [2, "bulk RNAseq", ["sel", "Select"], ["exp", "Explore"], ["rep", "Reports"]],
   dnam: [3, "DNA methylation"],
   lrna: [4, "long RNAseq"],

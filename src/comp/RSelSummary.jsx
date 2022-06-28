@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import {useState, useEffect} from 'preact/hooks';
+import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
    dtaBrains, XBrs, anyActiveFilters, clearFilters, getFilterSet,
@@ -48,11 +48,12 @@ function LoadBrList(props) {
     num=numbrs
   }
 
-  const loaded=num ? "subjects loaded" : "No subjects loaded.";
-  const btcap=num ? "Clear BrNums" : "Load BrNums";
+  const loaded=num ? "brains loaded" : "No brain list loaded.";
+  const btcap=num ? "Clear Br# list" : "Load Br# list";
   return(
-  <Row className="p-1 mb-1 d-flex justify-content-start align-items-center">
-    <Button id="b1" className="btn-sm app-btn" onClick={brListClick}  data-toggle="tooltip" title="Limit selection to a list of Br#s">{btcap}</Button>&nbsp;
+  <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
+    <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
+     onClick={brListClick} data-toggle="tooltip" title="Limit selection to a list of Br#s">{btcap}</Button>&nbsp;
       {(num>0) && <span class="lg-flt">{num}</span> }
         <span style="padding:2px 2px;font-size:90%">{loaded}</span>
     <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
@@ -72,9 +73,16 @@ function RSelSummary( props ) {
   const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
   const [xdata, countData, brCounts] = useRData(); //dtXsel, dtCounts, dtBrCounts
 
-  const [dlgSaveBrTable, toggleDlgSaveBrTable] = useModal(); //for saving full Br table
-  const [dlgSaveSubjSum, toggleDlgSaveSubjSum] = useModal(); //for saving subject summary table
+  const [isFullBrSave, toggleFullBrSave]=useModal()
+  const [isDlgExport, toggleDlgExport] = useModal(); //for full Export dialog
+  const [dlgSaveBrSum, toggleSaveBrSum] = useModal(); //for saving subject summary table
   const selXType = rGlobs.selXType;
+
+  const refData=useRef( {
+    selSheet:null,
+    brSummary:null
+  })
+  const m=refData.current;
 
   const xt=selXType ? selXType-1 : 0;
   const regflt=(dtFilters.reg.size>0)
@@ -85,6 +93,7 @@ function RSelSummary( props ) {
   const mixprotos = [];
   const selDsInfo=getSelDatasets()
   const selDatasets=[]
+
   if (selDsInfo && selDsInfo.length) {
      selDsInfo.forEach( (ds)=>{
         if (ds[1]>0) selDatasets.push(ds)
@@ -96,7 +105,7 @@ function RSelSummary( props ) {
        if (protoset.has(i) && countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
  }
 
- function brSaveSection() {
+ function brSaveSection(browse) {
     //prepare the blob data here
     //const obj = {hello: 'world'};
     //const blob = new Blob([JSON.stringify(obj, null, 2)], {type : 'application/json'});
@@ -106,13 +115,23 @@ function RSelSummary( props ) {
        <div style="width:3rem" />
      <Button onClick={downloadCSV}>Import list</Button>
     */
-    return (<Row className="d-flex flex-nowrap justify-content-between pt-4">
-      <Button className="btn-light btn-sm app-btn btn-download flex-nowrap " onClick={toggleDlgSaveBrTable}>
-       Download</Button>
-       <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={dlgSaveBrTable}  toggle={toggleDlgSaveBrTable} />
-       <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-       <Button className="btn-light btn-sm app-btn flex-nowrap ">
-       Request Genotypes</Button>
+    if (numbr<1) return null;
+    return (<Row className="d-flex flex-nowrap align-items-center justify-content-center mt-3">
+      <Col className="col-auto mr-3">
+         { browse ?
+            <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave}
+                        data-toggle="tooltip" title="Download a table with selected brains info">
+               Download table</Button>
+            : <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton}
+                      data-toggle="tooltip" title="Browse and save the selected brain set">
+               Browse Brain Set</Button>
+        }
+       </Col>
+       <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+       <Col className="col-auto ml-3">
+         <Button className="btn-light btn-sm app-btn ">
+            Request Genotypes</Button>
+       </Col>
      </Row>)
   }
 
@@ -207,6 +226,7 @@ useEffect( ()=> {
        return subjTable();
      }
      */
+     if (numbr<1) return null
      const dxr=brCounts.cxDxRace
      const c2dx=brCounts.cx2dx
      const dxs=brCounts.cxDxSex
@@ -339,17 +359,22 @@ useEffect( ()=> {
     return ret
   }
 
-  function saveSubjSummary() {
-    const arr=table2array('subjSummary')
-    //console.log(" subjSummary array :", arr)
 
-  }
+  //console.log(" subjSummary array :", arr)
+
 
   function clickExploreBtn() {
     const [page, tab]=currentPageTab()
     //tab can be undefined for default/entry page
     //console.log("----}} ExploreBtnClick: ", page, tab)
     navigateTo('rna', 'exp')
+  }
+
+  function clickBrBrowseButton() {
+    //const [page, tab]=currentPageTab()
+    //tab can be undefined for default/entry page
+    //console.log("----}} ExploreBtnClick: ", page, tab)
+    navigateTo('brsel', 'browse')
   }
 
   function showSampleSelWarn() {
@@ -361,6 +386,20 @@ useEffect( ()=> {
      </div>)
   }
 
+  function clickSaveBrSum() {
+    m.brSummary=table2array('subjSummary')
+    toggleSaveBrSum()
+  }
+
+  function clickDlgExport() {
+    m.brSummary=table2array('subjSummary')
+    toggleDlgExport()
+  }
+
+  function getBrSummary() {
+    return m.brSummary
+  }
+
   //console.log("----}} RSelSummary render..", dtBrXsel.size)
 
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
@@ -369,6 +408,7 @@ useEffect( ()=> {
   const nRegions=showDlButton ? getRegionCounts() : []
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
   const arrSubjTotals=[]
+
   return (<Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
@@ -401,15 +441,15 @@ useEffect( ()=> {
             <Row className="flex-nowrap align-self-center pt-0 mt-0">
               { subjXTable(arrSubjTotals) }
             </Row>
-              <Row className="pt-2">  <Button className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
-                  data-toggle="tooltip" title="Save CSV with subject summary" onClick={toggleDlgSaveSubjSum}>Save summary</Button>
-              <DlgSaveCSV title="Export subject summary table" data={table2array('subjSummary')} fname={`subj_summary_n${numbr}`}
-                                             isOpen={dlgSaveSubjSum}  toggle={toggleDlgSaveSubjSum} />
-            </Row>
+              {(numbr>0) && <Row className="pt-2">  <Button className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
+                  data-toggle="tooltip" title="Download CSV with the above subject summary" onClick={clickSaveBrSum}>Download totals</Button>
+              <DlgSaveCSV title="Export subject summary table" getData={getBrSummary} fname={`subject_summary_n${numbr}`}
+                                             isOpen={dlgSaveBrSum}  toggle={toggleSaveBrSum} />
+              </Row>}
         </> }
         {/* Row: border-top:1px solid #ddd; */}
         <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100">
-             { showDlButton ? <Col className="d-flex flex-column">
+             { (showDlButton && numbr>0) ? <Col className="d-flex flex-column">
              <Col className="w-100 mt-0 pt-0">
               <Row className="w-auto ml-4 mr-4 justify-content-center mt-1 mb-2"
                     style="padding-top:4px;border-top:1px solid #ddd;font-size:1rem">
@@ -419,11 +459,9 @@ useEffect( ()=> {
               </Row>
               <Row className="d-flex justify-content-center m-0">
                 <Row className="d-flex justify-content-center w-100 flex-nowrap" >
-                   {/* <Col className="d-flex flex-nowrap align-self-center justify-content-end bblue"> */}
                    <Col className="col-auto">
                      <span>{selDslabel}:</span>
                    </Col>
-                   {/* <Col className="d-flex-row justify-content-start"> */}
                    <Col className="col-auto">
                      {selDatasets.map( (ds, i) =>
                       <Row key={i}><b>{ds[0]}</b>&nbsp;({ds[1]})</Row>
@@ -446,11 +484,12 @@ useEffect( ()=> {
             { props.selsheet ?
               <Row className="d-flex flex-nowrap justify-content-center mt-3">
                  <Col className="col-auto mr-3">
-                     <Button className="btn-light btn-sm app-btn btn-download" onClick={toggleDlgSaveBrTable}>
+                     <Button className="btn-light btn-sm app-btn btn-download" onClick={clickDlgExport}>
                        Export</Button>
                     { restrictedDatasets.length ?
-                      <DlgRequest datasets={restrictedDatasets} isOpen={dlgSaveBrTable} toggle={toggleDlgSaveBrTable} /> :
-                      <DlgDownload isOpen={dlgSaveBrTable} toggle={toggleDlgSaveBrTable} getData={getSelSampleData} selsheet={props.selsheet} /> }
+                      <DlgRequest datasets={restrictedDatasets} isOpen={isDlgExport} toggle={toggleDlgExport} /> :
+                      <DlgDownload isOpen={isDlgExport} toggle={toggleDlgExport} getData={getSelSampleData} selsheet={props.selsheet}
+                                     getBrSum={getBrSummary} /> }
                  </Col>
                  <Col className="col-auto ml-3">
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>
@@ -461,7 +500,7 @@ useEffect( ()=> {
             }
           </Col> : <Col>
                    {selXType ? showSampleSelWarn()
-                           : <> { showsel && brSaveSection()} </>
+                           : <> { showsel && brSaveSection(props.browse)} </>
 
                        }
                    </Col>

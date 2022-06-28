@@ -22,7 +22,10 @@ export function DlgSaveCSV( props ) { //props.hide() must exist
 
   const m=refData.current;
 
-  function fnameChange( {target}) { setFileName(target.value); }
+  function fnameChange( {target}) {
+    const v=target.value
+    setFileName(v);
+  }
   function onFmtChange(e) {
     setFmt((e.target.id=="r1")?1:2)
   }
@@ -36,27 +39,23 @@ export function DlgSaveCSV( props ) { //props.hide() must exist
     }
     if (props.fname) {
       const input=$(dlgRef.current).find('#inp_fname')
-      console.log(" setting fname value to: ", props.fname)
-      console.log( "           input control: ", input)
       input.val(props.fname)
       setFileName(props.fname)
     }
   }
 
   function onSave() {
-        if (props.data) {
-            let arrdata=m.data
+      let arrdata=m.data
             /*
             if (typeof props.data == 'function')
               arrdata = props.data()
-            */
-            const fext=(fmt==1)?"csv":"tsv"
-            let fname=`${fileName}.${fext}`
-            let fdata=""
-            if (fmt==1) arrdata.forEach( row => fdata+=rowCSV(row) )
-              else arrdata.forEach( row => fdata+=rowTSV(row) )
-            saveFile(fdata,  fname, props.mimeType)
-        }
+       */
+      const fext=(fmt==1)?"csv":"tsv"
+      let fname=`${fileName}.${fext}`
+      let fdata=""
+      if (fmt==1) arrdata.forEach( row => fdata+=rowCSV(row) )
+         else arrdata.forEach( row => fdata+=rowTSV(row) )
+      saveFile(fdata,  fname, props.mimeType)
   }
   const title=props.title || "Save table"
   function fnameGiven() { return (fileName.length>0) }
@@ -71,7 +70,7 @@ export function DlgSaveCSV( props ) { //props.hide() must exist
            <Col>
             <Row className="mb-0 pb-0" >
             <Label className="frm-label text-nowrap mb-0 pb-0" style="font-size:95%;">
-              Please enter file name (without extension):
+              Enter file name (without extension):
               </Label>
             </Row>
 
