@@ -19,7 +19,8 @@
    background-color:#ddd;
  }
  .subjtbl, .subjxtbl {
-   font-size:90%;
+   font-size:15px;   
+   line-height:22px;
  }
  .subjtbl td, .subjxtbl td {
    padding: 0 4px;
@@ -47,6 +48,7 @@
   color: #855;
   text-align:left;
   border:none;
+  padding-top:1px;  
  }
 
 

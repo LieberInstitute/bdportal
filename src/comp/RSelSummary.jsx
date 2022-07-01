@@ -34,8 +34,8 @@ function BrSetButtons({ numbr, show, browse } ) {
   }
 
   if (!show || numbr<1) return null;
-  return (<Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-center mt-3">
-    <Col className="col-auto mr-3">
+  return (<Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
+    <Col className="col-auto m-2">
           <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
                      data-toggle="tooltip" title="Download a table with selected brains info">
             Download Set</Button>
@@ -44,7 +44,7 @@ function BrSetButtons({ numbr, show, browse } ) {
             Browse Set</Button>
      </Col>
      <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
-     <Col className="col-auto ml-3">
+     <Col className="col-auto m-2">
        <Button className="btn-light btn-sm app-btn ">
           Request Genotypes</Button>
      </Col>
@@ -432,14 +432,14 @@ function RSelSummary( props ) {
         {/*  (selXType && showsel && regflt) ?  regTable()  : null */}
 
        { showsel && <>
-            { selXType ? <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
-                      <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
-                      </Row> :
-                      <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
+             <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
+                 <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects 
+             </Row>
+             {/* <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
                           style="font-size:1rem;border-bottom:1px solid #ddd;">
                       <span class="flex-fill"> Selected subjects:&nbsp; </span>
                         <span style="color:#923;padding:0 2px;padding-right:4px;"><b>{showsel ? numbr : 0}</b></span>
-            </Row> }
+            </Row> */}
             <Row className="flex-nowrap align-self-center pt-0 mt-0">
               { subjXTable(arrSubjTotals) }
             </Row>

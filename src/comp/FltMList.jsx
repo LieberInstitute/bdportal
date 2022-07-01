@@ -497,7 +497,7 @@ export function FltMList( props ) {
    //  console.log("renderItems() called with m.onlyStates=", Object.keys(m.onlyStates))
     let itclass = isHoriz ? 'lg-item-h': (fid==='proto' ? 'lg-it-proto' : '')
     return (m.fltData.map( (d)=>{
-      return (<li class={`d-flex justify-content-between lg-item ${itclass} ${itemClass(d[3])}`}
+      return (<li class={`d-flex flex-row align-items-center justify-content-between lg-item ${itclass} ${itemClass(d[3])}`}
         id={d[3]} key={`${d[3]}_${String(Date.now()).substring(4)}`}>
       <span class="lg-item-th">{lockStatus(d[2])}{d[0]}</span>
       { isHoriz && <span class="lg-spacer"> </span>}

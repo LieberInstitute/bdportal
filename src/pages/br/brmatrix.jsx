@@ -22,7 +22,7 @@ import { clearTooltips, setupTooltips } from '../../comp/ui';
 //import axios from 'axios'
 import { MW_SERVER } from '../../appcfg'
 
-// the top-right info panel
+// the top-right info panel - only used to spawn the brmatrix toast right now
 // items is an array of text lines to show
 function TrPanel( ) {
 	const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update this component
@@ -201,69 +201,67 @@ function onAgeSelection(customRange) {
 	m.ageRange=customRange
 }
 
+const dta={ sex : getFilterData('sex'),
+             dx : getFilterData('dx'),
+           race : getFilterData('race'),
+   }
+
 //console.log(">>------------- rendering brmatrix page!")
 
-const dtaSex=getFilterData('sex')
-const dtaDx=getFilterData('dx')
-const dtaRace=getFilterData('race')
 const flt_onlySeq=getFilterCond('with_seq')
 const flt_onlyGeno=getFilterCond('with_gt')
 const brloaded=getBrListFilter().size
 
 //console.log(" -- page render with flt_onlySeq=", flt_onlySeq);
-return(<div class="col-12 d-flex flex-column">
+return(<div class="col-12 d-flex flex-nowrap flex-column">
 <MxSelProvider>
-<Row className="pl-2 pt-0 pb-0 mt-0 d-flex flex-nowrap align-items-end justify-content-center">
-<Col xs="3" className="colDemo ml-2" style={{height:"3.3rem"}}> &nbsp;
-	 <div class="col d-flex justify-content-between align-self-center ckRow">
-		 <div class="col-6 d-flex">
-			 <div class="row pl-0 d-flex justify-content-start align-self-center">
-				 <Button outline color="danger" className="btn-sm align-self-start" onClick={resetFilters}
-				   data-toggle="tooltip" title="Clear all demographic filters"
-					 style="line-height:80%;font-size:80%;margin-top:-3px;">Clear</Button>
-			 </div>
-		 </div>
-		 <div class="col-6 d-flex flex-column">
-			 <div class="row mx-auto">
-				 <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Consider only genotyped brains" >
-					 <CustomInput type="checkbox" id="ckOnlyGenotyped" onClick={toggleOnlyGeno} checked={flt_onlyGeno} />
-					 Genotyped
-				 </div>
-			 </div>
-			 <div class="row mx-auto">
-				 <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Only sequenced brains with at least one data type">
-					 <CustomInput type="checkbox" id="ckOnlySeq" onClick={toggleOnlySeq} checked={flt_onlySeq} />
-					 Sequenced
-				 </div>
-			 </div>
-		</div>
-	</div>
-</Col>
-<Col xs="5" className="colMatrix d-flex align-self-start">  </Col>
-<Col xs="4" className="pl-3 colSummary align-self-start">
-		<Row className="m-0 p-0 mr-1 pr-1 mt-1 d-flex justify-content-start">
-				 <TrPanel />
-		 </Row>
-</Col>
+<Row className="pt-0 mt-0 pb-0 mb-0 justify-content-center flex-nowrap">
+<Col xs="2" className="d-flex flex-column m-0 p-0 pl-1 ml-1 colDemo align-self-stretch justify-content-center">
+    <Row className="d-flex position-relative mb-0 pb-0 pl-0 justify-content-start align-self-stretch">
+        <Col xs="5" className="d-flex justify-content-start align-items-center pr-0 mr-0">
+            <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
+              data-toggle="tooltip" title="Clear all selections"
+              style="line-height:80%;font-size:80%">Clear</Button>
+        </Col>
+        <Col className="d-flex flex-column m-0 p-0 ml-1 align-self-start justify-content-center" style="height:32px;">
+           <Row className="align-self-center m-0 p-0">
+    				  <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Consider only genotyped brains" >
+      					 <CustomInput type="checkbox" id="ckOnlyGenotyped" onClick={toggleOnlyGeno} checked={flt_onlyGeno} />
+  		 			    Genotyped
+  		  		  </div>
+  			  </Row>
+           <Row className="align-self-center m-0 p-0">
+            
+             <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Only sequenced brains with at least one data type">
+  					    <CustomInput type="checkbox" id="ckOnlySeq" onClick={toggleOnlySeq} checked={flt_onlySeq} />
+  					    Sequenced
+  				   </div>
+           </Row>
+        </Col>
+    </Row>
+  </Col>
+  <Col className="colMatrix d-flex align-self-start">  </Col>
+  <Col xs="4" className="d-flex flex-fill" style="z-index:-1;"> 
+  		<Row className="m-0 p-0 mr-1 pr-1 d-flex justify-content-start">
+  				 <TrPanel />
+  		 </Row>
+  </Col>
 </Row>
-<Row className="flex-grow-1 pt-0 mt-0 justify-content-center">
-	<Col xs="3" className="colDemo" >
-	<Col className="d-flex flex-column col-vscroll"  >
-	 <Row className="d-flex justify-content-start">
-		 <FltMList id="dx" key={`dx${clearCounter}_${m.updList['dx']}`}
-		     width="15em" height="6.9em" data={dtaDx} filter={getFilterSet} onApply={applyFilter} updateFilter />
-	 </Row>
-	 <Row className="d-flex justify-content-start">
-				<FltMList id="sex"  key={`sx${clearCounter}_${m.updList['sex']}`} type="htoggle"
-				    width="15em" data={dtaSex} filter={getFilterSet} onApply={applyFilter} updateFilter />
-	 </Row>
-	 <AgeDualPanel key={`age${clearCounter}_${m.updList['age']}`} width="15em" onAgeSelection={onAgeSelection} />
-	 <Row className="d-flex justify-content-start">
-		 <FltMList id="race" key={`race${clearCounter}_${m.updList['race']}`} width="15em" height="5.4rem" data={dtaRace} filter={getFilterSet} onApply={applyFilter} updateFilter />
-	 </Row>
-
-	</Col>
- </Col>
+<Row className="flex-grow-1 pt-0 mt-0 justify-content-center flex-nowrap">
+  <Col xs="3" className="colDemo" >
+     <Col className="d-flex flex-column col-vscroll"  >
+        <Row className="d-flex justify-content-start">
+           <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="6.9em" data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+         </Row>
+         <Row className="d-flex justify-content-start">
+           <FltMList key={`sx${clearCounter}_${m.updList['sex']}`} id="sex" type="htoggle" width="15em" data={dta.sex} filter={getFilterSet} onApply={applyFilter} updateFilter />
+         </Row>
+         <AgeDualPanel key={`age${clearCounter}_${m.updList['age']}`} width="15em" onAgeSelection={onAgeSelection} />
+         <Row className="d-flex justify-content-start" style="margin-top:2px;">
+           <FltMList key={`race${clearCounter}_${m.updList['race']}`} id="race" width="15em" height="5.5rem" data={dta.race} filter={getFilterSet} onApply={applyFilter} updateFilter />
+         </Row>
+     </Col>
+  </Col>
 
  <Col xs="5" className="pt-0 mt-0 colMatrix align-self-start">
 	 <Row className="mt-0 pt-0">
@@ -272,14 +270,12 @@ return(<div class="col-12 d-flex flex-column">
 			 </Col>
 	 </Row>
  </Col>
- {/* <Col xs="4" className="colSummary d-flex pt-0 mt-0 justify-content-center align-items-start flex-grow-1 bpink">
-	 {/* <Col className="d-flex pt-0 mt-0 flex-column col-vscroll align-items-stretch" > */}
-	<Col xs="4" className="d-flex flex-fill" >
-		 <Row className="pt-0 mt-0 d-flex flex-fill flex-grow-1 justify-content-center align-items-start">
-		    <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} />
-		 </Row>
-	 {/*</Col>*/}
- </Col>
+  {/* -- right column: RSelSummary  -- */}
+  <Col xs="4" className="d-flex flex-fill" >
+    <Row className="pt-0 mt-0 d-flex flex-fill flex-grow-1 justify-content-center align-items-start">
+      <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} />
+    </Row>
+  </Col>
 </Row>
 </MxSelProvider>
 </div>)
