@@ -6,10 +6,11 @@
   }
 
  .navheader {
+  position:relative;
 	height: 3rem;
 	flex: 0 0 3rem;
 	min-width:68rem !important;
-	z-index: 50;
+	z-index: 100;
  }
 
  .navimgbands {

@@ -2,6 +2,7 @@ import $ from 'jquery'
 import {useEffect, useRef, useState, useReducer } from 'preact/hooks'
 import './FltMList.css'
 import './ui.css'
+import { hideTooltip, setupTooltips, clearTooltips } from './ui'
 /* Core functionality props:
    data = function or object that provides the items with ids and counts
           ATTN: every re-render will reload these data
@@ -197,7 +198,7 @@ export function FltMList( props ) {
       }
 
   }) // useEffect after every render
-  /*
+  
   useEffect( () => {
     //const dom=$(refDom.current) //points to the container div of this component
 
@@ -205,8 +206,10 @@ export function FltMList( props ) {
     //return ()=>{  if (fid=='sex')
     //   console.log(`  xxxxxxxxx <<< ${fid} FltMList dismounting ! `)
     // }
-
-  }, []); */
+    // --- enable tooltips:
+    setupTooltips(refDom.current)
+    return ()=>clearTooltips(refDom.current)
+  }, []); 
 
 
    function updateFromFilter() { //this should not be needed
@@ -261,12 +264,6 @@ export function FltMList( props ) {
       props.ageRange.length=0
     }
     deselectAll(true)
-    /*
-    $(e.target).tooltip('hide')
-    setTimeout( ()=>{
-      $('[data-toggle="tooltip"]').tooltip({ delay: { show: 800, hide: 100 }, trigger: 'hover' })
-    },1000)
-    */
     doApply()
   }
 
@@ -430,12 +427,7 @@ export function FltMList( props ) {
   }
 
   function doApply() { //when clicking the Apply button
-    //$('[data-toggle="lg-tooltip"]').tooltip("hide")
-      $(refDom.current).find('[data-toggle="tooltip"]').tooltip('hide')
-      setTimeout( ()=> {
-        //console.log(" 888888888888 reinit tooltips ")
-        $(refDom.current).find('[data-toggle="tooltip"]').tooltip({ delay: { show: 800, hide: 100 }, trigger: 'hover' })
-      }, 1000)
+      //hideTooltip(m.btnApply) 
       applyFilter() //onlyStates string is applied, call props.onApply() handler
       if (isToggle || noCollapse)  return
 
@@ -541,6 +533,7 @@ export function FltMList( props ) {
                                 "lg-toggler";
   const numhl=Object.keys(m.onlyStates).length //number of highlighted items
   const showTDismiss=(isToggle && numhl>0) //to display the clear/dismiss button in the caption of toggle panels
+  // lg-only needs this? key={String(Date.now()).substring(4)}
   return (
        <div class={addclass} ref={refDom} id={props.id} style={{ width : (props.width ? props.width : "auto") }}>
         <div class={titleClass}>
@@ -568,7 +561,7 @@ export function FltMList( props ) {
            <div class="lg-topshade"> </div>
            <div class="lg-bottomshade"> </div>
           </ul> }
-        <div class="lg-only" key={String(Date.now()).substring(4)} style={showOnly ? "display:block;" : "display:none;"}>
+        <div class="lg-only" style={showOnly ? "display:block;" : "display:none;"}>
            <span class="lg-only-lb" data-toggle="tooltip" title="Dismiss selection" onClick={onClickClearAll}>&#x2715;</span>
 
         </div>

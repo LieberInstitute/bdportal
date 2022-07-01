@@ -10,6 +10,7 @@ import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters,
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'
+import { clearTooltips, setupTooltips } from '../../comp/ui';
 //dtBrXsel has the brains that passed the filters
 
 /* import useSWR from 'swr'
@@ -112,13 +113,8 @@ const BrTable = ( props ) => {
     </tbody></table>);
 }
 
-// Note: `user` comes from the URL, courtesy of our router
 const BrBrowse = ( ) => {
-  /* useEffect(() => {
-		let timer = setInterval(() => setTime(Date.now()), 1000);
-		return () => clearInterval(timer);
-	}, []);
-*/
+
 const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
    function onBtnClick(e) {
        const id=e.target.id;
@@ -128,6 +124,15 @@ const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		  	 default:
 		 }
 	 }
+
+   useEffect(() => {
+    $('.toast').toast({ delay: 7000 })
+    setupTooltips()    
+    return ()=>{ //clean-up code
+       clearTooltips()
+    }
+	 }, []);
+
    if (!anyActiveFilters(true)) {
 		 return (<div class="col-12 d-flex flex-column">
 			 <Row className="pt-3 d-flex flex-nowrap flex-row align-items-center justify-content-center">

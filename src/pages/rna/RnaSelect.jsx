@@ -16,6 +16,7 @@ import { Row, Col, Button, Label, Input, CustomInput } from 'reactstrap'
 import { ToastBox } from '../../comp/ToastBox'
 import RSelSummary from '../../comp/RSelSummary'
 import AgeDualPanel from '../../comp/AgeDualPanel'
+import { clearTooltips, setupTooltips } from '../../comp/ui';
 
 const RnaSelect = ({ style }) => {
   const [, , , dataLoaded] = useRData()
@@ -36,9 +37,13 @@ const RnaSelect = ({ style }) => {
   //const [brloaded, setBrLoaded] = useState(0)
 
   useEffect(() => {
-    $('[data-toggle="tooltip"]').tooltip({ delay: { show: 800, hide: 100 }, trigger: 'hover' })
-    //$("body").tooltip({ selector: '[data-toggle=tooltip]' });
+    
     $('.toast').toast({ delay: 7000 })
+
+    setupTooltips()
+    return ()=>{ //clean-up code
+       clearTooltips()
+    }
   }, [])
 
   useEffect(() => {

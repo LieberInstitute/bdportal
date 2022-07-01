@@ -124,7 +124,7 @@ to be made available everywhere in the app
   min-height:4.7em;
   max-height:4.7em !important;
   min-width:50em;
-  z-index:100;
+  z-index:50;
 }
 #dset-info-content {
   position:relative;
@@ -132,7 +132,7 @@ to be made available everywhere in the app
   padding-left: 3px;
   border-radius:4px;
   background-color:#f8f8f8;
-  z-index:110 !important;
+  z-index:55;
   display:none;
 }
 

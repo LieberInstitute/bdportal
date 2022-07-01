@@ -19,10 +19,39 @@ import { DlgBrUpload } from './DlgBrUpload'
 import { rowCSV, rowTSV }  from './gutils';
 import { navigateTo, hrefTo, currentPageTab} from './header';
 
+import { clearTooltips, setupTooltips } from './ui';
+
 /*  BrList loader component:
      props.brloaded   : number of BrNums loaded
      props.onBrList() : callback being passed the brlist array
 */
+function BrSetButtons({ numbr, show, browse } ) {
+
+  const [isFullBrSave, toggleFullBrSave]=useModal()
+
+  function clickBrBrowseButton() {
+    navigateTo('brsel', 'browse')
+  }
+
+  if (!show || numbr<1) return null;
+  return (<Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-center mt-3">
+    <Col className="col-auto mr-3">
+          <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
+                     data-toggle="tooltip" title="Download a table with selected brains info">
+            Download Set</Button>
+          <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton} style={ !browse ? null : { display: "none" } }
+                   data-toggle="tooltip" title="Browse and save the selected brain set">
+            Browse Set</Button>
+     </Col>
+     <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+     <Col className="col-auto ml-3">
+       <Button className="btn-light btn-sm app-btn ">
+          Request Genotypes</Button>
+     </Col>
+   </Row>)
+}
+
+
 function LoadBrList(props) {
   // shows a button and a info Label
 
@@ -73,7 +102,6 @@ function RSelSummary( props ) {
   const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
   const [xdata, countData, brCounts] = useRData(); //dtXsel, dtCounts, dtBrCounts
 
-  const [isFullBrSave, toggleFullBrSave]=useModal()
   const [isDlgExport, toggleDlgExport] = useModal(); //for full Export dialog
   const [dlgSaveBrSum, toggleSaveBrSum] = useModal(); //for saving subject summary table
   const selXType = rGlobs.selXType;
@@ -94,6 +122,11 @@ function RSelSummary( props ) {
   const selDsInfo=getSelDatasets()
   const selDatasets=[]
 
+  const numsmp = selXType ? xdata[xt].length : 0 ; //dtXsel.length;
+  
+  const numbr=brCounts.sex.slice(1).reduce((a, b)=>a+b)
+  const havebr=(numbr>0);
+
   if (selDsInfo && selDsInfo.length) {
      selDsInfo.forEach( (ds)=>{
         if (ds[1]>0) selDatasets.push(ds)
@@ -105,36 +138,6 @@ function RSelSummary( props ) {
        if (protoset.has(i) && countData.proto[i]>0) mixprotos.push(dtaNames.proto[xt][i]);
  }
 
- function brSaveSection(browse) {
-    //prepare the blob data here
-    //const obj = {hello: 'world'};
-    //const blob = new Blob([JSON.stringify(obj, null, 2)], {type : 'application/json'});
-    //let blob = "Just a stupidly long text data here?\nHello\n";
-    /*
-     <Button onClick={downloadCSV}>Download CSV</Button>
-       <div style="width:3rem" />
-     <Button onClick={downloadCSV}>Import list</Button>
-    */
-    if (numbr<1) return null;
-    return (<Row className="d-flex flex-nowrap align-items-center justify-content-center mt-3">
-      <Col className="col-auto mr-3">
-         { browse ?
-            <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave}
-                        data-toggle="tooltip" title="Download a table with selected brains info">
-               Download table</Button>
-            : <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton}
-                      data-toggle="tooltip" title="Browse and save the selected brain set">
-               Browse Brain Set</Button>
-        }
-       </Col>
-       <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
-       <Col className="col-auto ml-3">
-         <Button className="btn-light btn-sm app-btn ">
-            Request Genotypes</Button>
-       </Col>
-     </Row>)
-  }
-
    /*
    useEffect( () =>  {
       function jqBuildTable() {
@@ -145,17 +148,23 @@ function RSelSummary( props ) {
      jqBuildTable();  //update counts only
   }, [fltUpdId, fltFlip] );
 */
-useEffect( ()=> {
-  if (mixprotos.length>1)  {
-    $("#tsWarnProto").toast('show')
-  }
-})
+  useEffect( ()=> {
+    if (mixprotos.length>1)  {
+      $("#tsWarnProto").toast('show')
+    }
+  })
 
+  useEffect(() => {
+    setupTooltips()
+    $('.toast').toast({ delay: 7000 })
+    return ()=>{ //clean-up code
+       clearTooltips()
+    }
+  }, [showsel, havebr])
+  
+  
   if (!smpBrTotals || smpBrTotals.length==0) return null;
 
-  const numsmp = selXType ? xdata[xt].length : 0 ; //dtXsel.length;
-  //console.log("------------ HERE: ", brCountData.sex.splice(1))
-  const numbr=brCounts.sex.slice(1).reduce((a, b)=>a+b)
   //const numbr=brCountData.sex[1]+brCountData.sex[2]
   //console.log("================= dtBrXsel.size: ", dtBrXsel.size, " | numbr=", numbr)
   let restrictedDatasets=[] //gather restricted datasets
@@ -370,13 +379,6 @@ useEffect( ()=> {
     navigateTo('rna', 'exp')
   }
 
-  function clickBrBrowseButton() {
-    //const [page, tab]=currentPageTab()
-    //tab can be undefined for default/entry page
-    //console.log("----}} ExploreBtnClick: ", page, tab)
-    navigateTo('brsel', 'browse')
-  }
-
   function showSampleSelWarn() {
      return (<div className="mx-auto">
         <span class="red-info-warn">&#9888; </span>
@@ -500,7 +502,7 @@ useEffect( ()=> {
             }
           </Col> : <Col>
                    {selXType ? showSampleSelWarn()
-                           : <> { showsel && brSaveSection(props.browse)} </>
+                           : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} />
 
                        }
                    </Col>

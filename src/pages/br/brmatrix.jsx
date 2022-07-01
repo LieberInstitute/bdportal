@@ -17,6 +17,7 @@ import AgeDualPanel from '../../comp/AgeDualPanel'
 
 import {useMxSel, MxSelProvider} from './mxSelCtx'
 import RMatrix from './RMatrix'
+import { clearTooltips, setupTooltips } from '../../comp/ui';
 
 //import axios from 'axios'
 import { MW_SERVER } from '../../appcfg'
@@ -140,12 +141,13 @@ const refData=useRef( {
 })
 const m=refData.current
 
-useEffect( ()=>{
-	$('[data-toggle="tooltip"]').tooltip({ delay:{show:800, hide:100 }, trigger : 'hover'})
-	//$("body").tooltip({ selector: '[data-toggle=tooltip]' });
-	$('.toast').toast({ delay: 5000 })
-}, [])
-
+useEffect(() => {
+  $('.toast').toast({ delay: 7000 })
+  setupTooltips()    
+  return ()=>{ //clean-up code
+     clearTooltips()
+  }
+}, []);
 
 if (!dataLoaded) return <h3>Loading..</h3>
 

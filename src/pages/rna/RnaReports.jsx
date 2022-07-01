@@ -4,7 +4,7 @@ import {useEffect, useState} from "preact/hooks";
 import {APP_BASE_URL} from '../../appcfg'
 import './style.css'
 import {Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink} from 'reactstrap'
-
+import { clearTooltips, setupTooltips } from '../../comp/ui';
 
 function BrRegSeq(props) {
 	  const [rows, setRows]=useState([])
@@ -71,6 +71,16 @@ function BrRegSeq(props) {
     .catch(error => console.log(error))
 
   }, [])
+
+
+  useEffect(() => {
+    setupTooltips()
+    $('.toast').toast({ delay: 7000 })
+    return ()=>{ //clean-up code
+       clearTooltips()
+    }
+  }, [])
+
 
 			useEffect(  ()=>{
 				// resize the header and body columns to align
