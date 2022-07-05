@@ -156,6 +156,12 @@ to be made available everywhere in the app
   color:#845;
 }
 
+.br-set-info {
+  width:26rem;
+  text-align:center;
+  padding:6px;
+}
+
 .red-text {
   color:#ed1848;
 }
@@ -720,6 +726,14 @@ border-bottom:1px solid #ececec;
   border-bottom: 1px solid #b8b8b8;
   border-right: 1px solid #b8b8b8;
   border-radius: 2px;
+}
+/* for emphasising in info text */
+.info-tx-apply {
+  color: #ed1848;
+  font-weight: bold;
+  padding:0 2px;
+  margin:2px;
+  border:none !important;
 }
 
 .lg-apply {

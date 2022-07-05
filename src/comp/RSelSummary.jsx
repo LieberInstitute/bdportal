@@ -34,7 +34,8 @@ function BrSetButtons({ numbr, show, browse } ) {
   }
 
   if (!show || numbr<1) return null;
-  return (<Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
+  return (<Col>
+   <Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
     <Col className="col-auto m-2">
           <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
                      data-toggle="tooltip" title="Download a table with selected brains info">
@@ -48,7 +49,18 @@ function BrSetButtons({ numbr, show, browse } ) {
        <Button className="btn-light btn-sm app-btn ">
           Request Genotypes</Button>
      </Col>
-   </Row>)
+   </Row>
+   <Row className="d-flex justify-content-center mt-2">
+     { browse ?  <span class="red-info-text br-set-info"> &nbsp; </span>
+       : <span class="red-info-text br-set-info">
+        Inspect/save the selection set using the Browse button, or navigate to the
+        experiment data page using the top-left menu.<br /><br />
+        Only demographics selection and user-loaded brain list selection is preserved
+        when navigating to an experiment data page.
+       </span>
+    }
+   </Row>
+   </Col>)
 }
 
 
@@ -83,16 +95,28 @@ function LoadBrList(props) {
   let num=m.numbrs
   const loaded=num ? "brains loaded" : "No brain list set.";
   const btcap=num ? "Clear Br# list" : "Load Br# list";
+  const btooltip = num ? "" : "Provide a file or a list of Br#s";
   //console.log(` rendering LoadBrList() with num=${num}, props.brloaded=${props.brloaded}`)
   return(
   <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
-    <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
-     onClick={brListClick} data-toggle="tooltip" title="Provide a file or a list of Br#s">{btcap}</Button>&nbsp;
-      {(num>0) && <span class="lg-flt">{num}</span> }
-        <span style="padding:2px 2px;font-size:90%">{loaded}</span>
-    <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
-      title="Confirm" />
+    <Col id="brlist-col" className="d-flex flex-column justify-content-center align-items-center position-relative" style="margin-top:-2rem;">
+    <div class="row brlist-info d-flex justify-content-center">
+        { (num>0) ? <span> Clear the user provided list of brains </span>
+           : <span>
+              Loading a user list of brains will clear the existing selections<br />
+            </span>}
+   </div>
+    <div class="row d-flex justify-content-center align-items-center">
+      <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
+         onClick={brListClick}>{btcap}</Button>&nbsp;
+         {(num>0) && <span class="lg-flt">{num}</span> }
+          <span style="padding:2px 2px;font-size:90%">{loaded}</span>
+      <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
+           title="Confirm" />
+    </div>
+    </Col>
   </Row>)
+
 }
 
 /* main RSelSummary multi-panel component
@@ -416,7 +440,8 @@ function RSelSummary( props ) {
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
   const arrSubjTotals=[]
 
-  return (<Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
+  return (
+  <Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
           { (!props.browse) && <LoadBrList brloaded={props.brloaded} onBrList={props.onBrList} /> }
 

@@ -17,7 +17,7 @@ export function DlgBrUpload( props ) {
   const refData=useRef( {
      showInfo: true
   })
-  
+
   const m=refData.current;
 
   function showAlert(msg, sec) {
@@ -29,7 +29,7 @@ export function DlgBrUpload( props ) {
      setTimeout( ()=>{ setAlertVisible(false) }, sec*1000 )
   }
 
-  
+
 
   function parseBrNums(txt) {
     let lines=txt.trim().split(/\r?\n/);
@@ -71,7 +71,7 @@ export function DlgBrUpload( props ) {
    function checkListValid( ) {
      return brList.length>0;
    }
-   
+
    function afterShow() {
       m.showInfo=false
    }
@@ -97,13 +97,14 @@ export function DlgBrUpload( props ) {
      if (props.onSubmit) props.onSubmit(brList)
      return true
    }
-   
+
    return (
     <DlgModal {... props} title="BrNum list" button="Apply list" buttonClose="Cancel"
          onSubmit={onSubmit} onClose={onClose} onShow={afterShow}>
       <Row className="d-flex m-0 p-0 justify-content-center align-items-center" style="min-height:52px;">
-        { m.showInfo && <span id="infoTxt" class="red-info-text text-center">Upload a text file with Br#s from your computer or type/paste 
-          the list of Br#s in the box below. Only <i>"Br"</i>-prefixed tokens are recognized. </span>
+        { m.showInfo && <span id="infoTxt" class="red-info-text text-center">Upload a text file with Br#s from your computer or type/paste
+          the list of Br#s in the box below. Only <i>"Br"</i>-prefixed tokens are recognized.
+          </span>
         }
        {alertVisible && <Alert id="alInvalid" className="mb-0 app-alert" color="danger" isOpen={alertVisible}
           toggle={ onAlertDismiss } style="font-size:90%">
@@ -112,11 +113,15 @@ export function DlgBrUpload( props ) {
       </Row>
       <Row className="p-1 d-flex justify-content-start align-items-center">
         <label for="fupload"  className="app-file-upload app-btn">  <input type="file" id="fupload" accept=".csv,.txt,.tsv"
-             onChange={e => handleFileChosen(e.target.files[0])} /> Upload Br list
+             onChange={e => handleFileChosen(e.target.files[0])} />&nbsp; Upload file
         </label>
       </Row>
-      <Row className="mb-4 pb-4">
+      <Row className="mb-2 pb-2">
        <Input id="brlst" type="textarea" rows="5" />
+     </Row>
+     <Row className="pb-0 mb-0 d-flex justify-content-center align-items-center"><span id="infoTxt" class="red-info-text text-center">
+     Applying a list will clear all panel selections.
+     </span>
      </Row>
    </DlgModal> )
 

@@ -181,11 +181,14 @@ const RnaSelect = ({ style }) => {
       clearDsetInfo()
       //clearFilters()
       clearBrListFilter()
+      setClearCounter(clearCounter + 1)
       notifyUpdate('clear-brlist')
       //setBrLoaded(0)
       return 0
     }
     const n = applyBrList(brlist)
+    //since the above is clearing the filters:
+    setClearCounter(clearCounter + 1)
     notifyUpdate('brlist')
     return n
   }
@@ -251,9 +254,8 @@ const RnaSelect = ({ style }) => {
               {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
-              <span style="color: #ed1848;font-weight: bold;padding:0 2px;margin:2px;border:none !important;">Apply</span>
-              a selection in every category panel below to select and export samples.
-
+              <span class="info-tx-apply">Apply</span> a selection in every category panel below
+              to select and export samples.
               </div> : null}
             </Row>
 

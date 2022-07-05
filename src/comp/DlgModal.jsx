@@ -139,7 +139,7 @@ export function DlgModal ( props ) {
         </div>
       </div>
     <Form onSubmit={dlgSubmit}>
-    <ModalBody className="app-bg"><Container fluid={true}>
+    <ModalBody className="mb-0 pb-1 app-bg"><Container fluid={true}>
       <FormGroup>
        {props.children}
       </FormGroup>

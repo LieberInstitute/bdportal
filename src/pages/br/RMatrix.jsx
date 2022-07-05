@@ -373,18 +373,19 @@ function RMatrix( props ) {
   }
 
   return ( <div className="col mx-auto noselect">
-          <div className="mxImgBox">
-            <img alt="Regions" src={brainImg} />
-              {/* <h5>Brain regions</h5> */}
-          </div>
-          <div className="mxApply"><span className="lg-apply">Apply</span> </div>
-
-          <table id="rxMatrix">
-            <thead>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
+            <div className="mxImgBox">
+              <img alt="Regions" src={brainImg} />
+                {/* <h5>Brain regions</h5> */}
+            </div>
+            <div className="mxApply"><span className="lg-apply">Apply</span> </div>
+            <table id="rxMatrix">
+              <thead>  </thead>
+              <tbody> </tbody>
+            </table>
+            <div className="mx-info-box">
+              Choose brain regions in a data type column and click <span  class="info-tx-apply">Apply</span> to restrict the
+              selection to subjects sampled in those regions by that data type.
+            </div>
         </div> )
 }
 
@@ -507,5 +508,4 @@ function jqRender(xtypes, rdata) {
     }
   }
 
-
-export default RMatrix;
+  export default RMatrix;

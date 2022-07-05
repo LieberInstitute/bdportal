@@ -168,11 +168,13 @@ function resetFilters() {
 function onBrListLoad(brlist) {
 	if (!brlist || brlist.length==0) {
 		clearBrListFilter()
+		setClearCounter(clearCounter + 1)
 		notifyUpdate('clear-brlist')
 		//setBrLoaded(0)
 		return 0
 	}
 	const n=applyBrList(brlist)
+	setClearCounter(clearCounter + 1)
 	notifyUpdate('brlist')
 	return n
 }
@@ -240,11 +242,10 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
         </Col>
     </Row>
   </Col>
-  <Col className="colMatrix d-flex align-self-start"><Row className="position-relative bred">
-	      <div id="help-msg" class="app-help-panel align-self-center" style="margin-left:2rem;margin-top:3rem;">
-              <span style="color: #ed1848;font-weight: bold;padding:0 2px;margin:2px;border:none !important;">Apply</span>
-              selections to create a set of subjects then Browse, Export as CSV, <br /> Store as list or use for exporting other experiment data.
-
+  <Col className="colMatrix d-flex align-self-start"><Row className="position-relative">
+	      <div id="help-msg" class="app-help-panel align-self-center" style="margin-left:2px;margin-top:3rem;">
+              <span class="info-tx-apply">Apply</span>  selections to create a set of subjects
+							to browse, download <br /> or access their experiment data.
         </div>
 		</Row>  </Col>
   <Col xs="4" className="d-flex flex-fill" style="z-index:-1;">

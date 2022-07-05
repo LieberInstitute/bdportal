@@ -208,3 +208,12 @@
    #rxMatrix .cr {
      border-top: none;
    }
+
+   .mx-info-box {
+    width:28rem;
+    text-align: center;
+    padding:6px;
+    font-size:80%;
+    color:#845;
+    /* visibility:hidden; */
+  }
