@@ -55,7 +55,7 @@ function BrSetButtons({ numbr, show, browse } ) {
        : <span class="red-info-text br-set-info">
         Inspect/save the selection set using the Browse button, or navigate to the
         experiment data page using the top-left menu.<br /><br />
-        Only demographics selection and user-loaded brain list selection is preserved
+        Only demographics selections and the user loaded Br# list will be carried over
         when navigating to an experiment data page.
        </span>
     }

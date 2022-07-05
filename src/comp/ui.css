@@ -731,7 +731,7 @@ border-bottom:1px solid #ececec;
 .info-tx-apply {
   color: #ed1848;
   font-weight: bold;
-  padding:0 2px;
+  padding:0;
   margin:2px;
   border:none !important;
 }

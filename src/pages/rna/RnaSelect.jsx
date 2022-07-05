@@ -255,7 +255,7 @@ const RnaSelect = ({ style }) => {
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
               <span class="info-tx-apply">Apply</span> a selection in every category panel below
-              to select and export samples.
+              to access sample data.
               </div> : null}
             </Row>
 

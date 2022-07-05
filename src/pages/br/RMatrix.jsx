@@ -384,7 +384,7 @@ function RMatrix( props ) {
             </table>
             <div className="mx-info-box">
               Choose brain regions in a data type column and click <span  class="info-tx-apply">Apply</span> to restrict the
-              selection to subjects sampled in those regions by that data type.
+              selection to subjects sampled in any of those regions by that data type.
             </div>
         </div> )
 }
