@@ -9,8 +9,11 @@ import {APP_BASE_URL, MW_SERVER} from '../appcfg'
 export const dtaDTypes=[] //to be populated with the loaded data allData.dtypes content - 0 based
 
 // this should match, from 1 on, the wordy description of the dtaDTypes entries (at least) -- to be used in the dropdown menu!
-export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation', 'WGS', 'scRNAseq', 'long RNAseq', 'microRNA']
+export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methyl.',    'WGS', 'scRNAseq', 'long RNAseq', 'small RNA']
 //                            0               1                2               3          4          5           6
+export const dtaSelTFull=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation',   'Whole Genome Sequencing',
+      'single cell RNAseq', 'long RNAseq', 'small RNAseq']
+
 // the above must match the order of entries in the NavHeader
 
 export const rGlobs={
@@ -1028,7 +1031,13 @@ const fltbit_Geno  = 1<<9;
 export function changeXType( newXType=0, forceUpdate=false ) {
 
   rGlobs.selXType=newXType;
-  // clear filters?
+  // if newXType==0 clear proto, dset filters
+  if (newXType==0 && rGlobs.prevSelXType!=0)  {
+         dtFilters.proto.clear()
+         dtFilters.dset.clear()
+         dtFilters.reg.clear()
+  }
+
   if (forceUpdate || newXType!=rGlobs.prevSelXType) updateCounts();
 }
 

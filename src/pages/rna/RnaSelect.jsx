@@ -27,7 +27,9 @@ const RnaSelect = ({ style }) => {
 
   const refData=useRef( {
     ageRange:false, //default: age bins
-    updList: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  }
+    updList: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  },
+    lastAutosel: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  }
+
   })
   const m=refData.current
 
@@ -37,7 +39,7 @@ const RnaSelect = ({ style }) => {
   //const [brloaded, setBrLoaded] = useState(0)
 
   useEffect(() => {
-    
+
     $('.toast').toast({ delay: 7000 })
 
     setupTooltips()
@@ -132,34 +134,39 @@ const RnaSelect = ({ style }) => {
 
   function applyFilter(oset, fid) {
     clearDsetInfo()
+
+    const autosel=(fid=='dset' && Object.keys(oset).length<=2)
+    // before updating the counts, clear previous autoselection
+    if (autosel) {
+      ['reg', 'proto', 'race', 'sex'].forEach( f=>{
+        const fset=getFilterSet(f)
+        if (fset.size==1 && fset.has(m.lastAutosel[f])) {
+          fset.clear()
+          console.log(" ... clearing auto selection for", f)
+          m.lastAutosel[f]=0
+          m.updList[f]++;
+        }
+      })
+    }
     applyFilterSet(fid) //this will call updateCounts!
     //counts should be updated now!
-     if (Object.keys(oset).length>0) {
-        /* if (fid!='sex') { // no, don't be patronizing to the user
-             const fset=getFilterSet('sex')
-             if (fset.size==0) {
-              fset.add(1);fset.add(2)
-              m.updList['sex']++
-              //console.log(`  updated sx fset =`,getFilterSet('sex'))
-             }
-        }*/
-        if (Object.keys(oset).length<=2 && fid=='dset') {
+    if (autosel) {
           //auto select non-zero reg, proto ONLY if ONLY ONE item has non-zero counts
           ['reg', 'proto', 'race', 'sex'].forEach( f=>{
             const fset=getFilterSet(f)
-            if (fset.size==0) { //no previous selection
+            if (fset.size==0) { //no previous selection, auto select if obvious
               const fd=getFilterData(f)
               const nzix=[]
               fd.forEach( d=>{
                  if (d[1]>0) nzix.push(d[3])
               })
               if (nzix.length==1) {
-                fset.add(nzix[0]);
+                fset.add(nzix[0])
+                m.lastAutosel[f]=nzix[0]
                 m.updList[f]++;
               }
             }
           })
-        }
     }
     notifyUpdate(fid)
   }
@@ -244,8 +251,9 @@ const RnaSelect = ({ style }) => {
               {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
-              Choose from every selection category below what you would like to export and click
-                <span style="color: #ed1848;font-weight: bold;padding:0 2px;margin:2px;border:none !important;">Apply</span>
+              <span style="color: #ed1848;font-weight: bold;padding:0 2px;margin:2px;border:none !important;">Apply</span>
+              a selection in every category panel below to select and export samples.
+
               </div> : null}
             </Row>
 
@@ -255,7 +263,7 @@ const RnaSelect = ({ style }) => {
       <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">
         <div id="dset-info"><div id="dset-info-content"> </div></div>
       </Col>
-      <Col xs="4" className="d-flex flex-fill" style="z-index:-1;"> 
+      <Col xs="4" className="d-flex flex-fill" style="z-index:-1;">
       <Row className="m-0 p-0 mr-1 pr-1 d-flex justify-content-start"> </Row>
       </Col>
     </Row>

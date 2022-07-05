@@ -16,7 +16,7 @@ let xData=null; // will be set with dtXs, array of [sid, d, dx, r, s, a, rg, br]
 // if any of these changes, we'll rebuild/refill the matrix
 // otherwise we should just update the numbers
 const mxMaxVal=700;
-const dtaXTypes=dtaSelTypes.slice(1,6);
+const dtaXTypes=dtaSelTypes.slice(1,7);
 const clShadeHover='#FFF0F0';
 const clShadeHoverRGB='rgb(255,240,240)';
 //const clHdrSelFg='#A00';
@@ -355,7 +355,6 @@ function RMatrix( props ) {
         if (selcol[0]>0 && selcol[0]!==cix) return; //clicking the wrong column
         if (selcol[0]>0) deselectAll(true);
         else { //select all ?
-          console.log(" selecting all!~~~~~~~~~~~~~~~~~~~")
           for (let r=0;r<selregs.length;r++) {
                 selectCell(null, r, cix, 1);
           }
@@ -373,9 +372,7 @@ function RMatrix( props ) {
     });
   }
 
-  return (
-        <>
-        <div className="col mx-auto">
+  return ( <div className="col mx-auto">
           <div className="mxImgBox">
             <img alt="Regions" src={brainImg} />
               {/* <h5>Brain regions</h5> */}
@@ -388,9 +385,7 @@ function RMatrix( props ) {
             <tbody>
             </tbody>
           </table>
-        </div>
-        </>
-    )
+        </div> )
 }
 
 function jqFillMatrix(xt, rn, rtooltips) { //takes values from mxVals!

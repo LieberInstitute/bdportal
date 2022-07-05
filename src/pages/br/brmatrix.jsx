@@ -44,7 +44,7 @@ function TrPanel( ) {
 	const m=refData.current
 	if (selcol>0) { // selcol-1 : experiment type
 
-	expType=['RNASeq', 'DNAm', 'WGS', 'scRNAseq', 'long RNAseq' ][selcol-1];
+	expType=['RNASeq', 'DNAm', 'WGS', 'scRNAseq', 'long RNAseq', 'small RNAseq' ][selcol-1];
 		for (let i=0;i<selregs.length; i++) {
 			if (selregs[i])
 				nhregs++;
@@ -143,7 +143,7 @@ const m=refData.current
 
 useEffect(() => {
   $('.toast').toast({ delay: 7000 })
-  setupTooltips()    
+  setupTooltips()
   return ()=>{ //clean-up code
      clearTooltips()
   }
@@ -231,7 +231,7 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
   		  		  </div>
   			  </Row>
            <Row className="align-self-center m-0 p-0">
-            
+
              <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Only sequenced brains with at least one data type">
   					    <CustomInput type="checkbox" id="ckOnlySeq" onClick={toggleOnlySeq} checked={flt_onlySeq} />
   					    Sequenced
@@ -241,7 +241,7 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
     </Row>
   </Col>
   <Col className="colMatrix d-flex align-self-start">  </Col>
-  <Col xs="4" className="d-flex flex-fill" style="z-index:-1;"> 
+  <Col xs="4" className="d-flex flex-fill" style="z-index:-1;">
   		<Row className="m-0 p-0 mr-1 pr-1 d-flex justify-content-start">
   				 <TrPanel />
   		 </Row>
@@ -265,7 +265,7 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
 
  <Col xs="5" className="pt-0 mt-0 colMatrix align-self-start">
 	 <Row className="mt-0 pt-0">
-			 <Col className="col-4 matrixWrap">
+			 <Col className="matrixWrap">
 				 <RMatrix />
 			 </Col>
 	 </Row>

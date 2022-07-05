@@ -55,34 +55,39 @@ function BrSetButtons({ numbr, show, browse } ) {
 function LoadBrList(props) {
   // shows a button and a info Label
 
-  const [numbrs, setNumBrs] = useState(props.brloaded|0)
+  //const [numbrs, setNumBrs] = useState(props.brloaded|0)
+  const refData=useRef({ numbrs: 0 })
+  const m=refData.current
   const [openBrsUpDlg, setBrsUpDlg] = useState(false)
   function toggleBrsDlg() { setBrsUpDlg(!openBrsUpDlg)}
   function brListClick() {
-    if (numbrs>0) {// Clear
-         if (props.onBrList) setNumBrs(props.onBrList([]))
+    if (m.numbrs>0) {// Clear
+         if (props.onBrList) //setNumBrs(props.onBrList([]))
+            m.numbrs=props.onBrList([])
        }
       else //open upload dialog
-       setBrsUpDlg(true)
+         setBrsUpDlg(true)
   }
 
   function getBrList(brlist) { //on submit
      // do something with brlist
-     if (props.onBrList) setNumBrs(props.onBrList(brlist))
-      else setNumBrs(brlist.length)
-  }
-  let num=numbrs
-  if (props.brloaded && numbrs!=props.brloaded) {
-    setNumBrs(numbrs)
-    num=numbrs
+      if (props.onBrList) //setNumBrs(props.onBrList(brlist))
+                   m.numbrs=props.onBrList(brlist)
+      else m.numbrs=brlist.length //setNumBrs(brlist.length)
   }
 
-  const loaded=num ? "brains loaded" : "No brain list loaded.";
+  if (props.brloaded && m.numbrs!=props.brloaded) {
+    //setNumBrs(numbrs)
+    m.numbrs=props.brloaded
+  }
+  let num=m.numbrs
+  const loaded=num ? "brains loaded" : "No brain list set.";
   const btcap=num ? "Clear Br# list" : "Load Br# list";
+  console.log(" rendering LoadBrList() ....... ")
   return(
   <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
     <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
-     onClick={brListClick} data-toggle="tooltip" title="Limit selection to a list of Br#s">{btcap}</Button>&nbsp;
+     onClick={brListClick} data-toggle="tooltip" title="Limit subject selection to a list of Br#s">{btcap}</Button>&nbsp;
       {(num>0) && <span class="lg-flt">{num}</span> }
         <span style="padding:2px 2px;font-size:90%">{loaded}</span>
     <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
@@ -115,7 +120,7 @@ function RSelSummary( props ) {
   const xt=selXType ? selXType-1 : 0;
   const regflt=(dtFilters.reg.size>0)
   let dsflt=dtFilters.dset; //only used for RNASeq downloading for now
-  let showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
+  let showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq), depends also on selXtype
   //let showsel = true;
   let showDlButton=(selXType && dsflt.size>0); //only set for RNAseq - must have a dataset selected!
   const mixprotos = [];
@@ -123,7 +128,7 @@ function RSelSummary( props ) {
   const selDatasets=[]
 
   const numsmp = selXType ? xdata[xt].length : 0 ; //dtXsel.length;
-  
+
   const numbr=brCounts.sex.slice(1).reduce((a, b)=>a+b)
   const havebr=(numbr>0);
 
@@ -148,11 +153,6 @@ function RSelSummary( props ) {
      jqBuildTable();  //update counts only
   }, [fltUpdId, fltFlip] );
 */
-  useEffect( ()=> {
-    if (mixprotos.length>1)  {
-      $("#tsWarnProto").toast('show')
-    }
-  })
 
   useEffect(() => {
     setupTooltips()
@@ -161,8 +161,13 @@ function RSelSummary( props ) {
        clearTooltips()
     }
   }, [showsel, havebr])
-  
-  
+
+  useEffect( ()=> {
+    if (mixprotos.length>1)  {
+      $("#tsWarnProto").toast('show')
+    }
+  })
+
   if (!smpBrTotals || smpBrTotals.length==0) return null;
 
   //const numbr=brCountData.sex[1]+brCountData.sex[2]
@@ -433,7 +438,7 @@ function RSelSummary( props ) {
 
        { showsel && <>
              <Row className="pb-0 mb-0 d-flex justify-content-center" style="font-size:1rem;">
-                 <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects 
+                 <span style="color:#923"><b>{showsel ? numbr : 0}</b></span> &nbsp; subjects
              </Row>
              {/* <Row className="d-flex flex-nowrap align-items-center align-self-center justify-content-center"
                           style="font-size:1rem;border-bottom:1px solid #ddd;">
@@ -450,6 +455,9 @@ function RSelSummary( props ) {
               </Row>}
         </> }
         {/* Row: border-top:1px solid #ddd; */}
+        { (selXType>0 && mixprotos.length>0) && <ToastBox id="tsWarnProto" title="Warning"
+                text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
+            }
         <Row className="d-flex-row justify-content-center mt-2 pt-1 w-100">
              { (showDlButton && numbr>0) ? <Col className="d-flex flex-column">
              <Col className="w-100 mt-0 pt-0">
@@ -497,10 +505,8 @@ function RSelSummary( props ) {
                     <Button className="btn-light btn-sm app-btn btn-xplore" onClick={clickExploreBtn}>Explore</Button>
                  </Col>
             </Row> : showSampleSelWarn() }
-            { mixprotos.length>1 && <ToastBox id="tsWarnProto" title="Warning"
-                   text={`Selection has samples with ${mixprotos.length} different RNAseq protocols (${ mixprotos.join(', ')})`} />
-            }
-          </Col> : <Col>
+
+            </Col> : <Col>
                    {selXType ? showSampleSelWarn()
                            : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} />
 
