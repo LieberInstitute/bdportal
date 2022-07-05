@@ -53,12 +53,12 @@ function RMatrix( props ) {
       appSt:[''], // same with onlySt, but applied
       appSelcol:[0], //applied selection column (can be 0 if there was no selection )
       //idMap:[], //mapping a dtaNames index to its index in the displayed region list ?
-      selcol:[0], //selcol[0] has the value of selected column
+      selcol:[0], //selcol[0] has the value of first selected column (primary column)
       selregs:[],
       interSects:[], //array of boolean for the intersect flag by exp. data type index xt
       btnApp: [null]
     })
-    const onlyStates=flDt.current.onlySt; //changing/current selected states
+    const onlyStates=flDt.current.onlySt; //changing/current selected states in the primary column
     const appliedStates=flDt.current.appSt; // selected set as last applied
     const appliedCol=flDt.current.appSelcol;
     const btnApply=flDt.current.btnApp;
@@ -372,7 +372,7 @@ function RMatrix( props ) {
     });
   }
 
-  return ( <div className="col mx-auto">
+  return ( <div className="col mx-auto noselect">
           <div className="mxImgBox">
             <img alt="Regions" src={brainImg} />
               {/* <h5>Brain regions</h5> */}

@@ -38,6 +38,10 @@ to be made available everywhere in the app
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
+.allow-select {
+ user-select:text !important;
+}
+
 .frm-label {
   height: 28px !important;
   line-height: 28px !important;
@@ -51,6 +55,11 @@ to be made available everywhere in the app
   min-width: 26rem !important;
   max-width: 26rem !important;
 }
+
+.mx-top-info {
+  margin-left: 2rem !important;
+}
+
 
 .colCkRow {
   min-width: 16.6rem !important;

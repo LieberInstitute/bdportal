@@ -109,7 +109,7 @@ function ServerStatus( ) {
 }, [])
   return (
   <div style={{ position: "absolute", "font-size": "70%", color:"red", top:"4px" }}>
-   {status} [{pgstatus}] <span style="color:#a88;position:relative;font-size:11px;top:0px;">{COMMIT_HASH}-{COMMIT_DATE}</span>
+   {status} [{pgstatus}] <span class="allow-select" style="color:#a88;position:relative;font-size:11px;top:0px;">{COMMIT_HASH}-{COMMIT_DATE}</span>
   </div>)
 }
 
@@ -208,7 +208,7 @@ export function Header({ page, tab, menuClick }) {
   // -- disable items beyond i==1 in drop down menu:
   //<DropdownItem key={i} disabled={i>1} onClick={ () => ddClick(t[0], t[1])}>
   return (
-    <Nav className='bg-light d-flex align-items-center navheader flex-nowrap'>
+    <Nav className='bg-light d-flex align-items-center navheader flex-nowrap noselect'>
       <a href='http://www.libd.org'><img alt="logo" src={imgLogo} style={{ height: "2rem" }} /></a>
       <span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
       <UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">

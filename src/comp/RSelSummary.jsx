@@ -83,11 +83,11 @@ function LoadBrList(props) {
   let num=m.numbrs
   const loaded=num ? "brains loaded" : "No brain list set.";
   const btcap=num ? "Clear Br# list" : "Load Br# list";
-  console.log(` rendering LoadBrList() with num=${num}, props.brloaded=${props.brloaded}`)
+  //console.log(` rendering LoadBrList() with num=${num}, props.brloaded=${props.brloaded}`)
   return(
   <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
     <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
-     onClick={brListClick} data-toggle="tooltip" title="Limit subject selection to a list of Br#s">{btcap}</Button>&nbsp;
+     onClick={brListClick} data-toggle="tooltip" title="Provide a file or a list of Br#s">{btcap}</Button>&nbsp;
       {(num>0) && <span class="lg-flt">{num}</span> }
         <span style="padding:2px 2px;font-size:90%">{loaded}</span>
     <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
