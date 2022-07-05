@@ -76,14 +76,14 @@ function LoadBrList(props) {
       else m.numbrs=brlist.length //setNumBrs(brlist.length)
   }
 
-  if (props.brloaded && m.numbrs!=props.brloaded) {
+  if (typeof props.brloaded!=='undefined' && m.numbrs!=props.brloaded) {
     //setNumBrs(numbrs)
     m.numbrs=props.brloaded
   }
   let num=m.numbrs
   const loaded=num ? "brains loaded" : "No brain list set.";
   const btcap=num ? "Clear Br# list" : "Load Br# list";
-  console.log(" rendering LoadBrList() ....... ")
+  console.log(` rendering LoadBrList() with num=${num}, props.brloaded=${props.brloaded}`)
   return(
   <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
     <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
