@@ -38,15 +38,15 @@ function BrSetButtons({ numbr, show, browse } ) {
    <Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
     <Col className="col-auto m-2">
           <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
-                     data-toggle="tooltip" title="Download a table with selected brains info">
-            Download Set</Button>
+                     data-toggle="tooltip" title="Download the table with selected brains">
+            Download table</Button>
           <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton} style={ !browse ? null : { display: "none" } }
                    data-toggle="tooltip" title="Browse and save the selected brain set">
             Browse Set</Button>
      </Col>
      <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
      <Col className="col-auto m-2">
-       <Button className="btn-light btn-sm app-btn ">
+       <Button className="btn-light btn-sm app-btn" disabled >
           Request Genotypes</Button>
      </Col>
    </Row>

@@ -304,7 +304,7 @@ export const dtBrCounts = {
     sex: ['sex'], //+ F-counts, M-counts
 
     // 2-dimensional cross-tabulation arrays, contingency tables
-    // init by initBrCX() at each updateCounts()
+    // initialized by initBrCX() at each updateCounts()
     dx2cx: {},  //mapping dxid to column index in cxDx* tables
     cx2dx: {},  //mapping column index in cxDx* tables to dxid
     s2cx:  {}, //mapping sex/race idx to row index in cxDx* tables
@@ -313,7 +313,7 @@ export const dtBrCounts = {
     cx2r:  {},
     cxDxSex: [], // crosstab counts Dx vs Sex   - initialized by initBrCX
     cxDxRace: [], // crosstab counts Dx vs Race  - initialized by initBrCX
-    Brains: new Set() // set of brix passing the filters
+    Brains: new Set() // set of brix passing the filters (dtBrXsel)
  }
 
  export const dtBrXsel = dtBrCounts.Brains
@@ -1518,7 +1518,7 @@ export function getRegionCounts() {
 
 export function getBrSelData(showSmpCounts) {
 //returns an array with rows of data for brains in dtBrAllsel
-// if showSmpCounts is an array, it has experiment data types
+// if showSmpCounts is an array, it has the experiment data types
 //      to report sample counts for (0 based), e.g. [0, 1] for RNASeq, DNAmet
   const rows=[]
   let extraCols=0;

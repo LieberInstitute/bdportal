@@ -74,7 +74,23 @@
   width:100%;
 }
 
-.brtbl tr td:nth-child(3) {
+.bregxt tbody td .xtc, .bregxt tbody td .xtc0 {
+  display:inline-block;
+  font-size:12px;
+  text-align:center;
+  padding:1px 3px;
+  margin:auto 2px;
+  width:12px; 
+}
+.bregxt tbody td .xtc0 {
+  color: #e2e2e2;
+  background-color:#e2e2e2;
+}
+
+.brtbl.bregxt tr td {
+  text-align:center;
+  min-width:5rem;
+  white-space: nowrap;
 }
 
 

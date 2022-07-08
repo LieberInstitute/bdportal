@@ -33,10 +33,15 @@ const numsortCols=[   1,                               5,     6,       7,      8
 const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI' ] //region columns to be added
 const stickyCols=3; //stick #, BrNum, Dx
 const stickyWs=[ 54, 64, 76 ]; //pixels
-function prepTable(byRegion) {
+
+function prepTable(byRegion, mcache) {
+  if (mcache && mcache.brnum==dtBrXsel.size && mcache.byRegion==byRegion)
+      return [ ... mcache.r_data ] // [ rcols, rds ] did not change since last render
+        
 	const brseldata=[]
 	const rds=[]
 	let rcols=null
+  //console.log("}{}{}{}>> prepTable() called !!!")
 	//every render - prepare brseldata
 	if (byRegion) {
 		//TODO : build rds rows
@@ -55,6 +60,11 @@ function prepTable(byRegion) {
 			})
        rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts])
 		})
+    if (mcache) { //memoize this
+       mcache.brnum=dtBrXsel.size;
+       mcache.byRegion=byRegion;
+       mcache.r_data=[rcols, rds]
+    }
 		return [rcols, rds]
 	}
   // simplified table, only total sample counts per experiment data type
@@ -70,20 +80,49 @@ function prepTable(byRegion) {
 		})
 		rds.push([brint, dxix, raix, six, age, pmi, ...counts])
    })
+
+   if (mcache) { //memoize this
+    mcache.brnum=dtBrXsel.size;
+    mcache.byRegion=byRegion;
+    mcache.r_data=[xtcols, rds]
+  }
   return [xtcols, rds]
 }
 
-function renderRow(i, rd, byRegion) { //
- if (byRegion) {
-	return  (<tr key={i}>
-		  </tr>)
- }
+function renderRow(r, rd, byRegion) { //
+ if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
+   // rxtcounts are per-region arrays of counts (one for each xtype in every array)
+   const [brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
+   const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+           `${dtaNames.sex[six]}`, age, pmi]
+   let lacc=0;           
+   return(<tr key={`tr${r}`}>{
+    outrd.map(  (e,i)=> {
+       if (i && i<=stickyCols) lacc+=stickyWs[i-1]
+       let cl=null, st=null;
+       if (i<stickyCols) {
+          cl="app-sticky";
+          let w=stickyWs[i];
+          if (i==stickyCols-1) w-=1;
+          st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+       }
+       return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+           : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
+     })} 
+     { //now output the region counts, by xtype in each region
+       rxtcounts.map( (rc,i)=><td key={`r${r}tc${i}`}> {
+        rc.map( (c, xt) => <span key={`r${r}c${i}x${xt}`} class={ c ? "xtc" : "xtc0"}
+             style={ c ? {backgroundColor: xtcolors[xt] } : null } >{c}</span> ) 
+       } </td>)  
+   }
+ </tr>)
+}
  // --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
   const [brint, dxix, raix, six, age, pmi, ...counts] =rd;
-	const outrd=[`${i+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+	const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
            `${dtaNames.sex[six]}`, age, pmi, ...counts]
 		let lacc=0
-	return(<tr key={i+1}>{
+	return(<tr key={`tr${r}`}>{
 	   outrd.map(  (e,i)=> {
 		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
 			let cl=null, st=null;
@@ -93,8 +132,8 @@ function renderRow(i, rd, byRegion) { //
          if (i==stickyCols-1) w-=1;
          st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
       }
-	    return ((i==stickyCols-1) ?  <td key={i} class={cl} style={st}><span>{e}</span></td>
-            : <td key={i} class={cl} style={st}> {e} </td>)
+	    return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+            : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
 			//return (<td key={i}> {e} </td>)
 		} ) }
 	</tr>)
@@ -103,15 +142,15 @@ function renderHeader(tblhdr) {
   let lacc=0
 	return ( tblhdr.map(  (e,i)=> {
 		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-      let cl=null, st=null;
+      let cl="app-sticky-top", st=null;
       if (i<stickyCols) {
-         cl="app-sticky";
+         cl="app-sticky-top-l";
          let w=stickyWs[i];
          if (i==stickyCols-1) w-=1;
          st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
       } 
-			return ((i==stickyCols-1) ? <td key={i} class={cl} style={st}> <span>{e}</span></td>
-         : <td key={i} class={cl} style={st}> {e} </td>)
+			return ((i==stickyCols-1) ? <td key={`h${i}`} class={cl} style={st}> <span>{e}</span></td>
+         : <td key={`h${i}`} class={cl} style={st}> {e} </td>)
 		} ) )
 }
 
@@ -146,46 +185,17 @@ const BrTable = ( props ) => {
 	const refData = useRef({
     brd: [],
 		sortcol: 0,
-		sortup: false //sorting direction
+		sortup: false, //sorting direction
+    // --- cache
+    cache: { brnum:0, byRegion:false, r_data: [null, null] }
   })
 	const m=refData.current
-
-  /*
-	useEffect(  ()=>{
-		// resize the header and body columns to align
-		const table = $('.brtbl'),
-		  bodyRow1Cells = table.find('tbody tr:first').children(), //first row
-			//bodyRows = table.find('tbody tr'), //all body rows
-			thead =  table.find('thead tr');
-		  // Get the tbody columns width array
-			let i=-1
-		  let bWidths = bodyRow1Cells.map( function() {
-				   //debug only:
-           if (i>stickyCols) $(this).css('min-width', 120);
-				   i++;
-		       return i<stickyCols ? stickyWs[i] : $(this).width()  }).get();
-		 console.log(" bWidths: ", bWidths)
-			i=-1;
- 		  let hWidths = thead.children().map( function() {
-  			    //$(this).addClass('clhead');
-						i++;
-						return i<stickyCols ? stickyWs[i] : $(this).width()  }).get();
-				 // Set the width of thead columns
-		  thead.children().each((i, v) => {
-		     $(v).width(Math.max(bWidths[i], hWidths[i]) )
-				});
-
-			bodyRow1Cells.each( (i,v)=>{
-				$(v).width(Math.max(bWidths[i], hWidths[i]))
-			})
-
-	}) */
 
   function sortByCol(e) {
 		  let t=$(e.target)
 	}
 
-  const [ cntcols, tblrows] = prepTable(props.byRegion);
+  const [ cntcols, tblrows] = prepTable(props.byRegion, m.cache);
   const tblhdr=[...basecols, ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
@@ -194,33 +204,35 @@ const BrTable = ( props ) => {
 		 //console.log("   setting max-width to: ", maxw)
 		 wstyle=`max-width:${maxw}px;`
 	}
-  
+  const tbclass=props.byRegion ? "brtbl bregxt flex-shrink-1" : "brtbl flex-shrink-1"
 	return (<Col className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
 	           style={wstyle}>
-	 <table class="brtbl flex-shrink-1"><thead>
-
+	 <table class={tbclass}><thead>
 		<tr key="t0">
       { renderHeader(tblhdr) }
 		</tr>
 		</thead><tbody>
 	  { tblrows.map( (rd, i)=> renderRow(i, rd, props.byRegion))  }
-</tbody></table>
+    </tbody></table>
 		</Col>);
 }
 // ------------------- page content starts here
 const BrBrowse = ( ) => {
      const refData=useRef( {
-			   relwidth:0,
+         tblkey:1,
+			   relwidth:0
 		 })
      const [winWidth, setwinWidth]=useState(0)
 		 const m=refData.current;
      const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		 const [byRegion, setByRegion]=useState(false)
+
 		 function toggleByRegion() {
 			  if (!byRegion) {
            m.relwidth=$('#relSumBox').width()
 					 //console.log(" relwdith: ", m.relwidth)
 				}
+       m.tblkey++;
 			 setByRegion( prev=> !prev )
 		 }
 
@@ -292,7 +304,7 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-		   	    <BrTable wuwidth={winWidth} tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
+		   	    <BrTable key={m.tblkey} wuwidth={winWidth} tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
 			</Col>
 			<Col className="d-flex align-items-start">
 				{/* <Label>{dtBrXsel.size} subjects selected.</Label> */}
