@@ -802,3 +802,31 @@ border-bottom:1px solid #ececec;
   /* box-shadow: 2px 2px 1px grey; */
 }
 
+/* add this to the th or td elements you want to stick
+ for tables: container should have position:relative and overflow:auto
+*/
+.app-sticky, .app-sticky-top, .app-sticky-l, .app-sticky-top-l {
+  position: sticky;
+  position: -webkit-sticky; /* for safari */
+  z-index: 50;
+}
+
+.app-sticky-top {
+  top:0;
+  z-index:55;
+}
+.app-sticky-l {
+  left:0;
+}
+.app-sticky-top-l {
+  top:0; left:0;
+  z-index:70;
+}
+
+.app-sticky-item {
+  display: inline-block;
+  width:auto;
+  margin:0;
+  padding:0;
+  text-align:right;
+}

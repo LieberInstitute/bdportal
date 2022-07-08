@@ -210,6 +210,8 @@
    }
 
    .mx-info-box {
+    position:relative;
+    margin-left:-2rem;
     width:28rem;
     text-align: center;
     padding:6px;

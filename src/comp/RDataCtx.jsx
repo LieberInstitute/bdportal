@@ -128,21 +128,27 @@ export const XBrs = new Set();
 // the set of bridx present in JSON brains but NOT having experimental samples at all
 export const noXBrs = new Set(); //built from JSON brains removing any "seen" bridx in JSON sdata
 
-//array of maps for bridx to array of sample indexes in dtaXall[dtype], for each datatype dtype
-export const br2Smp= [] /* maps bridx
+// array of maps for bridx to array of sample indexes and their region index, per each data type
+// eg br2Smp[0] is a hash mapping brix : [ [ rnaseq_sample_id,regix],  ... ]
+// eg br2Smp[1] is a hash mapping brix : [ [ dnam_sample_ids,regix],  ... ]
+export const br2Smp= [] /*
     [
-      { // rnaseq samples hash
+      { // [0]: rnaseq samples hash
         bridx: [sample_id1, sample_id2, ...],
         bridx2:  [sample_id3, sample_id4, ...],
         ...
-      },  // dna met samples hash
-      { bridx: [sample_id1, sample_id2, ...],
+      },
+      { // [1]: dnamet samples hash
+        bridx: [sample_id1, sample_id2, ...],
         bridx2:  [sample_id3, sample_id4, ...]
         ...
       }
       ...
     ]
 */
+
+export const smp2Region=[]
+//array of maps for smp to array of region indexes in dtaXall[dtype], for each datatype dtype
 
 //array of maps of sample_id to bridx (index in dtaBrains array) for each data type
 export const smp2Br=[] //TODO: check if we REALLY need this?!
@@ -640,8 +646,8 @@ export function loadData(allData) {
   allData.sdata.forEach( (xtdata, ix) => {
     dtXsel.push([]); //clear selection
     dtXall.push( xtdata ); //collecting data for all sample types, as is
-    const b2s={}; //using {} to make sure bridx is converted to string as key
-    br2Smp.push(b2s);
+    const b2sr={}; //using {} to make sure bridx is converted to string as key
+    br2Smp.push(b2sr);
     const s2b=[];
     smp2Br.push(s2b);
     // for region counts:
@@ -667,11 +673,11 @@ export function loadData(allData) {
            // use to populate btBrOriCounts.(dx,sex,race,age) for the current datatype
     let brCount=0
     xtdata.forEach( (sd, si)=> { // [ bridx, sample_id, dsidx, regidx, protoidx ]
-      const [bridx, sid, , rg, p]=sd;
+      const [bridx, sid, dsi, rg, p]=sd;
       s2b[sid]=bridx; //should be a single brain, duh
-      let smps=b2s[bridx];
-      if (!smps) { smps=[]; b2s[bridx]=smps }
-      smps.push(si);
+      let smpregs=b2sr[bridx];
+      if (!smpregs) { smpregs=[]; b2sr[bridx]=smpregs }
+      smpregs.push([si,rg]);
       //if (xtix===0)
       protooc[p]++;
       // -- update dtOriCounts.dx sample counts:
@@ -687,12 +693,6 @@ export function loadData(allData) {
           XBrs.add(bridx);
           // also remove it from noXBrs !
           noXBrs.delete(bridx);
-          /* already populated earlier?
-          brXdxoc[dxi]++; //counts per dx of brains having ANY experimental data
-          brXageoc[ax]++;
-          brXraceoc[raidx]++;
-          brXsexoc[sidx]++;
-          */
         }
         if (!brXTCounted[bridx]) { //counts for this exp type
           brCount++
@@ -714,7 +714,6 @@ export function loadData(allData) {
         }
      }
     });
-    //smpBrTotals.push([xtdata.length, Object.keys(b2s).length]);
     smpBrTotals.push([xtdata.length, brCount]);
   });
  // free memory from loaded/fetched JSON bulk data

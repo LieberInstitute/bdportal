@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import {useEffect, useState} from "preact/hooks";
 import { rGlobs, changeXType, useRData }  from '../../comp/RDataCtx';
-import './style.css'; 
+import './style.css';
 import BrMatrix from './brmatrix';
 import BrBrowse from './brbrowse';
 

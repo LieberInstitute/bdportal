@@ -278,8 +278,8 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
 	 </Row>
  </Col>
   {/* -- right column: RSelSummary  -- */}
-  <Col xs="4" className="d-flex flex-fill" >
-    <Row className="pt-0 mt-0 d-flex flex-fill flex-grow-1 justify-content-center align-items-start">
+  <Col xs="4" className="d-flex flex-fill ml-2" >
+    <Row className="pt-0 mt-0 d-flex justify-content-center align-items-start">
       <RSelSummary brloaded={brloaded} onBrList={onBrListLoad} />
     </Row>
   </Col>
