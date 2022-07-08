@@ -55,7 +55,6 @@ function prepTable(byRegion) {
 			})
        rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts])
 		})
-		console.log(rcols, rds)
 		return [rcols, rds]
 	}
   // simplified table, only total sample counts per experiment data type
@@ -176,22 +175,38 @@ const BrTable = ( props ) => {
 
   const [ cntcols, tblrows] = prepTable(props.byRegion);
   const tblhdr=[...basecols, ...cntcols]
-	return (<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto" >
-	<table class="brtbl"><thead>
+	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
+	let wstyle=null
+	if (props.byRegion && props.relwidth) {
+		 const maxw=$('#brContainer').width() - props.relwidth-40;
+		 console.log("   setting max-width to: ", maxw)
+		 wstyle=`max-width:${maxw}px;`
+	}
+	return (<Col className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
+	           style={wstyle}>
+	 <table class="brtbl flex-shrink-1"><thead>
+
 		<tr key="t0">
       { renderHeader(tblhdr) }
 		</tr>
 		</thead><tbody>
 	  { tblrows.map( (rd, i)=> renderRow(i, rd, props.byRegion))  }
-    </tbody></table>
+</tbody></table>
 		</Col>);
 }
 // ------------------- page content starts here
 const BrBrowse = ( ) => {
-
+     const refData=useRef( {
+			   relwidth:0
+		 })
+		 const m=refData.current;
      const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		 const [byRegion, setByRegion]=useState(false)
 		 function toggleByRegion() {
+			  if (!byRegion) {
+           m.relwidth=$('#relSumBox').width()
+					 console.log(" relwdith: ", m.relwidth)
+				}
 			 setByRegion( prev=> !prev )
 		 }
 
@@ -222,15 +237,15 @@ const BrBrowse = ( ) => {
 		 </Row></div>)
 	 }
 
-	return (<div class="col-12 d-flex flex-column bred">
+	return (<div class="col-12 d-flex flex-column">
 
 	   {/*<Row className="pt-1">
 			 &nbsp;
 		   <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Brain table</Button>
 		 </Row>*/}
-		 <Row className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap bgreen">
+		 <Row id="brContainer" className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap">
 		  {/* <Col className="d-flex mr-0 pr-0 flex-grow-1 align-self-stretch" > */}
-			  <Col className="d-flex flex-column align-items-end justify-content-end mb-1 bblue"  >
+			  <Col className="d-flex flex-column align-items-end justify-content-end mb-1">
 					<Row className="d-flex flex-row justify-content-center m-1 pt-1">
 					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
       					 <CustomInput type="checkbox" id="ckByRegion" onClick={toggleByRegion} checked={byRegion} />
@@ -239,11 +254,11 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-		   	    <BrTable tnum={tbl} byRegion={byRegion} />
+		   	    <BrTable tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
 			</Col>
-			<Col className="d-flex align-items-start bred">
+			<Col className="d-flex align-items-start">
 				{/* <Label>{dtBrXsel.size} subjects selected.</Label> */}
-				<Row className="pl-0 pr-0 pt-1 mt-4 d-flex justify-content-start align-items-start bgreen">
+				<Row id="relSumBox" className="pl-0 pr-0 pt-1 mt-4 d-flex justify-content-start align-items-start">
 				 <RSelSummary browse />
     	 </Row>
 
