@@ -42,7 +42,7 @@
   text-align:right;
 }
 
-.brtbl tr td:nth-child(2), .brtbl tr td:nth-child(3), .brtbl tr td:nth-child(4), .brtbl tr td:nth-child(5) {
+.brtbl tr td:nth-child(2), tr td:nth-child(3), .brtbl tr td:nth-child(4), .brtbl tr td:nth-child(5) {
   text-align:center;
 }
 
@@ -66,6 +66,17 @@
 .brtbl .clhead {
   cursor:pointer;
 }
+
+.brtbl tr td:nth-child(3)>span, .brtbl tr th:nth-child(3)>span {  
+  display: inline-block;
+  padding-right:4px;
+  border-right:1px solid #fff !important;
+  width:100%;
+}
+
+.brtbl tr td:nth-child(3) {
+}
+
 
 /*
 .brtbl tbody {

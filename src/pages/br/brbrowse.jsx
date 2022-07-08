@@ -32,7 +32,7 @@ const xtgrey='#cdcdcd'
 const numsortCols=[   1,                               5,     6,       7,      8,      9]
 const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI' ] //region columns to be added
 const stickyCols=3; //stick #, BrNum, Dx
-const stickyWs=[ 54, 64, 64 ]; //pixels
+const stickyWs=[ 54, 64, 76 ]; //pixels
 function prepTable(byRegion) {
 	const brseldata=[]
 	const rds=[]
@@ -86,9 +86,15 @@ function renderRow(i, rd, byRegion) { //
 	return(<tr key={i+1}>{
 	   outrd.map(  (e,i)=> {
 		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-			const cl= i<stickyCols ? "app-sticky" : null ;
-			const st=(i<stickyCols) ? `min-width:${stickyWs[i]}px;max-width:${stickyWs[i]}px;left:${lacc}px;` : null;
-	    return (<td key={i} class={cl} style={st}> {e} </td>)
+			let cl=null, st=null;
+      if (i<stickyCols) {
+         cl="app-sticky";
+         let w=stickyWs[i];
+         if (i==stickyCols-1) w-=1;
+         st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+      }
+	    return ((i==stickyCols-1) ?  <td key={i} class={cl} style={st}><span>{e}</span></td>
+            : <td key={i} class={cl} style={st}> {e} </td>)
 			//return (<td key={i}> {e} </td>)
 		} ) }
 	</tr>)
@@ -97,9 +103,15 @@ function renderHeader(tblhdr) {
   let lacc=0
 	return ( tblhdr.map(  (e,i)=> {
 		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-			const cl=stickyCols ? (i<stickyCols ? "app-sticky-top-l":"app-sticky-top") : null ;
-			const st=(i<stickyCols) ? `min-width:${stickyWs[i]}px;max-width:${stickyWs[i]}px;left:${lacc}px;` : null;
-	    return (<td key={i} class={cl} style={st}> {e} </td>)
+      let cl=null, st=null;
+      if (i<stickyCols) {
+         cl="app-sticky";
+         let w=stickyWs[i];
+         if (i==stickyCols-1) w-=1;
+         st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+      } 
+			return ((i==stickyCols-1) ? <td key={i} class={cl} style={st}> <span>{e}</span></td>
+         : <td key={i} class={cl} style={st}> {e} </td>)
 		} ) )
 }
 
@@ -178,10 +190,11 @@ const BrTable = ( props ) => {
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
 	if (props.byRegion && props.relwidth) {
-		 const maxw=$('#brContainer').width() - props.relwidth-40;
-		 console.log("   setting max-width to: ", maxw)
+		 const maxw=window.innerWidth - props.relwidth-78;
+		 //console.log("   setting max-width to: ", maxw)
 		 wstyle=`max-width:${maxw}px;`
 	}
+  
 	return (<Col className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
 	           style={wstyle}>
 	 <table class="brtbl flex-shrink-1"><thead>
@@ -197,15 +210,16 @@ const BrTable = ( props ) => {
 // ------------------- page content starts here
 const BrBrowse = ( ) => {
      const refData=useRef( {
-			   relwidth:0
+			   relwidth:0,
 		 })
+     const [winWidth, setwinWidth]=useState(0)
 		 const m=refData.current;
      const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		 const [byRegion, setByRegion]=useState(false)
 		 function toggleByRegion() {
 			  if (!byRegion) {
            m.relwidth=$('#relSumBox').width()
-					 console.log(" relwdith: ", m.relwidth)
+					 //console.log(" relwdith: ", m.relwidth)
 				}
 			 setByRegion( prev=> !prev )
 		 }
@@ -223,9 +237,34 @@ const BrBrowse = ( ) => {
     $('.toast').toast({ delay: 7000 })
     setupTooltips()
     return ()=>{ //clean-up code
-       clearTooltips()
+       clearTooltips()      
     }
 	 }, []);
+
+  useEffect(()=> {
+    function debounce(fn, ms) {
+      let timer
+      return () => {
+        clearTimeout(timer)
+        timer = setTimeout(_ => {
+          timer = null
+          fn.apply(this, arguments)
+        }, ms)
+      };
+    }
+    const debouncedHandleResize= debounce( ()=> {
+       if (byRegion) {
+           m.relwidth=$('#relSumBox').width()
+           setwinWidth(window.innerWidth) //force update
+       }
+     }, 300 )
+     window.addEventListener('resize', debouncedHandleResize)
+     return ()=>{ //clean-up code
+         window.removeEventListener('resize', debouncedHandleResize)
+     } 
+
+  })
+
 
    if (!anyActiveFilters(true)) {
 		 return (<div class="col-12 d-flex flex-column">
@@ -237,8 +276,7 @@ const BrBrowse = ( ) => {
 		 </Row></div>)
 	 }
 
-	return (<div class="col-12 d-flex flex-column">
-
+  return (<div class="col-12 d-flex flex-column">
 	   {/*<Row className="pt-1">
 			 &nbsp;
 		   <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Brain table</Button>
@@ -254,7 +292,7 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-		   	    <BrTable tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
+		   	    <BrTable wuwidth={winWidth} tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
 			</Col>
 			<Col className="d-flex align-items-start">
 				{/* <Label>{dtBrXsel.size} subjects selected.</Label> */}
