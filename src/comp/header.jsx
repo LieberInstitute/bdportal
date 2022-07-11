@@ -1,5 +1,5 @@
 import './header.css';
-import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem } from 'reactstrap'
+import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem, NavLink } from 'reactstrap'
 import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
 import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
@@ -196,8 +196,7 @@ export function Header({ page, tab, menuClick }) {
 
 
   function showReadMe() {
-    let basePath = APP_BASE_URL
-    if (basePath=='/') basePath='';
+    const bpath=basePath=='/' ? '' : basePath
     window.open(`${basePath}/bdportal.readme.html#${page}-${tab}`, "LIBDPortal help")
   } 
 
@@ -217,7 +216,13 @@ export function Header({ page, tab, menuClick }) {
     <Nav className='bg-light d-flex align-items-center navheader flex-nowrap noselect'>
       <a href='http://www.libd.org'><img alt="logo" src={imgLogo} style={{ height: "2rem" }} /></a>
       <span style={{ height: '100%', padding: '0.5rem 1rem' }} > </span>
-      <UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
+     { navDropDown.map( (pd, i) => {
+        <NavItem>
+          <NavLink href={`${basePath}#/${pd[0]}/${pd[1]}`}>{pd[2]}</NavLink>
+        </NavItem>
+      })
+     }
+      {/* <UncontrolledDropdown nav inNavbar className="p-0 m-0 ddtsel">
         <DropdownToggle className="navdbtsel v-100 m-2" nav caret>
           {pageNav[1]}
         </DropdownToggle>
@@ -230,10 +235,10 @@ export function Header({ page, tab, menuClick }) {
           )
           }
         </DropdownMenu>
-      </UncontrolledDropdown>
+        </UncontrolledDropdown> */}
 
       <div class="navtab-box flex-nowrap">
-         <ServerStatus />
+         {/* <ServerStatus /> */}
         {tabs.length > 0 && tabs.map((t) => (
           <NavItem className={t[0] === tab ? "navtab selected" : "navtab"} key={t[0]} id={t[0]}>
             {/* <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link> */}
@@ -241,11 +246,14 @@ export function Header({ page, tab, menuClick }) {
               {/* <a href={`${basePath}#/${page}/${t[0]}`}>{t[1]}</a> */}
               <a href={hrefTo(page,t[0])}>{t[1]}</a>
             </div>
-          </NavItem>
+          </NavItem>          
         ))}
       </div>
 
+      
       <NavItem className="ml-auto nav-right">
+        <div style="position:relative;top:-10px;left:-120px;"><ServerStatus />
+        </div>
         <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;<b>?</b>&nbsp;</button> 
         
         <img alt="bands" src={imgBands} className="navimgbands" />
