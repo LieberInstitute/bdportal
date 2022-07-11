@@ -196,7 +196,9 @@ export function Header({ page, tab, menuClick }) {
 
 
   function showReadMe() {
-    window.open("/bdportal.readme.html", "LIBDPortal help")
+    let basePath = APP_BASE_URL
+    if (basePath=='/') basePath='';
+    window.open(`${basePath}/bdportal.readme.html#${page}-${tab}`, "LIBDPortal help")
   } 
 
   const pageNav = navRoutes[page] // [pageOrd#, pageTitle [,  [ tabId1, tabLabel1], [tabId2, tabLabel2], ...] ]
