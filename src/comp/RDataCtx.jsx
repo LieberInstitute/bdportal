@@ -313,6 +313,7 @@ export const dtBrCounts = {
     cx2r:  {},
     cxDxSex: [], // crosstab counts Dx vs Sex   - initialized by initBrCX
     cxDxRace: [], // crosstab counts Dx vs Race  - initialized by initBrCX
+    act_brSet:null, //in BrBrowse this points to a different set
     Brains: new Set() // set of brix passing the filters (dtBrXsel)
  }
 
@@ -1082,11 +1083,18 @@ function initBrCounts(brSet) { //before counting (updateCounts), or anytime we n
 
 }
  export function updateBrCountsFromBrSet(brSet) {
-    //populated dtBrCounts.*2* tables for the crosstable report etc. 
-    // if brSet is not given, restore those tables from dtBrXsel (e.g. when switching from Browse to Select in BSB)
-    let restoreBrXSel=false
-    if (!brSet) { brSet=dtBrXsel; restoreBrXSel=true }
-    
+    //populate dtBrCounts.*2* tables for the crosstable report etc. 
+    // if brSet is not given, restore those tables from dtBrXsel (e.g. when switching from Browse to Select tabs in BSB)
+    if (!brSet) brSet=dtBrXsel
+    const br_set=new Set(brSet) //shallow copy
+    brSet.clear()
+    initBrCounts(brSet)
+    br_set.forEach( brix=> {
+      const [ brint,  dxi, r, s, age, ...rest ] = dtaBrains[brix];
+      let ax=age2RangeIdx(age);
+      updateBrCounts(brix, dxi, s, r, ax, brSet)
+    } )
+    dtBrCounts.act_brSet=brSet
  }
 
  //add a subject that passed the filters to the cxDx data

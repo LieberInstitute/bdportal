@@ -3,7 +3,7 @@ import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
    dtaBrains, XBrs, anyActiveFilters, clearFilters, getFilterSet,
-   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts } from './RDataCtx';
+   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts, updateBrCountsFromBrSet } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
      Row, Col, Button, Label, Alert} from 'reactstrap';
@@ -25,7 +25,7 @@ import { clearTooltips, setupTooltips } from './ui';
      props.brloaded   : number of BrNums loaded
      props.onBrList() : callback being passed the brlist array
 */
-function BrSetButtons({ numbr, show, browse } ) {
+function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable } ) {
 
   const [isFullBrSave, toggleFullBrSave]=useModal()
 
@@ -38,13 +38,15 @@ function BrSetButtons({ numbr, show, browse } ) {
    <Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
     <Col className="col-auto m-2">
           <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
-                     data-toggle="tooltip" title="Download the table with selected brains">
+                     data-toggle="tooltip" title="Download CSV table with selected brains">
             Download table</Button>
           <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton} style={ !browse ? null : { display: "none" } }
                    data-toggle="tooltip" title="Browse and save the selected brain set">
             Browse Set</Button>
      </Col>
-     <DlgSaveCSV data={getBrSelData([0,1,2])} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+     { browse ? <DlgSaveCSV getData={getBrowseTable} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+              : <DlgSaveCSV data={getBrSelData([0,1,2], brSet)} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+     }
      <Col className="col-auto m-2">
        <Button className="btn-light btn-sm app-btn" disabled >
           Request Genotypes</Button>
@@ -126,6 +128,7 @@ function LoadBrList(props) {
    props.selsheet : passed down from RnaSelect page to DlgDownload dialog
 */
 function RSelSummary( props ) {
+  // props.brSet -> if provided, should reinitialize dtBrCounts.*2* hashes with updateBrCountsFromBrSet()
   // props.onBrList() handler
   // props.brloaded can receive back the updated brlist count
   const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
@@ -136,12 +139,21 @@ function RSelSummary( props ) {
   const selXType = rGlobs.selXType;
 
   const refData=useRef( {
+    firstRender:true,
     selSheet:null,
     brSummary:null
   })
   const m=refData.current;
 
   const xt=selXType ? selXType-1 : 0;
+  if (m.firstRender) {
+    m.firstRender=false;
+    if (!props.browse && brCounts.act_brSet && brCounts.act_brSet!=dtBrXsel)
+       updateBrCountsFromBrSet() //coming back from Browse tab to the Select tab in BSB
+  }
+
+  const brSet = props.brSet ? props.brSet : dtBrXsel ;
+
   const regflt=(dtFilters.reg.size>0)
   let dsflt=dtFilters.dset; //only used for RNASeq downloading for now
   let showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq), depends also on selXtype
@@ -195,7 +207,6 @@ function RSelSummary( props ) {
   if (!smpBrTotals || smpBrTotals.length==0) return null;
 
   //const numbr=brCountData.sex[1]+brCountData.sex[2]
-  //console.log("================= dtBrXsel.size: ", dtBrXsel.size, " | numbr=", numbr)
   let restrictedDatasets=[] //gather restricted datasets
   if (selXType)
     dsflt.forEach( (di)=>{
@@ -257,7 +268,6 @@ function RSelSummary( props ) {
 
   function subjXTable() {
      //cross tab functionality
-     //TODO: can also build CSV (users might want to save this too!)
      /*
      if (brCounts.cxDxRace.length<2) {
        //console.log(" -- cxDxRace:", brCounts.cxDxRace);
@@ -431,14 +441,14 @@ function RSelSummary( props ) {
     return m.brSummary
   }
 
-  //console.log("----}} RSelSummary render..", dtBrXsel.size)
-
+  
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
-  const selbrCount = dtBrXsel.size
+  const selbrCount = brSet.size
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
   const arrSubjTotals=[]
+  //console.log("----}} RSelSummary render with brSet:", brSet)
 
   return (
   <Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
@@ -533,7 +543,7 @@ function RSelSummary( props ) {
 
             </Col> : <Col>
                    {selXType ? showSampleSelWarn()
-                           : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} />
+                           : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} getBrowseTable={props.getBrowseTable} brSet={props.brSet} />
 
                        }
                    </Col>

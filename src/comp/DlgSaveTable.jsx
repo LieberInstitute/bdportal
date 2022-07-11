@@ -26,10 +26,10 @@ export function DlgSaveCSV( props ) { //props.hide() must exist
     const v=target.value
     setFileName(v);
   }
+
   function onFmtChange(e) {
     setFmt((e.target.id=="r1")?1:2)
   }
-
 
   function afterOpen() {
     if (props.getData)  {

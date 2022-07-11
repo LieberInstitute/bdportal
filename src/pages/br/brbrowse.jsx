@@ -6,7 +6,7 @@ import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 	Row, Col, Input, Button, Label, CustomInput} from 'reactstrap';
 import axios from 'axios'
 import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters,
-	useFltCtx, dtaBrains, dtBrXsel, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
+	useFltCtx, dtaBrains, dtBrXsel, updateBrCountsFromBrSet, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'
@@ -96,6 +96,7 @@ function prepTable(byRegion, mcache) {
   return [xtcols, rds]
 }
 
+//filter the brains table based on a set of brix
 function tableFilter(tblrows, brset) {
 	const rows=[]
   tblrows.forEach( r => {
@@ -103,8 +104,6 @@ function tableFilter(tblrows, brset) {
 	})
 	return rows
 }
-
-
 
 function getBrTblRow(rd, brix, i) {
 	const [brint, dxix, raix, six, age, pmi, hasSeq, hasGeno, dropped]=rd;
@@ -144,19 +143,13 @@ const BrTable = ( props ) => {
 		if (!showXTs || showXTs.length==0) {
 			showXTs=new Array(xtcols.length).fill(true)
 		 }
-		const shcounts=[]
 		const shcolors=[]
 		xtcols.forEach( (e,i)=> {
 			if (showXTs[i]) {
 				shcolors.push(xtcolors[i])
 			}
 	  })
-    /* () => {
-								const shrc=[]
-								rc.forEach( (c,j) => {
-									if (showXTs[j]) shrc.push(c)
-								})
-    */
+    
 		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
 			const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
@@ -196,7 +189,8 @@ const BrTable = ( props ) => {
 	 const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
 							`${dtaNames.sex[six]}`, age, pmi]
 	 let lacc=0
-
+   const shcounts=[]
+		
 	 counts.forEach( (e,i)=> {
 			  if (showXTs[i]) {
 					shcounts.push(e)
@@ -260,7 +254,7 @@ const BrTable = ( props ) => {
 		})
 	}
 
-  const tblrows = tableFilter( props.tblRows, props.brSet )
+  const tblrows = tableFilter( props.tblRows, props.brSet ) //filter rows to render 
   const tblhdr=[...basecols, ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
@@ -339,18 +333,26 @@ const BrBrowse = ( ) => {
      }
 		 if (m.brSet) m.brSet.clear()
         else m.brSet=new Set()
+     const brSet=m.brSet
 		 if (m.reqXType.size==0) { // no restrictions
   			dtBrXsel.forEach( brix=> {
-  				m.brSet.add(brix)
+  				brSet.add(brix)
   			})
         m.cache.fltXT=new Set(m.reqXType)
+        updateBrCountsFromBrSet(brSet)
         return
 		 }
      //m.brSet rebuild from m.tblRows according to m.reqXType
      m.cache.fltXT=new Set(m.reqXType)
-     const brSet=m.brSet
-     if (byRegion) { //let pass only brains that have at least 1 region with m.reqXType 
-
+     if (byRegion) { //let pass only brains that have at least 1 region with all m.reqXType sequenced
+       m.tblRows.forEach( (rd,i)=>{
+          const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts] =rd;
+          for(let ri=0;ri<rxtcounts.length;ri++) {
+            let reqmet=true
+            m.reqXType.forEach( v=> { reqmet &= (rxtcounts[ri][v]>0) })
+            if (reqmet) { brSet.add(brix); break }
+          }
+       })
      } else { // let pass only brains that have samples of all m.reqXType types 
          m.tblRows.forEach( (rd,i)=>{
             const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
@@ -359,8 +361,7 @@ const BrBrowse = ( ) => {
             if (reqmet) brSet.add(brix)
          })
      }
-     
-
+     updateBrCountsFromBrSet(brSet) // rebuild brCounts.*2* ; brSet should be passed to RSelSummary
 	 }
 
 	 function toggleXType(xt) {
@@ -376,6 +377,58 @@ const BrBrowse = ( ) => {
 		 else m.reqXType.add(xt)
      forceUpdate();
 	 }
+
+   function getBrowseTable() { //for the SaveCSV dialog, get table data according to the current selections options
+          //this should act similarly with the render functions as used in BrTable
+          // same setup as in BrTable render:
+          const cntcols = []
+          const showXTs=m.showXType
+          if (byRegion) {
+            m.tblCols.forEach( r =>{
+              const r_xt=[]
+              //push <region>_<xn> for each showXType
+              xtcols.forEach( (xn, xt)=> {
+                if (m.showXType[xt]) r_xt.push(`${r}_${xn}`)
+              })
+              cntcols.push(...r_xt)
+            })
+          } else {
+            m.tblCols.forEach( (e,i)=> {
+              if (m.showXType[i]) cntcols.push(e)
+            })
+          }
+        
+          const tblrows = tableFilter( m.tblRows, m.brSet ) //filter rows to export according to current brSet
+          //const tblhdr=[...basecols, ...cntcols]
+          const rdata=[ [...basecols, ...cntcols] ] // add header row
+          if (byRegion) {
+            tblrows.forEach( (rd, r)=>{
+              const shcounts=[]
+              const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
+              const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+                      `${dtaNames.sex[six]}`, age, pmi]
+              rxtcounts.forEach( (rc,i)=>{
+                 rc.forEach( (c,j)=> {
+                   if (showXTs[j]) outrd.push(c) //do not export unless shown
+                 })
+              })
+              rdata.push(outrd)
+            } )
+            return rdata;
+          }
+          // simplified table:
+          tblrows.forEach( (rd, r)=>{
+            const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+            const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+                       `${dtaNames.sex[six]}`, age, pmi]
+            counts.forEach( (c,i)=> {
+                if (showXTs[i]) outrd.push(c);                
+            })
+            rdata.push(outrd)
+          } )
+          return rdata;
+   }
+
 
    useEffect(() => {
     $('.toast').toast({ delay: 7000 })
@@ -454,7 +507,7 @@ const BrBrowse = ( ) => {
 							<div key={`ckXt${xt}`} class="pl-4 ml-1 row d-flex align-self-start flex-row xt-ckbox">
 						    <div className="ckbox-label" data-toggle="tooltip" data-placement="right" title="" >
 								<span class='ckbox-br-xt'>
-								   <span style={ { height:'18px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;&nbsp;&nbsp;</span>
+								   <span style={ { height:'18px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;#&nbsp;</span>
 									 {xn}
 								</span>
 							   <CustomInput type="checkbox" id={`ckXt${xt}`} onClick={ () => toggleXType(xt)} checked={m.showXType[xt]} />
@@ -479,7 +532,7 @@ const BrBrowse = ( ) => {
 					</Col>
 			  </Row>
 				<Row id="relSumBox" className="pl-0 pr-0 pt-1 mt-2 d-flex justify-content-start align-items-start">
-				 <RSelSummary browse brSet={m.brSet} />
+				 <RSelSummary browse brSet={m.brSet} getBrowseTable={getBrowseTable}/>
     	 </Row>
 
 			</Col>
