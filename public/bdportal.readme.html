@@ -1,0 +1,62 @@
+<html><head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+   <style type="text/css">ol{margin:0;padding:0}table td,table th{padding:0}.c1{color:#cc0000;font-weight:700;text-decoration:none;vertical-align:baseline;font-size:16pt;font-family:"Arial";font-style:normal}.c6{padding-top:18pt;padding-bottom:6pt;line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}.c4{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:12pt;font-family:"Arial";font-style:normal}.c0{padding-top:0pt;padding-bottom:0pt;line-height:1.15;orphans:2;widows:2;text-align:left}.c7{background-color:#ffffff;max-width:504pt;padding:36pt 36pt 36pt 72pt}.c3{font-size:12pt;font-weight:700}.c5{font-size:12pt}.c2{height:11pt}.title{padding-top:0pt;color:#000000;font-size:26pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}.subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}li{color:#000000;font-size:11pt;font-family:"Arial"}p{margin:0;color:#000000;font-size:11pt;font-family:"Arial"}h1{padding-top:20pt;color:#000000;font-size:20pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h2{padding-top:18pt;color:#000000;font-size:16pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h3{padding-top:16pt;color:#434343;font-size:14pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h4{padding-top:14pt;color:#666666;font-size:12pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h5{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}h6{padding-top:12pt;color:#666666;font-size:11pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
+   </style>
+  </head>
+  <body class="c7 doc-content">
+     <h2 class="c6" id="h.iav0zw4edp5i"><span class="c1">LIBD Brain Data Portal</span></h2>
+     <p class="c0"><span class="c4">
+       This is a multi-page web application where the page (screen) can be selected using the top-left navigation button :
+      </span>
+    </p><p class="c0">
+        <span style="overflow: hidden; display: inline-block; margin: 6px 2px; border: 0.00px solid #000000; 
+          transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 356.00px; height: 115.00px;">
+          <img alt="" src="images/image1.png" style="width: 356.00px; height: 115.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="">
+        </span></p>
+        <p class="c0 c2">
+        <span class="c4"></span></p>
+        <p class="c0"><span class="c4">This is a button which when clicked displays a drop-down menu with the available application pages. 
+          The pages not implemented yet are grayed out.</span></p>
+        <p class="c0 c2"><span class="c4"></span></p><p class="c0">
+          <span class="c5">The entry page is the </span><span class="c3">Brain Set Builder, </span><span class="c5">however if the user 
+            is just interested in available datasets for specific data types (e.g. </span><span class="c3">Bulk RNAseq </span><span class="c4">data), 
+          the user can navigate directly to the data type of interest by using this top-left navigation button.</span></p>
+         <p class="c0 c2"><span class="c4"></span></p>
+         
+         <h2 class="c6" id="h.j9q3iah77gwn"><span class="c1">Brain Set Builder</span></h2>
+         <p class="c0"><span class="c5">The </span><span class="c3">Brain Set Builder</span>
+          <span class="c4">&nbsp;page allows the user to get an overview of the available data types for the subjects loaded in the database, 
+            and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability 
+            of experiment data for the subjects.</span></p><p class="c0 c2">
+          <span class="c4"></span></p>
+
+          <p class="c0 c4">In order to create a set of subjects a selection must be made by clicking to highlight one or more features in the available panels 
+            and then clicking the <span class="c3" style="color:#c34">Apply</span> button that appears at the top of a category panel
+              whenever the highlighted criteria have changed for that panel. </p>
+          <p class="c0 c4"> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and 
+            all the subject counts in the other category panels will be updated to reflect the applied selection.
+         </p>
+         <h4>Region / Data type selection</h4>
+         
+          <table><tr>
+          <td style="vertical-align:top;">
+          <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
+            <img alt="" src="images/matrix_selection.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
+          </span> 
+          </td><td style="vertical-align:top;padding-left:6px;">
+          <span class="c0 c4">
+            The table in the center of the page shows how many subjects were sequenced by various data types across brain regions, as loaded in the database. 
+            <br /><br />A subject can have samples sequenced from multiple brain regions and different data types, so they are counted independently per brain region
+            and data type in this table.
+            <br /><br /> Selecting the first region cell locks the selection to that experiment data type (column). The selection of region cells in this matrix 
+            will restrict the subjects to only those that have sequencing data for the selected brain regions, for the selected data type (column).
+          </span>
+        </td>
+       
+
+        </table></tr>
+        
+          
+
+  </body>
+  </html>

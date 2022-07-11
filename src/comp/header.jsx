@@ -195,6 +195,10 @@ export function Header({ page, tab, menuClick }) {
   }
 
 
+  function showReadMe() {
+    window.open("/bdportal.readme.html", "LIBDPortal help")
+  } 
+
   const pageNav = navRoutes[page] // [pageOrd#, pageTitle [,  [ tabId1, tabLabel1], [tabId2, tabLabel2], ...] ]
   if (!pageNav) {
     return (<h1> Navdata for page ${page} not found!</h1>)
@@ -240,6 +244,8 @@ export function Header({ page, tab, menuClick }) {
       </div>
 
       <NavItem className="ml-auto nav-right">
+        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;<b>?</b>&nbsp;</button> 
+        
         <img alt="bands" src={imgBands} className="navimgbands" />
         <span className="navtitle">LIBData Portal</span>
         <img alt="bands_r" src={imgBandsR} className="navimgbands" />
