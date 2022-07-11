@@ -1081,6 +1081,13 @@ function initBrCounts(brSet) { //before counting (updateCounts), or anytime we n
       })
 
 }
+ export function updateBrCountsFromBrSet(brSet) {
+    //populated dtBrCounts.*2* tables for the crosstable report etc. 
+    // if brSet is not given, restore those tables from dtBrXsel (e.g. when switching from Browse to Select in BSB)
+    let restoreBrXSel=false
+    if (!brSet) { brSet=dtBrXsel; restoreBrXSel=true }
+    
+ }
 
  //add a subject that passed the filters to the cxDx data
  //NOTE: MUST be called only once per brix that passed the filters

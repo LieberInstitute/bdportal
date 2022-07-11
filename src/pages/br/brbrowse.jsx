@@ -41,10 +41,10 @@ function eqSets(s1, s2) {
 }
 // update brSet to have only the entries in dtBrXsel with
 // having samples in all the exp. types in reqXtSet
-//
+// returns [ countCols, tableRows, fromCached ]
 function prepTable(byRegion, mcache) {
   if (mcache && mcache.brnum==dtBrXsel.size && mcache.byRegion==byRegion)
-      return [ ... mcache.r_data ] // [ rcols, rds ] did not change since last render
+      return [ ... mcache.r_data, true ] // [ rcols, rds ] did not change since last render
 	const brseldata=[]
 	const rds=[]
 	let rcols=null
@@ -72,7 +72,7 @@ function prepTable(byRegion, mcache) {
        mcache.byRegion=byRegion;
        mcache.r_data=[rcols, rds]
     }
-		return [rcols, rds]
+		return [rcols, rds, false]
 	}
   // simplified table, only total sample counts per experiment data type
   // rds should be array of [brint, dxix, raix, six, age, pmi, counts...]
@@ -274,7 +274,7 @@ const BrTable = ( props ) => {
 	}
   const tbclass=byRegion ? "brtbl bregxt flex-shrink-1" : "brtbl flex-shrink-1"
 
-	//console.log(" ~~~~ rendering BrTable with props.byRegion:", props.byRegion);
+	// console.log(" >>>> ~~~~ rendering BrTable with tblrows:", tblrows);
 	return (<Col id="br-tbl-rx-col" className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
 	           style={wstyle}>
 	 <table class={tbclass}><thead>
@@ -291,12 +291,12 @@ const BrBrowse = ( ) => {
      const refData=useRef( {
          tblkey:1,
 				 showXType: new Array(xtcols.length).fill(true),
-				 allXType: new Set(),
+				 reqXType: new Set(),
 				 brSet:null,
 				 tblCols:[], //as built by prepTable()
 				 tblRows:[], //as built by prepTable()
 				 // --- cache
-         cache: { brnum:0, byRegion:false, r_data: [null, null] },
+         cache: { brnum:0, byRegion:false, r_data: [null, null], fltXT: new Set() },
 			   relWidth:0
 		 })
      //const [winWidth, setwinWidth]=useState(0)
@@ -312,7 +312,7 @@ const BrBrowse = ( ) => {
 					 //console.log(" relwdith: ", m.relwidth)
 				}
        //m.tblkey++;
-			 m.allXType.clear()
+			 m.reqXType.clear()
 			 const newV=!byRegion;
 			 [m.tblCols, m.tblRows]=prepTable(newV, m.cache)
 			 setByRegion( newV )
@@ -332,30 +332,49 @@ const BrBrowse = ( ) => {
 	 }
 
 	 function prepBrSet() {
-		 [m.tblCols, m.tblRows]=prepTable(byRegion, m.cache);
-		 m.brSet=new Set()
-		 if (m.allXType.size==0 || m.allXType.size==xtcols.length) {
-			dtBrXsel.forEach( brix=> {
-				m.brSet.add(brix)
-			})
+     let cached=false;
+		 [m.tblCols, m.tblRows, cached]=prepTable(byRegion, m.cache);
+     if (m.brSet && cached && eqSets(m.reqXType, m.cache.fltXT)) {
+       return
+     }
+		 if (m.brSet) m.brSet.clear()
+        else m.brSet=new Set()
+		 if (m.reqXType.size==0) { // no restrictions
+  			dtBrXsel.forEach( brix=> {
+  				m.brSet.add(brix)
+  			})
+        m.cache.fltXT=new Set(m.reqXType)
+        return
 		 }
-     //filter according to m.allXType
+     //m.brSet rebuild from m.tblRows according to m.reqXType
+     m.cache.fltXT=new Set(m.reqXType)
+     const brSet=m.brSet
+     if (byRegion) { //let pass only brains that have at least 1 region with m.reqXType 
 
+     } else { // let pass only brains that have samples of all m.reqXType types 
+         m.tblRows.forEach( (rd,i)=>{
+            const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+            let reqmet=true
+            m.reqXType.forEach( v=> { reqmet &= (counts[v]>0) })
+            if (reqmet) brSet.add(brix)
+         })
+     }
+     
 
 	 }
 
 	 function toggleXType(xt) {
 		 m.showXType[xt] = !m.showXType[xt]
 		 //must trigger re-render to rebuild BrTable
-		 m.tblkey++;
+		 //m.tblkey++;
 		 forceUpdate();
 	 }
 
-
-	 function toggleAllXType(xt) {
-		 if (m.allXType.has(xt))
-		    m.allXType.delete(xt)
-		 else m.allXType.add(xt)
+	 function toggleReqXType(xt) {
+		 if (m.reqXType.has(xt))
+		    m.reqXType.delete(xt)
+		 else m.reqXType.add(xt)
+     forceUpdate();
 	 }
 
    useEffect(() => {
@@ -405,8 +424,8 @@ const BrBrowse = ( ) => {
 		 </Row></div>)
 	 }
 
-	if (!m.brSet) prepBrSet(m.allXType) //this rebuilds m.brSet
-  //console.log(" ~~~~~~~~~ rendering BrBrowse() m =", m);
+	prepBrSet() //this might rebuild m.brSet
+  //console.log(" ~~~~~~~~~ rendering BrBrowse() m.reqXType =", m.reqXType, " .. and m.brSet: ", m.brSet);
   return (<div class="col-12 d-flex flex-column">
 	   {/*<Row className="pt-1">
 			 &nbsp;
@@ -452,7 +471,7 @@ const BrBrowse = ( ) => {
 					{ xtcols.map( (xn, xt)=>
 							<div key={`ckAllXt${xt}`} class="pl-4 ml-1 row d-flex align-self-start flex-row xt-ckbox">
 						    <div className="ckbox-label" data-toggle="tooltip" data-placement="right" title="" >
-							   <CustomInput type="checkbox" id={`ckAllXt${xt}`} onClick={ () => toggleAllXType(xt)} checked={m.allXType.has(xt)} />
+							   <CustomInput type="checkbox" id={`ckAllXt${xt}`} onClick={ () => toggleReqXType(xt)} checked={m.reqXType.has(xt)} />
 								 <span> {xn} samples </span>
 						    </div>
 							 </div>
