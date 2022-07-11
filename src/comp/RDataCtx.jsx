@@ -1119,18 +1119,6 @@ function initBrCounts(brSet) { //before counting (updateCounts), or anytime we n
    return true // new brain added to the set
  }
 
-/* post dtFilters refining BrXsel (in BrBrowse page)
-  based on samples present in all exp data types given in xtSet
-  optionally by region
-  dtFilters are NOT affected or checked (updateCounts() is not called!)
-  only dtBrSel is "temporarily" changed
-  NOTE: dtBrXsel is cleared&updated by updateCounts()
-  but here these volatile changes are only for BrBrowse => RSelSummary update
-*/
-export function refineBrXsel_byXt(xtSet, byRegion) {
-  //the current btBrXSel is updated to filter out
-}
-
 export function updateCounts() {
   //fills all dtn* arrays according to the dtf* filters
   const numDataTypes=dtaDTypes.length;

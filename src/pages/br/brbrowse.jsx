@@ -6,7 +6,7 @@ import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 	Row, Col, Input, Button, Label, CustomInput} from 'reactstrap';
 import axios from 'axios'
 import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters,
-	useFltCtx, dtaBrains, dtBrXsel, refineBrXsel_byXt, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
+	useFltCtx, dtaBrains, dtBrXsel, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'
@@ -48,7 +48,7 @@ function prepTable(byRegion, mcache) {
 	const brseldata=[]
 	const rds=[]
 	let rcols=null
-  console.log("}{}{}{}>> prepTable() called with byRegion=", byRegion)
+
 	//every render - prepare brseldata
 	if (byRegion) {
 		//TODO : build rds rows
