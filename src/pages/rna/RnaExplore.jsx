@@ -8,7 +8,7 @@ import {Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink} from
 
 function ExpAgePlots(props) {
   useEffect( () => {
-     console.log(" --- ExpAgePlots creation time --")
+     //console.log(" --- ExpAgePlots creation time --")
 		   const script = document.createElement("script");
        script.src = APP_BASE_URL+"json_plotly_ageplot.js";
        script.async = true;

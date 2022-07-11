@@ -434,7 +434,7 @@ function RSelSummary( props ) {
   //console.log("----}} RSelSummary render..", dtBrXsel.size)
 
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
-  const selbrCount=dtBrXsel.size
+  const selbrCount = dtBrXsel.size
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'

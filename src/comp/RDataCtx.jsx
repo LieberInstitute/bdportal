@@ -1046,7 +1046,8 @@ let br_dx2cx, br_cx2dx, br_cxDxSex, br_cxDxRace,
      brCountsRace, brCountsSex
 
 
-function initBrCounts() { //before counting (updateCounts)
+function initBrCounts(brSet) { //before counting (updateCounts), or anytime we need to rebuild brSet ()
+      if (!brSet) brSet=dtBrXsel
       dtBrCounts.dx2cx= { }
       dtBrCounts.cx2dx= { }   //mapping dx idx to/from cxDx* row idx
       dtBrCounts.s2cx = { } //mapping sex/race idx to column index in cxDx* tables
@@ -1056,7 +1057,7 @@ function initBrCounts() { //before counting (updateCounts)
       dtBrCounts.cxDxSex.length=0 // crosstab counts Dx vs Sex   (table)
       dtBrCounts.cxDxRace.length=0 // crosstab counts Dx vs Race  (table)
       //dtBrCounts.Brains.clear()
-      dtBrXsel.clear()
+      brSet.clear()
       br_dx2cx=dtBrCounts.dx2cx, br_cx2dx=dtBrCounts.cx2dx,
       br_cxDxSex=dtBrCounts.cxDxSex, br_cxDxRace=dtBrCounts.cxDxRace,
       br_s2cx=dtBrCounts.s2cx, br_r2cx=dtBrCounts.r2cx,
@@ -1083,9 +1084,10 @@ function initBrCounts() { //before counting (updateCounts)
 
  //add a subject that passed the filters to the cxDx data
  //NOTE: MUST be called only once per brix that passed the filters
- export function updateBrCounts(brix, dxi, s, r, ax) {
-   if (dtBrXsel.has(brix)) return false //brain already counted
-   dtBrXsel.add(brix)
+ export function updateBrCounts(brix, dxi, s, r, ax, brSet) {
+  if (!brSet) brSet=dtBrXsel
+   if (brSet.has(brix)) return false //brain already counted
+   brSet.add(brix)
     // -- add dx row if needed
    let d = br_dx2cx[dxi]
    let dc=br_cxDxSex.length, sc=Object.keys(br_s2cx).length, rc=Object.keys(br_r2cx).length
@@ -1116,6 +1118,18 @@ function initBrCounts() { //before counting (updateCounts)
 
    return true // new brain added to the set
  }
+
+/* post dtFilters refining BrXsel (in BrBrowse page)
+  based on samples present in all exp data types given in xtSet
+  optionally by region
+  dtFilters are NOT affected or checked (updateCounts() is not called!)
+  only dtBrSel is "temporarily" changed
+  NOTE: dtBrXsel is cleared&updated by updateCounts()
+  but here these volatile changes are only for BrBrowse => RSelSummary update
+*/
+export function refineBrXsel_byXt(xtSet, byRegion) {
+  //the current btBrXSel is updated to filter out
+}
 
 export function updateCounts() {
   //fills all dtn* arrays according to the dtf* filters
@@ -1516,7 +1530,8 @@ export function getRegionCounts() {
    return regdata
 }
 
-export function getBrSelData(showSmpCounts) {
+export function getBrSelData(showSmpCounts, brSet) {
+  if (!brSet) brSet=dtBrXsel
 //returns an array with rows of data for brains in dtBrAllsel
 // if showSmpCounts is an array, it has the experiment data types
 //      to report sample counts for (0 based), e.g. [0, 1] for RNASeq, DNAmet
@@ -1530,7 +1545,7 @@ export function getBrSelData(showSmpCounts) {
   }
   // array of [brnum, dx, race, sex, age, pmi, numsmpxt1, ... ]
   rows.push(hdr)
-  dtBrXsel.forEach( brix => {
+  brSet.forEach( brix => {
      const [brint, dxix, raix, six, age, pmi]=dtaBrains[brix]
      //this DOES list dropped brains
      const row=[`Br${brint}`, dtaNames.dx[dxix],

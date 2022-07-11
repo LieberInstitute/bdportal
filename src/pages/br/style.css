@@ -67,23 +67,36 @@
   cursor:pointer;
 }
 
-.brtbl tr td:nth-child(3)>span, .brtbl tr th:nth-child(3)>span {  
+.brtbl tr td:nth-child(3)>span, .brtbl tr th:nth-child(3)>span {
   display: inline-block;
   padding-right:4px;
   border-right:1px solid #fff !important;
   width:100%;
 }
 
-.bregxt tbody td .xtc, .bregxt tbody td .xtc0 {
+
+.bregxt tbody td .rxtc, .bregxt tbody td .rxtc0,
+.brtbl tbody td .xtc, .brtbl tbody td .xtc0 {
+ -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently */
   display:inline-block;
-  font-size:12px;
   text-align:center;
-  padding:1px 3px;
+  line-height:14px;
+  padding:1px 2px;
   margin:auto 2px;
-  width:12px; 
+  min-width:12px;
 }
-.bregxt tbody td .xtc0 {
-  color: #e2e2e2;
+
+.bregxt tbody td .rxtc,  .bregxt tbody td .rxtc0 {
+  font-size:12px;
+}
+
+.bregxt tbody td .rxtc0, .brtbl tbody td .xtc0 {
+  color: #aaa;
   background-color:#e2e2e2;
 }
 
@@ -94,6 +107,19 @@
 }
 
 
+.xt-ckbox {
+  display: block;
+}
+
+.ckbox-br-xt {
+  width: 72px;
+  text-align:start;
+}
+
+.br-xck-caption {
+  font-size:90%;
+  padding-bottom:2px;
+}
 /*
 .brtbl tbody {
   overflow-y: auto;

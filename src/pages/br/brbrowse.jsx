@@ -1,12 +1,12 @@
 import $ from 'jquery';
 import { h } from 'preact';
-import {useEffect, useState, useRef} from "preact/hooks";
+import {useEffect, useState, useReducer, useRef} from "preact/hooks";
 import './style.css';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 	Row, Col, Input, Button, Label, CustomInput} from 'reactstrap';
 import axios from 'axios'
 import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters,
-	useFltCtx, dtaBrains, dtBrXsel, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
+	useFltCtx, dtaBrains, dtBrXsel, refineBrXsel_byXt, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'
@@ -34,14 +34,21 @@ const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI' ] //region co
 const stickyCols=3; //stick #, BrNum, Dx
 const stickyWs=[ 54, 64, 76 ]; //pixels
 
+function eqSets(s1, s2) {
+	if (s1.size!==s2.size) return false
+  for (let e of s1) if (!s2.has(e)) return false;
+	return true;
+}
+// update brSet to have only the entries in dtBrXsel with
+// having samples in all the exp. types in reqXtSet
+//
 function prepTable(byRegion, mcache) {
   if (mcache && mcache.brnum==dtBrXsel.size && mcache.byRegion==byRegion)
       return [ ... mcache.r_data ] // [ rcols, rds ] did not change since last render
-        
 	const brseldata=[]
 	const rds=[]
 	let rcols=null
-  //console.log("}{}{}{}>> prepTable() called !!!")
+  console.log("}{}{}{}>> prepTable() called with byRegion=", byRegion)
 	//every render - prepare brseldata
 	if (byRegion) {
 		//TODO : build rds rows
@@ -58,7 +65,7 @@ function prepTable(byRegion, mcache) {
 					 } )
 				}
 			})
-       rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts])
+       rds.push([brix, brint, dxix, raix, six, age, pmi, ...rxtcounts])
 		})
     if (mcache) { //memoize this
        mcache.brnum=dtBrXsel.size;
@@ -78,7 +85,7 @@ function prepTable(byRegion, mcache) {
 			if (sd && sd[brix]) snum=sd[brix].length;
 			counts.push(snum)
 		})
-		rds.push([brint, dxix, raix, six, age, pmi, ...counts])
+		rds.push([brix, brint, dxix, raix, six, age, pmi, ...counts])
    })
 
    if (mcache) { //memoize this
@@ -89,70 +96,14 @@ function prepTable(byRegion, mcache) {
   return [xtcols, rds]
 }
 
-function renderRow(r, rd, byRegion) { //
- if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
-   // rxtcounts are per-region arrays of counts (one for each xtype in every array)
-   const [brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
-   const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-           `${dtaNames.sex[six]}`, age, pmi]
-   let lacc=0;           
-   return(<tr key={`tr${r}`}>{
-    outrd.map(  (e,i)=> {
-       if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-       let cl=null, st=null;
-       if (i<stickyCols) {
-          cl="app-sticky";
-          let w=stickyWs[i];
-          if (i==stickyCols-1) w-=1;
-          st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
-       }
-       return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
-           : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
-     })} 
-     { //now output the region counts, by xtype in each region
-       rxtcounts.map( (rc,i)=><td key={`r${r}tc${i}`}> {
-        rc.map( (c, xt) => <span key={`r${r}c${i}x${xt}`} class={ c ? "xtc" : "xtc0"}
-             style={ c ? {backgroundColor: xtcolors[xt] } : null } >{c}</span> ) 
-       } </td>)  
-   }
- </tr>)
+function tableFilter(tblrows, brset) {
+	const rows=[]
+  tblrows.forEach( r => {
+		if (brset.has(r[0])) rows.push(r)
+	})
+	return rows
 }
- // --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
-  const [brint, dxix, raix, six, age, pmi, ...counts] =rd;
-	const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-           `${dtaNames.sex[six]}`, age, pmi, ...counts]
-		let lacc=0
-	return(<tr key={`tr${r}`}>{
-	   outrd.map(  (e,i)=> {
-		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-			let cl=null, st=null;
-      if (i<stickyCols) {
-         cl="app-sticky";
-         let w=stickyWs[i];
-         if (i==stickyCols-1) w-=1;
-         st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
-      }
-	    return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
-            : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
-			//return (<td key={i}> {e} </td>)
-		} ) }
-	</tr>)
-}
-function renderHeader(tblhdr) {
-  let lacc=0
-	return ( tblhdr.map(  (e,i)=> {
-		  if (i && i<=stickyCols) lacc+=stickyWs[i-1]
-      let cl="app-sticky-top", st=null;
-      if (i<stickyCols) {
-         cl="app-sticky-top-l";
-         let w=stickyWs[i];
-         if (i==stickyCols-1) w-=1;
-         st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
-      } 
-			return ((i==stickyCols-1) ? <td key={`h${i}`} class={cl} style={st}> <span>{e}</span></td>
-         : <td key={`h${i}`} class={cl} style={st}> {e} </td>)
-		} ) )
-}
+
 
 
 function getBrTblRow(rd, brix, i) {
@@ -186,33 +137,152 @@ const BrTable = ( props ) => {
     brd: [],
 		sortcol: 0,
 		sortup: false, //sorting direction
-    // --- cache
-    cache: { brnum:0, byRegion:false, r_data: [null, null] }
   })
 	const m=refData.current
+
+	function renderRow(r, rd, byRegion, showXTs) { //
+		if (!showXTs || showXTs.length==0) {
+			showXTs=new Array(xtcols.length).fill(true)
+		 }
+		const shcounts=[]
+		const shcolors=[]
+		xtcols.forEach( (e,i)=> {
+			if (showXTs[i]) {
+				shcolors.push(xtcolors[i])
+			}
+	  })
+    /* () => {
+								const shrc=[]
+								rc.forEach( (c,j) => {
+									if (showXTs[j]) shrc.push(c)
+								})
+    */
+		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
+			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
+			const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
+			const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+							`${dtaNames.sex[six]}`, age, pmi]
+			let lacc=0;
+			return(<tr key={`tr${r}`}>{
+			outrd.map(  (e,i)=> {
+					if (i && i<=stickyCols) lacc+=stickyWs[i-1]
+					let cl=null, st=null;
+					if (i<stickyCols) {
+						 cl="app-sticky";
+						 let w=stickyWs[i];
+						 if (i==stickyCols-1) w-=1;
+						 st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+					}
+					return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+							: <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
+				})}
+				{ //now output the region counts, by xtype in each region
+					rxtcounts.map( (rc,i)=>{
+							const shrc=[]
+							rc.forEach( (c,j) => {
+								if (showXTs[j]) shrc.push(c)
+							})
+				      return(<td key={`r${r}tc${i}`}> {
+							  shrc.map( (c, j) => {
+								   const cl=shcolors[j] //FIXME: j => xt mapping needed here if there is an exp type filter
+								   return (<span key={`r${r}c${i}x${j}`} class={ c ? "rxtc" : "rxtc0"}
+									         style={ c ? {backgroundColor: cl } : null } >{c}</span>) } )
+					        }	 </td>) })
+			 }
+		</tr>)
+	 }
+		// --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
+	 const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+	 const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+							`${dtaNames.sex[six]}`, age, pmi]
+	 let lacc=0
+
+	 counts.forEach( (e,i)=> {
+			  if (showXTs[i]) {
+					shcounts.push(e)
+					shcolors.push(xtcolors[i])
+				}
+		 })
+		 return(<tr key={`tr${r}`}>{
+				outrd.map(  (e, i)=> {
+				 if (i && i<=stickyCols) lacc+=stickyWs[i-1]
+				 let cl=null, st=null;
+				 if (i<stickyCols) {
+						cl="app-sticky";
+						let w=stickyWs[i];
+						if (i==stickyCols-1) w-=1;
+						st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+				 }
+				 return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+							 : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td> )
+				 //return (<td key={i}> {e} </td>)
+			 })}
+			 { //now output the total sample counts by exp. type
+			 shcounts.map( (c, j)=>{
+				 let spcl=null, color=null;
+				 spcl= c>0 ? "xtc" : "xtc0";
+				 color=shcolors[j]
+				 return (<td key={`r${r}td${j+basecols.length}`}>
+						 <span class={spcl} style={ c>0 ? {backgroundColor: color } : null }>{c}</span>
+						 </td>)
+				 })
+			 }
+		 </tr>)
+	 }
+	 function renderHeader(tblhdr) {
+		 let lacc=0
+		 return ( tblhdr.map(  (e,i)=> {
+				 if (i && i<=stickyCols) lacc+=stickyWs[i-1]
+				 let cl="app-sticky-top", st=null;
+				 if (i<stickyCols) {
+						cl="app-sticky-top-l";
+						let w=stickyWs[i];
+						if (i==stickyCols-1) w-=1;
+						st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+				 }
+				 return ((i==stickyCols-1) ? <td key={`h${i}`} class={cl} style={st}> <span>{e}</span></td>
+						: <td key={`h${i}`} class={cl} style={st}> {e} </td>)
+			 } ) )
+	 }
 
   function sortByCol(e) {
 		  let t=$(e.target)
 	}
 
-  const [ cntcols, tblrows] = prepTable(props.byRegion, m.cache);
+	const cntcols = []
+	if (props.byRegion) {
+		props.tblCols.forEach( e=>{
+			cntcols.push(e)
+		})
+	} else {
+		props.tblCols.forEach( (e,i)=> {
+			if (props.showXType[i]) cntcols.push(e)
+		})
+	}
+
+  const tblrows = tableFilter( props.tblRows, props.brSet )
   const tblhdr=[...basecols, ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
-	if (props.byRegion && props.relwidth) {
-		 const maxw=window.innerWidth - props.relwidth-78;
+	const byRegion=props.byRegion
+	const showXTs= props.showXType
+	if (byRegion && props.calcMaxWidth) {
+		const maxw=props.calcMaxWidth();
 		 //console.log("   setting max-width to: ", maxw)
-		 wstyle=`max-width:${maxw}px;`
+		 if (maxw>0)
+		   wstyle=`max-width:${maxw}px;`
 	}
-  const tbclass=props.byRegion ? "brtbl bregxt flex-shrink-1" : "brtbl flex-shrink-1"
-	return (<Col className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
+  const tbclass=byRegion ? "brtbl bregxt flex-shrink-1" : "brtbl flex-shrink-1"
+
+	//console.log(" ~~~~ rendering BrTable with props.byRegion:", props.byRegion);
+	return (<Col id="br-tbl-rx-col" className="d-flex flex-row-reverse flex-shrink-1 align-items-start justify-content-start m-0 p-0 overflow-auto"
 	           style={wstyle}>
 	 <table class={tbclass}><thead>
 		<tr key="t0">
       { renderHeader(tblhdr) }
 		</tr>
 		</thead><tbody>
-	  { tblrows.map( (rd, i)=> renderRow(i, rd, props.byRegion))  }
+	  { tblrows.map( (rd, i)=> renderRow(i, rd, byRegion, showXTs))  }
     </tbody></table>
 		</Col>);
 }
@@ -220,21 +290,37 @@ const BrTable = ( props ) => {
 const BrBrowse = ( ) => {
      const refData=useRef( {
          tblkey:1,
-			   relwidth:0
+				 showXType: new Array(xtcols.length).fill(true),
+				 allXType: new Set(),
+				 brSet:null,
+				 tblCols:[], //as built by prepTable()
+				 tblRows:[], //as built by prepTable()
+				 // --- cache
+         cache: { brnum:0, byRegion:false, r_data: [null, null] },
+			   relWidth:0
 		 })
-     const [winWidth, setwinWidth]=useState(0)
+     //const [winWidth, setwinWidth]=useState(0)
 		 const m=refData.current;
      const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		 const [byRegion, setByRegion]=useState(false)
+		 const [, forceUpdate] = useReducer((x) => x + 1, 0);
+		 //const [brSet, setBrSet] = useState(null)
 
 		 function toggleByRegion() {
 			  if (!byRegion) {
-           m.relwidth=$('#relSumBox').width()
+           m.relWidth=$('#relSumBox').width()
 					 //console.log(" relwdith: ", m.relwidth)
 				}
-       m.tblkey++;
-			 setByRegion( prev=> !prev )
+       //m.tblkey++;
+			 m.allXType.clear()
+			 const newV=!byRegion;
+			 [m.tblCols, m.tblRows]=prepTable(newV, m.cache)
+			 setByRegion( newV )
 		 }
+
+    function calcMaxXRwidth() {
+			return (window.innerWidth - m.relWidth-78);
+		}
 
     function onBtnClick(e) {
        const id=e.target.id;
@@ -245,11 +331,38 @@ const BrBrowse = ( ) => {
 		 }
 	 }
 
+	 function prepBrSet() {
+		 [m.tblCols, m.tblRows]=prepTable(byRegion, m.cache);
+		 m.brSet=new Set()
+		 if (m.allXType.size==0 || m.allXType.size==xtcols.length) {
+			dtBrXsel.forEach( brix=> {
+				m.brSet.add(brix)
+			})
+		 }
+     //filter according to m.allXType
+
+
+	 }
+
+	 function toggleXType(xt) {
+		 m.showXType[xt] = !m.showXType[xt]
+		 //must trigger re-render to rebuild BrTable
+		 m.tblkey++;
+		 forceUpdate();
+	 }
+
+
+	 function toggleAllXType(xt) {
+		 if (m.allXType.has(xt))
+		    m.allXType.delete(xt)
+		 else m.allXType.add(xt)
+	 }
+
    useEffect(() => {
     $('.toast').toast({ delay: 7000 })
     setupTooltips()
     return ()=>{ //clean-up code
-       clearTooltips()      
+       clearTooltips()
     }
 	 }, []);
 
@@ -258,7 +371,7 @@ const BrBrowse = ( ) => {
       let timer
       return () => {
         clearTimeout(timer)
-        timer = setTimeout(_ => {
+        timer = setTimeout( () => {
           timer = null
           fn.apply(this, arguments)
         }, ms)
@@ -266,14 +379,18 @@ const BrBrowse = ( ) => {
     }
     const debouncedHandleResize= debounce( ()=> {
        if (byRegion) {
-           m.relwidth=$('#relSumBox').width()
-           setwinWidth(window.innerWidth) //force update
+           m.relWidth=$('#relSumBox').width()
+					 const maxw=calcMaxXRwidth()
+					 //console.log(" ..... setting max width of xtreg col to", maxw)
+					 $('#br-tbl-rx-col').css({'max-width': `${maxw}px`})
+					 //const maxw=window.innerWidth - m.relwidth-78;
+           //setwinWidth(window.innerWidth) //force update
        }
      }, 300 )
      window.addEventListener('resize', debouncedHandleResize)
      return ()=>{ //clean-up code
          window.removeEventListener('resize', debouncedHandleResize)
-     } 
+     }
 
   })
 
@@ -288,12 +405,14 @@ const BrBrowse = ( ) => {
 		 </Row></div>)
 	 }
 
+	if (!m.brSet) prepBrSet(m.allXType) //this rebuilds m.brSet
+  //console.log(" ~~~~~~~~~ rendering BrBrowse() m =", m);
   return (<div class="col-12 d-flex flex-column">
 	   {/*<Row className="pt-1">
 			 &nbsp;
 		   <Button id="b1" style="line-height:90%" onClick={onBtnClick}>Brain table</Button>
 		 </Row>*/}
-		 <Row id="brContainer" className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap">
+		 <Row id="brTblContainer" className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap">
 		  {/* <Col className="d-flex mr-0 pr-0 flex-grow-1 align-self-stretch" > */}
 			  <Col className="d-flex flex-column align-items-end justify-content-end mb-1">
 					<Row className="d-flex flex-row justify-content-center m-1 pt-1">
@@ -304,12 +423,44 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-		   	    <BrTable key={m.tblkey} wuwidth={winWidth} tnum={tbl} byRegion={byRegion} relwidth={m.relwidth} />
+		   	    <BrTable key={m.tblkey} tnum={tbl} byRegion={byRegion} tblCols={m.tblCols} tblRows={m.tblRows} brSet={m.brSet}
+						       showXType={m.showXType} calcMaxWidth={calcMaxXRwidth} />
 			</Col>
-			<Col className="d-flex align-items-start">
-				{/* <Label>{dtBrXsel.size} subjects selected.</Label> */}
-				<Row id="relSumBox" className="pl-0 pr-0 pt-1 mt-4 d-flex justify-content-start align-items-start">
-				 <RSelSummary browse />
+			<Col className="d-flex flex-column align-items-start">
+			  <Row id="rowFltCtl" className="pl-2 pr-0 pt-1 mt-2 mb-0 d-flex justify-content-start align-items-start"
+				           style="padding-bottom:8px;border-bottom: 1px solid #ddd;">
+					<Col className="d-flex flex-column text-align-center justify-content-center align-items-center col-auto">
+					   <span class="br-xck-caption align-self-start"><br /> Show sample counts for:</span>
+							{ xtcols.map( (xn, xt)=>
+							<div key={`ckXt${xt}`} class="pl-4 ml-1 row d-flex align-self-start flex-row xt-ckbox">
+						    <div className="ckbox-label" data-toggle="tooltip" data-placement="right" title="" >
+								<span class='ckbox-br-xt'>
+								   <span style={ { height:'18px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;&nbsp;&nbsp;</span>
+									 {xn}
+								</span>
+							   <CustomInput type="checkbox" id={`ckXt${xt}`} onClick={ () => toggleXType(xt)} checked={m.showXType[xt]} />
+						    </div>
+							 </div>
+							) }
+					</Col>
+					<Col className="d-flex flex-column text-align-center justify-content-center align-items-start"
+					                style="border-left:1px solid #dfdfdf;" >
+          { byRegion ? <span class="br-xck-caption">Only show brains having <br /> in the same region:</span>
+					   : <span class="br-xck-caption"><br />Only show brains with:</span>
+					}
+
+					{ xtcols.map( (xn, xt)=>
+							<div key={`ckAllXt${xt}`} class="pl-4 ml-1 row d-flex align-self-start flex-row xt-ckbox">
+						    <div className="ckbox-label" data-toggle="tooltip" data-placement="right" title="" >
+							   <CustomInput type="checkbox" id={`ckAllXt${xt}`} onClick={ () => toggleAllXType(xt)} checked={m.allXType.has(xt)} />
+								 <span> {xn} samples </span>
+						    </div>
+							 </div>
+							) }
+					</Col>
+			  </Row>
+				<Row id="relSumBox" className="pl-0 pr-0 pt-1 mt-2 d-flex justify-content-start align-items-start">
+				 <RSelSummary browse brSet={m.brSet} />
     	 </Row>
 
 			</Col>
