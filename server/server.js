@@ -196,7 +196,7 @@ app.post('/pgdb/gcheck', (req, res) => {
 app.post('/pgdb/adl', (req, res) => {
    let body=req.body
    let feature=body.feature || 'g';
-   feature=feature.charAt(0).toLowerCase();
+   feature=feature.charAt(0).toLowerCase(); // 'g', 't', 'e', 'j' or 'm'
    let filetype=body.filetype || 'rse';
    let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
    let glst=body.genes
@@ -204,7 +204,7 @@ app.post('/pgdb/adl', (req, res) => {
    let fname=body.fname;
    //let glst=req.boby.genes;
    const garr=(glst)?glst.split(',') : []
-   let dtype=body.dtype || 'counts';
+   let dtype=body.dtype || 'counts'; //can also be 'meta' for metadata only
    let sarr=body.samples;
    if (sarr.length===0) res.status(500).send(
        { error: ':user error', message: " empty sample list provided"}
@@ -227,6 +227,44 @@ app.post('/pgdb/adl', (req, res) => {
    });
 })
 
+
+app.post('/pgdb/plotdl', (req, res) => {
+  let body=req.body
+  let feature=body.feature || 'g';
+  feature=feature.charAt(0).toLowerCase();
+  // let filetype=body.filetype || 'json'; // plotly JSON 
+  //let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
+  let glst=body.genes
+  //console.log(" received req.body:", body, "   glst=", glst)
+  let plotType=body.plotType; //which plot: 'age', 'box-gene', 'box-region', ...
+  //let glst=req.boby.genes;
+  const garr=(glst)?glst.split(',') : []
+  if (plotType.indexOf('qc')<0) { // most plots require a gene list!
+    if (garr.length===0)
+      res.status(500).send( { error: ':user error', message: " no gene list provided!"} )
+  }
+  //let dtype=body.dtype || 'counts';
+  let sarr=body.samples;
+  if (sarr.length===0) res.status(500).send(
+      { error: ':user error', message: " empty sample list provided"}
+  )
+  //const glst=['RIN2A','GRIN2B','SP4']
+  const qry=(glst) ? "select save_plot($1, $2, 1, $3, $4)" :
+  "select save_plot($1, $2, 1, '{}', $3)";
+  const qparms=(glst) ? [plotType, sarr, garr, feature ] :
+                        [plotType, sarr, feature ] ;
+  // [fname, sarr, glst, feature, dtype, fxt ]
+  db.query(qry, qparms
+           , (err, dbrows)=>{
+     if (err) {
+       res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+     }
+     else {
+       //console.log( "pdgb/adl response: ", res)
+       res.json(dbrows);
+     }
+  });
+})
 
 //const mdata={};
 //const jzfile='rnaseq_samples.json.gz';

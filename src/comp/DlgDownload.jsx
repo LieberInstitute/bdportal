@@ -26,9 +26,11 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
   //const ds0= (datasets && datasets.length)? datasets[0] : ""
   const numds=(datasets && datasets.length)? datasets.length : 0
   const numsamples =  (samples && samples.length)? samples.length : 0
-  const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'Selection' : (fidx==5 ? 'Br_Counts':  'metadata'))
-  if (fidx==4 || fidx==5) fext='csv'; // selsheet, brsum
+  //const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'Selection' : (fidx==5 ? 'Br_Counts':  'metadata'))
+  const ftype= fidx<4 ? fTypes[fidx] : ( fidx==4 ? 'Sample_Metadata' : (fidx==5 ? 'Selection_Info' :  'Br_Counts'))
+  if (fidx>3) fext = 'csv'; // metadata, selsheet, brsum
   const filename = `${prefix}_${ftype}_n${numsamples}.${fext}`
+  //if (fidx==4) fext = 'meta'
 
   function dlClick() {
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
@@ -56,8 +58,8 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
       }
       else if (Array.isArray(genes)) glst=genes
     }
-    if (fidx<4)  {
-      const ctype=fTypes[fidx].charAt(0).toLowerCase();
+    if (fidx<5)  {
+      const ctype=fidx<4 ? fTypes[fidx].charAt(0).toLowerCase() : 'm';
       buildRSE(filename, samples, ctype, dtype, fext, glst)
   			 .then( res => {
   				 //console.log("res=", res)
@@ -77,7 +79,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
   			 })
       return;
      }
-     if (fidx==4) { //save selsheet as csv
+     if (fidx==5) { //save selsheet as csv
       if (selsheet) {
         if (glst.length && selsheet.length>1) {
           const slast=selsheet[0].length-1
@@ -97,7 +99,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
         saveFile(fdata,  filename).then( ()=>setSaved(''))
        }
      }
-     if (fidx==5 && brsum) { //save selsheet as csv
+     if (fidx==6 && brsum) { //save selsheet as csv
         let fdata=""
         const fmt=1 //could be TSV as well, for fmt!=1
         if (fmt==1) brsum.forEach( row => fdata+=rowCSV(row) )
@@ -125,8 +127,9 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
     ctype=norm ? (fidx==1 ? "(TPM)": fidx==3 ? "(RP10M)" : "(RPKM)") : "";
     fcaption=`${ftNames[fidx]} data ${ctype}`
   } else {
-    if (fidx==4) fcaption='Selection table'
-     else if (fidx==5) fcaption='Subject totals'
+    if (fidx==4) fcaption='Sample metadata'
+     else if (fidx==5) fcaption='Selection info table'
+        else if (fidx==6) fcaption='Subjects summary table'
   }
 
   let disabled=(norm==0 && fidx==1) || (numds>1 && fidx>0 && fidx<4)
@@ -155,7 +158,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
       </Col>
       <Col className="d-flex align-self-begin justify-content-end">
          <Row>
-          <Button id="bsave" className="btn-sm app-btn" disabled={disabled} onClick={dlClick}>{fidx<4 ? "Export" : "Save"}</Button>
+          <Button id="bsave" className="btn-sm app-btn" disabled={disabled} onClick={dlClick}>{fidx<5 ? "Export" : "Save"}</Button>
         </Row>
       </Col>
     </Row>
@@ -310,7 +313,8 @@ export function DlgDownload( props ) {
   const glstDisabled=false;
 
   function prefixChange( {target}) { setPrefix(target.value); }
-  return (<DlgModal { ...props} title="Export expression data" justClose="1" onShow={afterOpen} width="38rem">
+
+  return (<DlgModal { ...props} title="Export RNA-Seq data" justClose="1" onShow={afterOpen} width="38rem">
     <Row className="form-group d-flex justify-content-center flex-nowrap mb-1" style="font-size:90%;">
       <Col className="d-flex justify-content-between m-0 p-0">
               <Label className="frm-label text-nowrap">File name:</Label>&nbsp;
@@ -319,8 +323,8 @@ export function DlgDownload( props ) {
     </Row>
     <Row className="form-group d-flex justify-content-center flex-nowrap mt-0 pt-0 mb-0 pb-0" style="font-size:90%;">
       <Col className="d-flex-column align-items-center justify-content-center ml-4 pl-4">
-        <Row>Format</Row>
-        <FormGroup tag="fieldset" onChange={onFmtChange}>
+        <Row>Expression data format:</Row>
+        <FormGroup className="ml-4" tag="fieldset" onChange={onFmtChange}>
           <FormGroup check>
             <Label check>
               <Input type="radio" id="r1" name="fmt" checked={(fext=='rda')} /> .rda (RSE)
@@ -334,7 +338,7 @@ export function DlgDownload( props ) {
          </FormGroup>
       </Col>
       <Col className="d-flex-column justify-content-center align-items-center">
-      <Row>Values</Row>
+      <Row>Values:</Row>
        <FormGroup tag="fieldset" onChange={onNormChange}>
           <FormGroup check>
             <Label check>
@@ -367,17 +371,18 @@ export function DlgDownload( props ) {
       </Col>
       </Row> : null }
 
-    <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
-           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
-    <MxDlRow fidx={5} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} brsum={m.brsum}
+    <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} 
          samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
-
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
            samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
      )}
-     { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
-     { (exporting>0) && <ToastBox id="tsExporting" title=" Info " text="Export operation in progress, please wait." /> }
+    <MxDlRow fidx={6} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} brsum={m.brsum}
+           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+    <MxDlRow fidx={5} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
+           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+    { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
+    { (exporting>0) && <ToastBox id="tsExporting" title=" Info " text="Export operation in progress, please wait." /> }
   </DlgModal>
  )
 }

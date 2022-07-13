@@ -1701,12 +1701,13 @@ export async function checkGeneList(glst, annotation) {
 }
 
 export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, glst) {
-	// params: file prefix, array of sample_IDs, ftype ('g', 't', 'e', 'j')
+	// params: file prefix, array of sample_IDs, feat =('g', 't', 'e', 'j' or 'm')
 	if (!feat) feat='g' //feature type
   //if (!glst)
   let lstgenes=glst.join()
 	feat=feat.charAt(0).toLowerCase()
 	if (feat=='t') assayType='tpm'
+    else if (feat=='m') assayType='meta'
 	const reqOpts = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
