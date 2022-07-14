@@ -23,51 +23,51 @@
    <title>LIBData Portal Help</title>
   </head>
   <body class="c7">
-     <h2 class="c6" id="h.iav0zw4edp5i"><span class="c1">LIBD Brain Data Portal</span></h2>
+     <h2 class="c6" id="brsel-matrix"><span class="c1">LIBD Brain Data Portal</span></h2>
      <p class="c0"><span class="c4">
        This is a multi-page web application where the page (screen) can be selected using the top-left navigation button :
       </span>
     </p><p class="c0">
-        <span style="overflow: hidden; display: inline-block; margin: 6px 2px; border: 0.00px solid #000000; 
+        <span style="overflow: hidden; display: inline-block; margin: 6px 2px; border: 0.00px solid #000000;
           transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 356.00px; height: 115.00px;">
           <img alt="" src="images/image1.png" style="width: 356.00px; height: 115.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="">
         </span></p>
         <p class="c0 c2">
         <span class="c4"></span></p>
-        <p class="c0"><span class="c4">This is a button which when clicked displays a drop-down menu with the available application pages. 
+        <p class="c0"><span class="c4">This is a button which when clicked displays a drop-down menu with the available application pages.
           The pages not implemented yet are grayed out.</span></p>
         <p class="c0 c2"><span class="c4"></span></p><p class="c0">
-          <span class="c5">The entry page is the </span><span class="c3">Brain Set Builder, </span><span class="c5">however if the user 
-            is just interested in available datasets for specific data types (e.g. </span><span class="c3">Bulk RNAseq </span><span class="c4">data), 
+          <span class="c5">The entry page is the </span><span class="c3">Brain Set Builder, </span><span class="c5">however if the user
+            is just interested in available datasets for specific data types (e.g. </span><span class="c3">Bulk RNAseq </span><span class="c4">data),
           the user can navigate directly to the data type of interest by using this top-left navigation button.</span></p>
          <p class="c0 c2"><span class="c4"></span></p>
-         
-         <h2 class="c6" id="brsel-matrix"><span class="c1">Brain Set Builder</span></h2>
+
+         <h2 class="c6"><span class="c1">Brain Set Builder</span></h2>
          <p class="c0"><span class="c5">The </span><span class="c3">Brain Set Builder</span>
-          <span class="c4">&nbsp;page allows the user to get an overview of the available data types for the subjects loaded in the database, 
-            and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability 
+          <span class="c4">&nbsp;page allows the user to get an overview of the available data types for the subjects loaded in the database,
+            and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability
             of experiment data for the subjects.</span></p><p class="c0 c2">
           <span class="c4"></span></p>
 
-          <p class="c0 c4">In order to create a set of subjects a selection must be made by clicking to highlight one or more features in the available panels 
+          <p class="c0 c4">In order to create a set of subjects a selection must be made by clicking to highlight one or more features in the available panels
             and then clicking the <span class="c3" style="color:#c34">Apply</span> button that appears at the top of a category panel
               whenever the highlighted criteria have changed for that panel. </p>
-          <p class="c0 c4"> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and 
+          <p class="c0 c4"> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and
             all the subject counts in the other category panels will be updated to reflect the applied selection.
          </p>
          <h4>Region / Data type selection</h4>
-         
+
           <table><tr>
           <td style="vertical-align:top;">
           <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
             <img alt="" src="images/matrix_selection.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
-          </span> 
+          </span>
           </td><td style="vertical-align:top;padding-left:6px;">
           <span class="c0 c4">
-            The table in the center of the page shows how many subjects were sequenced by various data types across brain regions, as loaded in the database. 
+            The table in the center of the page shows how many subjects were sequenced by various data types across brain regions, as loaded in the database.
             <br /><br />A subject can have samples sequenced from multiple brain regions and different data types, so they are counted independently per brain region
             and data type in this table.
-            <br /><br /> Selecting the first region cell locks the selection to that experiment data type (column). The selection of region cells in this matrix 
+            <br /><br /> Selecting the first region cell locks the selection to that experiment data type (column). The selection of region cells in this matrix
             will restrict the subjects to only those that have sequencing data for the selected brain regions, for the selected data type (column).
           </span>
           </td>
@@ -75,24 +75,24 @@
 
         <h4 id="brsel-browse">Brain Set Browser</h4>
         <p class="c0 c4">
-        The <span style="color:#c34">Browse</span> tab of the <b>Brain Set Builder</b> allows the inspection of the subject data for all the selected subjects, 
-        and exporting the resulting table as a CSV/TSV file. 
-        It also allows further customization of the subject data table based on sequencing information for each brain. 
+        The <span style="color:#c34">Browse</span> tab of the <b>Brain Set Builder</b> allows the inspection of the subject data for all the selected subjects,
+        and exporting the resulting table as a CSV/TSV file.
+        It also allows further customization of the subject data table based on sequencing information for each brain.
         <br /><br />
         The default table shows the demographics data along with the total number of sequencing samples for each experiment data type, as loaded in the database.
         <br /><br />
-        The checkbox labeled <b>Show sample counts by brain region</b> above the table allows switching to a detailed view of sample counts by brain region, so the table will expand accordingly 
+        The checkbox labeled <b>Show sample counts by brain region</b> above the table allows switching to a detailed view of sample counts by brain region, so the table will expand accordingly
         to show all the sequenced brain regions and the sample count per experiment data type within each region.
         <br /><br />
-        The subject set table can be customized to include/exclude the columns specific to experiment data types (the first set of checkboxes, which are all checked by default), 
-        but also to further restrict the subject set to only those brains that have specific experiment data type available (the second set of checkboxes on the right). 
+        The subject set table can be customized to include/exclude the columns specific to experiment data types (the first set of checkboxes, which are all checked by default),
+        but also to further restrict the subject set to only those brains that have specific experiment data type available (the second set of checkboxes on the right).
         <br />
-        Note that for the set of checkboxes on the right, a subject shall only be included in the dataset when it has experiment data available for <i>all</i> the data types checked. 
-                   
+        Note that for the set of checkboxes on the right, a subject shall only be included in the dataset when it has experiment data available for <i>all</i> the data types checked.
+
         </p>
 
-        
-          
+
+
 
   </body>
   </html>
