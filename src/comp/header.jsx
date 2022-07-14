@@ -22,7 +22,6 @@ export const navRoutes = {
   default: 'brsel'
 }
 
-
 export const navDropDown = [];
 // array of [pageId, pageOrd#, pageName, [tabId, tabName], [tabId2, tabName2], ..]
 // sorted by order of listing

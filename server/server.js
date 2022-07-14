@@ -248,7 +248,6 @@ app.post('/pgdb/plotdl', (req, res) => {
   if (sarr.length===0) res.status(500).send(
       { error: ':user error', message: " empty sample list provided"}
   )
-  //const glst=['RIN2A','GRIN2B','SP4']
   const qry=(glst) ? "select save_plot($1, $2, 1, $3, $4)" :
   "select save_plot($1, $2, 1, '{}', $3)";
   const qparms=(glst) ? [plotType, sarr, garr, feature ] :

@@ -1721,6 +1721,20 @@ export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, gls
 }
 
 
+export async function getPlot(plType, sarr, glst, feat='g') {
+	// params: file prefix, array of sample_IDs, feat =('g', 't', 'e', 'j' or 'm')
+	if (!feat) feat='g' //feature type
+	feat=feat.charAt(0).toLowerCase()
+	const reqOpts = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ plotType: plType, feature:feat, samples:sarr,
+                           genes: glst })
+  };
+  //console.log(" -- sending req body:", reqOpts.body)
+  return fetch(`${MW_SERVER}/pgdb/plotdl`, reqOpts)
+}
+
 export async function saveRStagedFile(relpath, newfname) {
   const a = document.createElement('a');
   //make sure relpath replaces / with | :
@@ -1937,4 +1951,27 @@ export function subjXTable(numbr) {
        <td class="tdlast"> </td>
        </tr> */}
     </tbody></table></div>)
+}
+
+export function useScript(scriptUrl, scriptId, fn) {
+  useEffect(() => {
+    const loadedScript = document.getElementById(scriptId);
+    //console.log("~~~~ useScript() called for",scriptId)
+    if (!loadedScript) {
+      //console.log(`    ...~~~~ useScript( ${scriptId}) first time loading`)
+      const script = document.createElement('script');
+      script.src = scriptUrl;
+      script.id = scriptId;
+      document.body.appendChild(script);
+      script.onload = () => {
+        if (fn) fn();
+      }
+    }
+    if (loadedScript && fn) fn()
+    return () => {
+      //console.log(`  >>>  >>> cleanup for useScript( ${scriptId} )`)
+      const script=document.getElementById(scriptId)
+      if (script) script.remove();
+    }
+  }, [scriptUrl, scriptId, fn]);
 }

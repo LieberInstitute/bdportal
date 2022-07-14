@@ -954,3 +954,16 @@ border-bottom:1px solid #ececec;
 .subjxtbl > thead > tr:nth-child(2) > th {
  padding-bottom:2px !important;
 }
+
+.regtbl {
+  margin-top:0;
+  padding-top:0;
+  text-align:left;
+  font-weight: bold;
+  font-size:95%;
+}
+
+.regtbl td > span{
+  font-size:95%;
+  font-weight:normal;
+}
