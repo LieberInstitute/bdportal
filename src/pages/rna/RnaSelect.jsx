@@ -7,7 +7,7 @@ import './style.css';
 
 import {
   useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
-  applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation,
+  applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation, rGlobs,
   applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
   getFilterNames, arraySMerge} from '../../comp/RDataCtx'
 
@@ -197,6 +197,7 @@ const RnaSelect = ({ style }) => {
   let selectionSheet = null
   const sscols=[] //array of 2-column tables that will be joined later
   let allSet=true;
+  rGlobs.validSelection=false;
   ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
       if (!allSet) return
       if (fid==='age' && m.ageRange) {
@@ -226,6 +227,7 @@ const RnaSelect = ({ style }) => {
    })
 
    if (allSet) {
+     rGlobs.validSelection=true;
      //console.log(" sscols :", sscols)
      selectionSheet=[ [ 'Diagnosis', 'Diagnosis_selected', 'Sex', 'Sex_selected',
      'Age', 'Age_selected', 'Ancestry', 'Ancestry_selected', 'Brain_Region', 'Brain_Region_selected',

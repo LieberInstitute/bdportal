@@ -5,7 +5,7 @@ import './style.css';
 import {Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink} from 'reactstrap'
 import { ToastBox } from '../../comp/ToastBox'
 import {subjXTable, getRegionCounts, getSelDatasets, getSelSampleData, dtBrXsel,
-	      checkGeneList, useScript, getRStagedJSON, getPlot } from '../../comp/RDataCtx';
+	      checkGeneList, useScript, getRStagedJSON, getPlot, rGlobs } from '../../comp/RDataCtx';
 
 import { clearTooltips, setupTooltips } from '../../comp/ui';
 
@@ -81,7 +81,7 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 		 </Row>
 		 <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0 mb-2 ">
 				<Col className="col-auto d-flex p-0 m-0 mr-2" style="top:1px;">
-				 <Label className="p-0 m-0" style="font-size:12px;color:#777;">e.g. SP4, TCF4, ZNF804A, DRD2</Label>
+				 <Label className="p-0 m-0" style="font-size:12px;color:#777;">e.g. SP4,TCF4,ZNF804A,DRD2</Label>
 				</Col>
 				<Col className="col-auto d-flex p-0 m-0">
 					<Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;min-width:20rem;" />
@@ -93,7 +93,7 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 		 </Row>
 		 <Row className="d-flex flex-fill">
 			  <div id="plot1" class="w-100 align-self-stretch plotly-graph-div">
-			    { (plstatus>0) ? <span class="red-info-text"> .. rebuilding plot, please wait .. </span>
+			    { (plstatus>0) ? <span class="red-info-text"> .. building plot, please wait .. </span>
 					  : <>{ (plotJSON) ? <span> loaded </span>
 						   : <span class="red-info-text"> Provide a list of genes and click <b>Plot</b></span>
 							}</>
@@ -106,45 +106,68 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 
 function ExpBoxPlots({ samples, glstCheck }) {
 	const [plotJSON, setPlotJSON]=useState(null)
-  const [geneList, setGeneList] = useState('') //only taken from
+  const [geneList, setGeneList] = useState('')
+  const [plstatus, setPlStatus] = useState(0) // 0 - idle, 1 - building-plot
 
-	function glstClear() {
+  function glstClear() {
     setGeneList("")
     $('#inglst').val("")
+		clearPlot()
   }
 
-  useEffect( () => {
-       function plotFetched(plotData, divName) {
-          showPlot(divName, plotData)
-          setPlotJSON(plotData)
-       }
-      getRStagedJSON('r4242e49d872/agePlot_n474.json.gz', plotFetched, 'plot1')
-  }, [])
+	function plotFetched(plotData, divName) {
+		showPlot(divName, plotData)
+		setPlStatus(0)
+		setPlotJSON(plotData)
+  }
 
-	function onPlotClick() {
+	function clearPlot() {
+		$(`#plot1`).html("")
+		setPlotJSON(null)
+	}
 
+  function onPlotClick() {
+		let glst=$('#inglst').val().trim()
+		glst=glstCheck(glst)
+		clearPlot()
+		if (glst.length==0) return;
+		// setFStatus(1) //enter plot prep state, show it somehow
+		setPlStatus(1)
+		setPlotJSON(null)
+		//console.log(" curated gene list: ", gtlst)
+		getPlot('box-gene', samples, glst).then(
+			res=>res.json()
+		).then(fn => {
+			 let fname="";
+       //console.log(" getPlot returned fname =", fn)
+			 if (fn.length>1) fname=fn[1][0]
+			 if (fname) {
+				 getRStagedJSON(fname, plotFetched, 'plot1')
+			 }
+		})
   }
 
   function onCheckGeneList() {
-    const glst=glstCheck()
+    const glst=glstCheck($('#inglst').val().trim())
     if (glst!=geneList) setGeneList(glst)
   }
+
 
   return(<Row className="d-flex flex-nowrap flex-fill">
 	<Col xs="12" className="d-flex flex-column mt-2">
 		 <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0">
 			 <Col className="col-auto d-flex p-0 m-0 mr-2 ">
 				 <Label className="p-0 m-0 red-info-text" style="font-size:14px;">
-					Enter up to 6 genes to plot their expression levels in the selected samples.
+					Enter up to 8 genes to plot their expression levels in the selected samples by diagnosis.
 				 </Label>
 			 </Col>
 		 </Row>
 		 <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0 mb-2 ">
 				<Col className="col-auto d-flex p-0 m-0 mr-2" style="top:1px;">
-				 <Label className="p-0 m-0" style="font-size:12px;color:#777;">e.g. GRIN2A,GRIN2B,SP4,SNX19</Label>
+				 <Label className="p-0 m-0" style="font-size:12px;color:#777;">e.g. SP4,TCF4,ZNF804A,DRD2</Label>
 				</Col>
 				<Col className="col-auto d-flex p-0 m-0">
-					<Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;min-width:17rem;" />
+					<Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;min-width:24rem;" />
 					<Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:3px;" onClick={glstClear}>&#x2715;</Button>
 				</Col>
 				<Col className="col-auto d-flex">
@@ -152,10 +175,14 @@ function ExpBoxPlots({ samples, glstCheck }) {
 				</Col>
 		</Row>
 		<Row className="d-flex flex-fill">
-			<div id="plot1" class="w-100 align-self-stretch plotly-graph-div">
-			 { ( plotJSON ? <h4>DATA LOADED!</h4> : <h5> .. Loading .. </h5>) }
-			</div>
-		</Row>
+			  <div id="plot1" class="w-100 align-self-stretch plotly-graph-div">
+			    { (plstatus>0) ? <span class="red-info-text"> .. building plot, please wait .. </span>
+					  : <>{ (plotJSON) ? <span> loaded </span>
+						   : <span class="red-info-text"> Provide a list of genes and click <b>Plot</b></span>
+							}</>
+					}
+			  </div>
+		 </Row>
 	</Col>
 </Row>)
 }
@@ -227,10 +254,23 @@ const RnaExplore = ({ selData, style }) => {
 	   setNav(Number(e.target.id))
   }
 
+	if (!rGlobs.validSelection) {
+		return (<div class="col-12 d-flex flex-column">
+		<Row className="pt-3 d-flex flex-nowrap flex-row align-items-center justify-content-center">
+			<Col><div style="color:#d23;line-height:200%;font-size:100%;">
+			 <span>Please make a sample selection in the <b>Select</b> tab</span>
+			</div>
+			</Col>
+		 </Row></div>)
+	 }
+
+
+
  const smpData=getSelSampleData();
  const numsmp=smpData.samples.length;
  const numbr=dtBrXsel.size;
  const nRegions= getRegionCounts();
+
 
  return(<div class="col-12 d-flex flex-nowrap flex-column">
 <Row className="flex-grow-1 pt-1 mt-1 justify-content-start flex-nowrap">

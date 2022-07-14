@@ -239,7 +239,7 @@ app.post('/pgdb/plotdl', (req, res) => {
   let plotType=body.plotType; //which plot: 'age', 'box-gene', 'box-region', ...
   //let glst=req.boby.genes;
   const garr=(glst)?glst.split(',') : []
-  if (plotType.indexOf('qc')<0) { // most plots require a gene list!
+  if (plotType.indexOf('qc')<0) { // most plots require a gene list, except maybe QC plots?
     if (garr.length===0)
       res.status(500).send( { error: ':user error', message: " no gene list provided!"} )
   }

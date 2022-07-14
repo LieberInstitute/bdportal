@@ -20,6 +20,7 @@ export const rGlobs={
      selXType : 0, //currently targeted experiment/assay type + 1; 0 is the 'brain matrix', i.e. no selected data type
      prevSelXType : -1,
      dataLoaded : false,
+     validSelection: false,  // is a current valid selection exists for the current xp type
      rebuildRMatrix: true
 }
 

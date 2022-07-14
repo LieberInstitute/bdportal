@@ -17,7 +17,11 @@ const RnaPages = ({ params }) => {
 	const [, , , dataLoaded] = useRData()
 	if (!dataLoaded) return <h3>Loading..</h3>
 
+	if (rGlobs.selXType!=1) {
+		rGlobs.validSelection=false;
+	}
 	changeXType(1);
+
 
 	return tab==='sel' ? <RnaSelect /> :
 	    ( tab=='exp' ? <RnaExplore /> :  <RnaReports />)
