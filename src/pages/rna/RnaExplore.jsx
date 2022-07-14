@@ -90,8 +90,9 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 					                disabled={plstatus>0} onClick={glstClear}>&#x2715;</Button>
 				</Col>
 				<Col className="col-auto d-flex">
-					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px; color:#844;" disabled={plstatus>0}
-					           onClick={onPlotClick}><b>Plot</b></Button> { (plstatus>0) && <div class="spinner-bars" style="position:relative;top:2px;">
+					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px; color:#844;"
+					     disabled={plstatus>0} onClick={onPlotClick}><b>Plot</b></Button>
+							 { (plstatus>0) && <div class="spinner-bars" style="position:relative;top:2px;">
 					                     <span></span><span></span><span></span><span></span><span></span> </div> }
 				</Col>
 		 </Row>
