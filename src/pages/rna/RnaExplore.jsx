@@ -2,6 +2,7 @@ import $ from 'jquery';
 import {useEffect, useState} from "preact/hooks";
 import {APP_BASE_URL} from '../../appcfg'
 import './style.css';
+import '../../comp/spinners.css';
 import {Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink} from 'reactstrap'
 import { ToastBox } from '../../comp/ToastBox'
 import {subjXTable, getRegionCounts, getSelDatasets, getSelSampleData, dtBrXsel,
@@ -85,17 +86,20 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 				</Col>
 				<Col className="col-auto d-flex p-0 m-0">
 					<Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;min-width:20rem;" />
-					<Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:3px;" onClick={glstClear}>&#x2715;</Button>
+					<Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:3px;"
+					                disabled={plstatus>0} onClick={glstClear}>&#x2715;</Button>
 				</Col>
 				<Col className="col-auto d-flex">
-					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px; color:#844;" onClick={onPlotClick}><b>Plot</b></Button>
+					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px; color:#844;" disabled={plstatus>0}
+					           onClick={onPlotClick}><b>Plot</b></Button> { (plstatus>0) && <div class="spinner-bars" style="position:relative;top:2px;">
+					                     <span></span><span></span><span></span><span></span><span></span> </div> }
 				</Col>
 		 </Row>
 		 <Row className="d-flex flex-fill">
 			  <div id="plot1" class="w-100 align-self-stretch plotly-graph-div">
-			    { (plstatus>0) ? <span class="red-info-text"> .. building plot, please wait .. </span>
+			    { (plstatus>0) ? <span class="red-info-text">.. building plot, please wait .. </span>
 					  : <>{ (plotJSON) ? <span> loaded </span>
-						   : <span class="red-info-text"> Provide a list of genes and click <b>Plot</b></span>
+						   : <span class="red-info-text">Provide a list of genes and click <b>Plot</b></span>
 							}</>
 					}
 			  </div>
@@ -168,10 +172,14 @@ function ExpBoxPlots({ samples, glstCheck }) {
 				</Col>
 				<Col className="col-auto d-flex p-0 m-0">
 					<Input id="inglst" className="frm-input d-inline-block" style="font-size:14px;min-width:24rem;" />
-					<Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:3px;" onClick={glstClear}>&#x2715;</Button>
+					<Button id="bglst" className="btn-sm app-btn" style="color:#a00;height:22px;margin-left:2px;margin-top:3px;"
+					         disabled={plstatus>0} onClick={glstClear}>&#x2715;</Button>
 				</Col>
 				<Col className="col-auto d-flex">
-					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px;" onClick={onPlotClick}>Plot</Button>
+					 <Button id="bglst" className="btn-sm app-btn align-self-center" style="padding:4px 10px;"
+					    disabled={plstatus>0} onClick={onPlotClick}><b>Plot</b></Button>
+							{ (plstatus>0) && <div class="spinner-bars" style="position:relative;top:2px;">
+					                     <span></span><span></span><span></span><span></span><span></span> </div> }
 				</Col>
 		</Row>
 		<Row className="d-flex flex-fill">
