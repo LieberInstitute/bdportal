@@ -2,8 +2,8 @@ import $ from 'jquery';
 import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
-   dtaBrains, XBrs, anyActiveFilters, clearFilters, getFilterSet,
-   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts,
+   dtaBrains, anyActiveFilters, getFilterSet,
+   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts, getSelSampleData,
    arrayEq, subjTable, subjXTable, updateBrCountsFromBrSet } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
@@ -258,7 +258,7 @@ function RSelSummary( props ) {
       </Row>)
 
   }
-
+  /*
   function getSelSampleData() { // return { datasets: [], samples: []}
    const data={ }
    const dsinfo=getSelDatasets()
@@ -274,7 +274,7 @@ function RSelSummary( props ) {
    data.samples=sampleIDs
    return data
   }
-
+  */
   function table2array(tid) {
     const tbl=document.getElementById(tid)
     const ret=[] //returning array of rows
@@ -419,8 +419,8 @@ function RSelSummary( props ) {
                      <Button className="btn-light btn-sm app-btn btn-download" onClick={clickDlgExport}>
                        Export</Button>
                     { restrictedDatasets.length ?
-                      <DlgRequest datasets={restrictedDatasets} isOpen={isDlgExport} toggle={toggleDlgExport} /> :
-                      <DlgDownload isOpen={isDlgExport} toggle={toggleDlgExport} getData={getSelSampleData} selsheet={props.selsheet}
+                         <DlgRequest datasets={restrictedDatasets} isOpen={isDlgExport} toggle={toggleDlgExport} />
+                       : <DlgDownload isOpen={isDlgExport} toggle={toggleDlgExport} getData={getSelSampleData} selsheet={props.selsheet}
                                      getBrSum={getBrSummary} /> }
                  </Col>
                  <Col className="col-auto ml-3">

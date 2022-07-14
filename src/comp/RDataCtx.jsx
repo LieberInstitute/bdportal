@@ -1800,6 +1800,24 @@ export function arraySMerge(dest, colarrs) {
    dest.push( ... allrows )
 }
 
+
+export function getSelSampleData(xt=0) { // return { datasets: [], samples: []}
+  const data={ }
+  const dsinfo=getSelDatasets()
+  data.datasets=[]
+  dsinfo.forEach( dsd => {
+     if (dsd[1]>0) data.datasets.push(dsd[0])
+   })
+  const sampleIDs=[]
+  //const xt=0 //RNAseq data type, rGlobs.selXType-1
+  dtXsel[xt].forEach( (r)=>{
+    sampleIDs.push(r[1]) //  just sample_ids [ br_idx, sample_id, ds_idx, reg_idx, proto ]
+  })
+  data.samples=sampleIDs
+  return data
+ }
+
+
 export function arrayEq(a, b) {
   if (a.length!==b.length) return false
   for (let i=0;i<a.length;i++)
