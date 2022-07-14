@@ -93,6 +93,7 @@ to be made available everywhere in the app
   flex:1;
   position:relative;
 }
+
 .colClearBtn {
   min-width: 9rem !important;
   /* max-width: fit-content !important; */

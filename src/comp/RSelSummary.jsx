@@ -3,7 +3,8 @@ import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
    dtaBrains, XBrs, anyActiveFilters, clearFilters, getFilterSet,
-   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts, updateBrCountsFromBrSet } from './RDataCtx';
+   getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts,
+   arrayEq, subjTable, subjXTable, updateBrCountsFromBrSet } from './RDataCtx';
 
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
      Row, Col, Button, Label, Alert} from 'reactstrap';
@@ -232,31 +233,6 @@ function RSelSummary( props ) {
       saveFile('Br_list.csv', blob);
     }
   */
-  function subjTable() {
-    return(<>
-      <Col><table id="subjSummary" className="subjtbl" ><tbody>
-      { brCounts.dx.map(  (e,i) => {
-           if (i>0 && e>0) return (<tr key={i}>
-              <td align="right"> {e} </td> <td align="left">{ dtaNames.dx[i] } </td>
-      </tr>) } ) }
-      </tbody></table>
-      </Col>
-      <Col><table className="subjtbl" ><tbody>
-      { brCounts.race.map(  (e,i) => {
-           if (i>0 && e>0) return (<tr key={i}>
-              <td align="right"> {e} </td> <td align="left">{ dtaNames.race[i] } </td>
-      </tr>) } ) }
-      </tbody></table>
-      </Col>
-      <Col><table className="subjtbl" ><tbody>
-      { brCounts.sex.map(  (e,i) => {
-           if (i>0 && e>0) return (<tr key={i}>
-              <td align="right"> {e} </td> <td align="left">{ dtaNames.sex[i] } </td>
-      </tr>) } ) }
-      </tbody></table>
-      </Col>
-      </>)
-  }
 
   function arrayEq(a, b) {
     if (a.length!==b.length) return false
@@ -265,93 +241,6 @@ function RSelSummary( props ) {
     return true
   }
 
-  function subjXTable() {
-     //cross tab functionality
-     /*
-     if (brCounts.cxDxRace.length<2) {
-       //console.log(" -- cxDxRace:", brCounts.cxDxRace);
-       return subjTable();
-     }
-     */
-     if (numbr<1) return null
-     const dxr=brCounts.cxDxRace
-     const c2dx=brCounts.cx2dx
-     const dxs=brCounts.cxDxSex
-     const c2s=brCounts.cx2s
-     const c2r=brCounts.cx2r
-     let csums=[], rsums=[], scsums=[] //, csum=[]
-     //-- sorting this table to match the regular Dx, Race order in the data
-     let ris=dxr.map((e,i)=>i) // for race
-     let sris=dxs.map((e,i)=>i) // for sex
-     if (!arrayEq(ris, sris)) {
-       console.log(" !!!!!!!!!! Error: subjXTable Dx rows should be the same!")
-       return subjTable();
-     }
-     let cis=dxr[0].map((e,i)=>i) // for race
-     let scis=dxs[0].map((e,i)=>i) // for sex
-     ris.sort( (a,b)=> c2dx[a]-c2dx[b])
-     cis.sort( (a,b)=> c2r[a]- c2r[b])
-     let dxrSrt=ris.map( (e,i)=>dxr[e] )
-     for (let r=0;r<dxrSrt.length;r++) {
-         rsums.push(0)//rsums[r]=0
-         dxrSrt[r]=cis.map( (e,i)=> {
-           const c=dxrSrt[r][e]
-           rsums[r]+=c
-           if (r===0) csums.push(0)
-           csums[i]+=c
-           return(c)
-          } )
-     }
-     // same as for race, re-sort and compute sums for sex columns
-     let dxsSrt=sris.map( (e,i)=>dxs[e] )
-     for (let r=0;r<dxsSrt.length;r++) {
-         // rsums.push(0) -- should be the same
-         dxsSrt[r]=scis.map( (e,i)=> {
-           const c=dxsSrt[r][e]
-           //rsums[r]+=c
-           if (r===0) scsums.push(0)
-           scsums[i]+=c
-           return(c)
-          } )
-     }
-     return (<Col className="pt-2"><table id="subjSummary" className="subjxtbl">
-       <thead>
-         <tr><td class="td-blank totals" colspan="2">TOTALS</td> {/* <td class="td-blank">  </td> */}
-            {csums.map( (v,i)=> <th key={i}>{v}</th>)}
-            {/*  bind the sex column totals the same way */}
-            <td class="tc-spacer"> </td>
-            {scsums.map( (v,i)=> <th key={i}>{v}</th>)}
-         </tr>
-         <tr><td class="td-blank">  </td > <td class="td-blank">  </td>
-            {dxrSrt[0].map((di,i)=>{
-               return <th key={i}>{dtaNames.race[c2r[cis[i]]]}</th>
-             })}
-            {/*  bind the sex column headers the same way */}
-            <td class="tc-spacer"> </td>
-            {dxsSrt[0].map((di,i)=>{
-               return <th key={i}>{dtaNames.sex[c2s[scis[i]]]}</th>
-             })}
-          </tr>
-       </thead>
-       <tbody>
-       {dxrSrt.map( (rd,i)=>{
-            //let rsum=0
-            return(<tr key={i}>
-              <th>{rsums[i]}</th>
-              <th>{dtaNames.dx[c2dx[ris[i]]]}</th>
-
-              {rd.map((c,j) => <td key={j}>{c}</td> )}
-              <td class="tc-spacer"> </td>
-              {/*  bind the sex columns similarly - but with srd as dxsSrt[i] */}
-              {dxsSrt[i].map((c,j) => <td key={j}>{c}</td> )}
-            </tr>)
-           })}
-         {/* <tr><th> </th><th> </th>
-          { csum.map( (v,k) => (<td class="tdlast" key={k}>{v}</td>)) }
-          <td class="tdlast"> </td>
-          </tr> */}
-       </tbody></table></Col>)
-  }
 
   function regTable() {
     return( <Row className="flex-nowrap justify-content-center p-1">
@@ -440,14 +329,13 @@ function RSelSummary( props ) {
     return m.brSummary
   }
 
-  
+
   const totalBrCount = dtBrOriCounts.sex[0].reduce((a, b)=>a+b)
   const selbrCount = brSet.size
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
   const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
-  const arrSubjTotals=[]
-  //console.log("----}} RSelSummary render with brSet:", brSet)
+    //console.log("----}} RSelSummary render with brSet:", brSet)
 
   return (
   <Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
@@ -480,7 +368,7 @@ function RSelSummary( props ) {
                         <span style="color:#923;padding:0 2px;padding-right:4px;"><b>{showsel ? numbr : 0}</b></span>
             </Row> */}
             <Row className="flex-nowrap align-self-center pt-0 mt-0">
-              { subjXTable(arrSubjTotals) }
+              { subjXTable(numbr) }
             </Row>
               {(numbr>0) && <Row className="pt-2">  <Button className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
                   data-toggle="tooltip" title="Download CSV with the above subject summary" onClick={clickSaveBrSum}>Download totals</Button>

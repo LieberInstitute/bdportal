@@ -84,10 +84,10 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
         if (glst.length && selsheet.length>1) {
           const slast=selsheet[0].length-1
           if (selsheet[0][slast].match(/Gene/i)) {
-            selsheet[1][slast]=glst.join(', ')
+            selsheet[1][slast]=glst.join(',')
           } else {
             selsheet[0].push('Gene_list')
-            selsheet[1].push(glst.join(', '))
+            selsheet[1].push(glst.join(','))
           }
         }
         let fdata=""
@@ -99,7 +99,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
         saveFile(fdata,  filename).then( ()=>setSaved(''))
        }
      }
-     if (fidx==6 && brsum) { //save selsheet as csv
+     if (fidx==6 && brsum) {
         let fdata=""
         const fmt=1 //could be TSV as well, for fmt!=1
         if (fmt==1) brsum.forEach( row => fdata+=rowCSV(row) )
@@ -222,7 +222,9 @@ export function DlgDownload( props ) {
     setFext((e.target.id=="r1")?'rda':'csv.gz')
   }
   function onNormChange(e) {
-    setNorm((e.target.id=="n0")? 0:1)
+    const raw=(e.target.id=="n0");
+    if (raw) glstClear();
+    setNorm(raw ? 0:1)
   }
 
   function glstCheck() {
@@ -371,7 +373,7 @@ export function DlgDownload( props ) {
       </Col>
       </Row> : null }
 
-    <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} 
+    <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets}
          samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}

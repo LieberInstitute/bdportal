@@ -4,7 +4,7 @@ import preact from "@preact/preset-vite";
 const host = require('os').hostname()
 process.env.VITE_HOST=host;
 
-let auth_proxy='http://gdebsrv:16443'
+let auth_proxy='http://gdebsrv:16600'
 let mail_proxy='http://gdebsrv:16244'
 let pgdb_proxy='http://localhost:4095'
 
@@ -21,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
      //nodemw_srv=devmode ? 'http://localhost:4095' : 'http://192.168.77.16:4095'
      nodemw_srv=devmode ? 'http://localhost:4095' :  'http://10.17.9.59:4095'
   }
-  
+
   process.env.VITE_NODESRV=nodemw_srv;
 
   if (devmode)

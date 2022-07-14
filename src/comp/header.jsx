@@ -15,7 +15,8 @@ import axios from 'axios'
 
 export const navRoutes = {
   brsel: [1, "Brain Set Builder", ["matrix", "Select"], ["browse", "Browse"]],
-  rna: [2, "Bulk RNAseq", ["sel", "Select"], ["exp", "Explore"], ["rep", "Reports"]],
+  //rna: [2, "Bulk RNAseq", ["sel", "Select"], ["exp", "Explore"], ["rep", "Reports"]],
+  rna: [2, "Bulk RNAseq", ["sel", "Select"], ["exp", "Explore"] ] ,
   dnam: [3, "DNA methylation"],
   lrna: [4, "long RNAseq"],
   default: 'brsel'
@@ -199,7 +200,7 @@ export function Header({ page, tab, menuClick }) {
     let basePath = APP_BASE_URL
     if (basePath=='/') basePath='';
     window.open(`${basePath}/bdportal.readme.html#${page}-${tab}`, "LIBDPortal help")
-  } 
+  }
 
   const pageNav = navRoutes[page] // [pageOrd#, pageTitle [,  [ tabId1, tabLabel1], [tabId2, tabLabel2], ...] ]
   if (!pageNav) {
@@ -246,10 +247,10 @@ export function Header({ page, tab, menuClick }) {
       </div>
 
       <NavItem className="ml-auto nav-right">
-        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;<b>?</b>&nbsp;</button> 
-        
+        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;<b>?</b>&nbsp;</button>
+
         <img alt="bands" src={imgBands} className="navimgbands" />
-        <span className="navtitle">LIBData Portal</span>
+        <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
         <img alt="bands_r" src={imgBandsR} className="navimgbands" />
         {/* <span className="navlogin">Login</span> */}
         <Login />

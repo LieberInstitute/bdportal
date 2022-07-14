@@ -1083,7 +1083,7 @@ function initBrCounts(brSet) { //before counting (updateCounts), or anytime we n
 
 }
  export function updateBrCountsFromBrSet(brSet) {
-    //populate dtBrCounts.*2* tables for the crosstable report etc. 
+    //populate dtBrCounts.*2* tables for the crosstable report etc.
     // if brSet is not given, restore those tables from dtBrXsel (e.g. when switching from Browse to Select tabs in BSB)
     if (!brSet) brSet=dtBrXsel
     const br_set=new Set(brSet) //shallow copy
@@ -1720,6 +1720,7 @@ export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, gls
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
 }
 
+
 export async function saveRStagedFile(relpath, newfname) {
   const a = document.createElement('a');
   //make sure relpath replaces / with | :
@@ -1740,15 +1741,44 @@ export async function saveRStagedFile(relpath, newfname) {
   return href;
 }
 
+export async function getRStagedJSON(relpath, callbackFn, ...args) {
+  //relpath looks like this: r4247179d263/agePlot_n676.json.gz
+  // it's relative to the R_STAGING dir
+  //for the /rstaging endpoint, the relative path must be encoded with | instead of /s
+  relpath=relpath.replace(/\//g, '|')
+  const res= await fetch(`${MW_SERVER}/rstaging/${relpath}`, { mode: 'cors'} )
+  const ctype=res.headers.get('Content-Type')
+  //console.log(" data content type : ", ctype)
+  let data=null
+  if (ctype=="application/json") {
+          data = JSON.parse(await res.text())
+  } else {
+    let compr = new Uint8Array(await res.arrayBuffer())
+    const decompr = decompressSync(compr);
+    const str = strFromU8(decompr);
+    data = JSON.parse(str);
+  }
+  if (data && callbackFn) callbackFn(data, ...args)
+  return(data)
+}
+
 //side merge of 2-column tables in colarrs,
 // under dest array which already has the header (1-row)
 export function arraySMerge(dest, colarrs) {
    //check consistency
    if (dest.length!==1) { console.log("Error: no header in dest!");return }
    let numcols=0;
-   colarrs.forEach( tbl => { numcols+=tbl[0].length} )
+   const hdr=[];
+   colarrs.forEach( (tbl) => {
+    hdr.push( ... dest[0].slice(numcols, numcols+tbl[0].length))
+    numcols+=tbl[0].length
+    hdr.push('') //insert a spacer column
+  } )
    if (dest[0].length!==numcols)
      { console.log("Error: mismatch columns in header vs colarrs!");return }
+   dest.length=0;
+   dest.push(hdr)
+   //console.log( "dest = ", dest)
    let numrows=0
    colarrs.forEach( tbl => { if (numrows<tbl.length) numrows=tbl.length} )
    //all arrays will be padded with '' to numrows before merging
@@ -1763,9 +1793,130 @@ export function arraySMerge(dest, colarrs) {
    for (let i=0;i<numrows;i++) {
      const rr=[]
      colarrs.forEach((carr)=> {
-       rr.push( ... carr[i] )
+       rr.push( ... carr[i], [''] )
      })
      allrows.push(rr)
    }
    dest.push( ... allrows )
+}
+
+export function arrayEq(a, b) {
+  if (a.length!==b.length) return false
+  for (let i=0;i<a.length;i++)
+      if (a[i]!==b[i]) return false
+  return true
+}
+
+export function subjTable() {
+  return(<>
+    <div class="col"><table id="subjSummary" className="subjtbl" ><tbody>
+    { dtBrCounts.dx.map(  (e,i) => {
+         if (i>0 && e>0) return (<tr key={i}>
+            <td align="right"> {e} </td> <td align="left">{ dtaNames.dx[i] } </td>
+    </tr>) } ) }
+    </tbody></table>
+    </div>
+    <div class="col"><table className="subjtbl" ><tbody>
+    { dtBrCounts.race.map(  (e,i) => {
+         if (i>0 && e>0) return (<tr key={i}>
+            <td align="right"> {e} </td> <td align="left">{ dtaNames.race[i] } </td>
+    </tr>) } ) }
+    </tbody></table>
+    </div>
+    <div class="col"><table className="subjtbl" ><tbody>
+    { dtBrCounts.sex.map(  (e,i) => {
+         if (i>0 && e>0) return (<tr key={i}>
+            <td align="right"> {e} </td> <td align="left">{ dtaNames.sex[i] } </td>
+    </tr>) } ) }
+    </tbody></table>
+    </div>
+    </>)
+}
+
+export function subjXTable(numbr) {
+  //cross tab functionality
+  /*
+  if (dtBrCounts.cxDxRace.length<2) {
+    //console.log(" -- cxDxRace:", dtBrCounts.cxDxRace);
+    return subjTable();
+  }
+  */
+  if (numbr<1) return null
+  const dxr=dtBrCounts.cxDxRace
+  const c2dx=dtBrCounts.cx2dx
+  const dxs=dtBrCounts.cxDxSex
+  const c2s=dtBrCounts.cx2s
+  const c2r=dtBrCounts.cx2r
+  let csums=[], rsums=[], scsums=[] //, csum=[]
+  //-- sorting this table to match the regular Dx, Race order in the data
+  let ris=dxr.map((e,i)=>i) // for race
+  let sris=dxs.map((e,i)=>i) // for sex
+  if (!arrayEq(ris, sris)) {
+    console.log(" !!!!!!!!!! Error: subjXTable Dx rows should be the same!")
+    return subjTable();
+  }
+  let cis=dxr[0].map((e,i)=>i) // for race
+  let scis=dxs[0].map((e,i)=>i) // for sex
+  ris.sort( (a,b)=> c2dx[a]-c2dx[b])
+  cis.sort( (a,b)=> c2r[a]- c2r[b])
+  let dxrSrt=ris.map( (e,i)=>dxr[e] )
+  for (let r=0;r<dxrSrt.length;r++) {
+      rsums.push(0)//rsums[r]=0
+      dxrSrt[r]=cis.map( (e,i)=> {
+        const c=dxrSrt[r][e]
+        rsums[r]+=c
+        if (r===0) csums.push(0)
+        csums[i]+=c
+        return(c)
+       } )
+  }
+  // same as for race, re-sort and compute sums for sex columns
+  let dxsSrt=sris.map( (e,i)=>dxs[e] )
+  for (let r=0;r<dxsSrt.length;r++) {
+      // rsums.push(0) -- should be the same
+      dxsSrt[r]=scis.map( (e,i)=> {
+        const c=dxsSrt[r][e]
+        //rsums[r]+=c
+        if (r===0) scsums.push(0)
+        scsums[i]+=c
+        return(c)
+       } )
+  }
+  return (<div class="col pt-2"><table id="subjSummary" className="subjxtbl">
+    <thead>
+      <tr><td class="td-blank totals" colspan="2">TOTALS</td> {/* <td class="td-blank">  </td> */}
+         {csums.map( (v,i)=> <th key={i}>{v}</th>)}
+         {/*  bind the sex column totals the same way */}
+         <td class="tc-spacer"> </td>
+         {scsums.map( (v,i)=> <th key={i}>{v}</th>)}
+      </tr>
+      <tr><td class="td-blank">  </td > <td class="td-blank">  </td>
+         {dxrSrt[0].map((di,i)=>{
+            return <th key={i}>{dtaNames.race[c2r[cis[i]]]}</th>
+          })}
+         {/*  bind the sex column headers the same way */}
+         <td class="tc-spacer"> </td>
+         {dxsSrt[0].map((di,i)=>{
+            return <th key={i}>{dtaNames.sex[c2s[scis[i]]]}</th>
+          })}
+       </tr>
+    </thead>
+    <tbody>
+    {dxrSrt.map( (rd,i)=>{
+         //let rsum=0
+         return(<tr key={i}>
+           <th>{rsums[i]}</th>
+           <th>{dtaNames.dx[c2dx[ris[i]]]}</th>
+
+           {rd.map((c,j) => <td key={j}>{c}</td> )}
+           <td class="tc-spacer"> </td>
+           {/*  bind the sex columns similarly - but with srd as dxsSrt[i] */}
+           {dxsSrt[i].map((c,j) => <td key={j}>{c}</td> )}
+         </tr>)
+        })}
+      {/* <tr><th> </th><th> </th>
+       { csum.map( (v,k) => (<td class="tdlast" key={k}>{v}</td>)) }
+       <td class="tdlast"> </td>
+       </tr> */}
+    </tbody></table></div>)
 }

@@ -232,7 +232,7 @@ app.post('/pgdb/plotdl', (req, res) => {
   let body=req.body
   let feature=body.feature || 'g';
   feature=feature.charAt(0).toLowerCase();
-  // let filetype=body.filetype || 'json'; // plotly JSON 
+  // let filetype=body.filetype || 'json'; // plotly JSON
   //let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
   let glst=body.genes
   //console.log(" received req.body:", body, "   glst=", glst)
@@ -390,8 +390,15 @@ app.get('/rstaging/:fpath', (req, res)=> {
   db.clog('~~ got rstaging query:', relpath);
   let fpath=path.join(r_filedir, relpath);
   if (fs.existsSync(fpath)) {
-      //console.log(`calling res.download(${fpath})`)
-      res.download(fpath)
+       //res.download(fpath)
+       //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
+       //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
+       //console.log("Sending file: ", fpath)
+       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png'))
+          res.sendFile(fpath)
+       else
+          res.download(fpath)
+       //res.sendFile(fpath, { headers: cfghdr })
     }
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
 })

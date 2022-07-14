@@ -183,5 +183,6 @@
    /* font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; */
    font-size:120%;
    font-weight:bold;
+	 cursor:pointer;
    display:inline-block;
  }

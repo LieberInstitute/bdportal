@@ -193,13 +193,10 @@ const RnaSelect = ({ style }) => {
     return n
   }
 
-
-
   // prep selection sheet as per R.'s instructions
   let selectionSheet = null
   const sscols=[] //array of 2-column tables that will be joined later
   let allSet=true;
-   //quick pass to make sure all are set
   ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
       if (!allSet) return
       if (fid==='age' && m.ageRange) {

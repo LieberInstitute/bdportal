@@ -6,8 +6,12 @@ export function DlgRequest(props) {
   //props: isOpen={props.isOpen} toggle={props.toggle} onSubmit={submitHandler}
   //       button={yesCaption} buttonClose={noCaption}
   //  buttonEnable={enableSubmit}
-  return (<DlgModal { ...oProps} title="Restricted data" button="Request"
-                      buttonClose="Cancel">
+  return ( <DlgModal { ...oProps} title="Restricted data" buttonClose="Cancel" >
+      <p>
+        <br />
+        You selected restricted datasets which cannot be accessed at this time.
+      </p>
+      {/*  button="Request"
         <p><br />
         The following datasets are restricted. Please enter access codes for each dataset or
         press the <b>Request Access</b> button below to request access to them.
@@ -29,16 +33,8 @@ export function DlgRequest(props) {
           to be sent along with your request.
           <textarea style={{ width:"100%" }} >  </textarea>
         </Row>
-          {/*
-          <div className="row form-group justify-content-center ">
-            <div className="col-6 align-self-center text-center">
-            <button className="btn btn-primary">Request Access</button>
-            </div>
-            <div className="col-6 align-self-center text-center">
-            <button className="btn btn-light" onClick={props.hide}>Cancel</button>
-            </div>
-         </div>
-        */}
+      */}
+
      </DlgModal>
 )
 }

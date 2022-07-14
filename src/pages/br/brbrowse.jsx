@@ -149,7 +149,7 @@ const BrTable = ( props ) => {
 				shcolors.push(xtcolors[i])
 			}
 	  })
-    
+
 		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
 			const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
@@ -190,7 +190,7 @@ const BrTable = ( props ) => {
 							`${dtaNames.sex[six]}`, age, pmi]
 	 let lacc=0
    const shcounts=[]
-		
+
 	 counts.forEach( (e,i)=> {
 			  if (showXTs[i]) {
 					shcounts.push(e)
@@ -254,7 +254,7 @@ const BrTable = ( props ) => {
 		})
 	}
 
-  const tblrows = tableFilter( props.tblRows, props.brSet ) //filter rows to render 
+  const tblrows = tableFilter( props.tblRows, props.brSet ) //filter rows to render
   const tblhdr=[...basecols, ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
@@ -353,7 +353,7 @@ const BrBrowse = ( ) => {
             if (reqmet) { brSet.add(brix); break }
           }
        })
-     } else { // let pass only brains that have samples of all m.reqXType types 
+     } else { // let pass only brains that have samples of all m.reqXType types
          m.tblRows.forEach( (rd,i)=>{
             const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
             let reqmet=true
@@ -397,7 +397,7 @@ const BrBrowse = ( ) => {
               if (m.showXType[i]) cntcols.push(e)
             })
           }
-        
+
           const tblrows = tableFilter( m.tblRows, m.brSet ) //filter rows to export according to current brSet
           //const tblhdr=[...basecols, ...cntcols]
           const rdata=[ [...basecols, ...cntcols] ] // add header row
@@ -422,7 +422,7 @@ const BrBrowse = ( ) => {
             const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
                        `${dtaNames.sex[six]}`, age, pmi]
             counts.forEach( (c,i)=> {
-                if (showXTs[i]) outrd.push(c);                
+                if (showXTs[i]) outrd.push(c);
             })
             rdata.push(outrd)
           } )
@@ -532,7 +532,7 @@ const BrBrowse = ( ) => {
 					</Col>
 			  </Row>
 				<Row id="relSumBox" className="pl-0 pr-0 pt-1 mt-2 d-flex justify-content-start align-items-start">
-				 <RSelSummary browse brSet={m.brSet} getBrowseTable={getBrowseTable}/>
+				 <RSelSummary browse brSet={m.brSet} getBrowseTable={getBrowseTable} />
     	 </Row>
 
 			</Col>
