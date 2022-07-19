@@ -1698,14 +1698,20 @@ export async function checkGeneList(glst, annotation) {
 		   body: JSON.stringify({ dtype: 'genelist', annset: annotation, genelist: glst })
   };
   //console.log(" -- sending req body:", reqOpts.body)
-  return fetch(`${MW_SERVER}/pgdb/gcheck`, reqOpts)
+  //return fetch(`${MW_SERVER}/pgdb/gcheck`, reqOpts)
+  const res=await fetch(`${MW_SERVER}/pgdb/gcheck`, reqOpts)
+  if (res) {
+    const jres=await res.json()
+    return jres;
+  }
+  return null;
 }
 
-export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, glst) {
+export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, garr) {
 	// params: file prefix, array of sample_IDs, feat =('g', 't', 'e', 'j' or 'm')
 	if (!feat) feat='g' //feature type
   //if (!glst)
-  let lstgenes=glst.join()
+  let lstgenes=garr.join()
 	feat=feat.charAt(0).toLowerCase()
 	if (feat=='t') assayType='tpm'
     else if (feat=='m') assayType='meta'
@@ -1717,7 +1723,7 @@ export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, gls
                            filetype:fext,
                            dtype:assayType })
   };
-  //console.log(" -- sending req body:", reqOpts.body)
+  //console.log(" -- buildRSE() sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
 }
 
@@ -1726,6 +1732,7 @@ export async function getPlot(plType, sarr, glst, feat='g') {
 	// params: file prefix, array of sample_IDs, feat =('g', 't', 'e', 'j' or 'm')
 	if (!feat) feat='g' //feature type
 	feat=feat.charAt(0).toLowerCase()
+  if (Array.isArray(glst)) glst=glst.join()
 	const reqOpts = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

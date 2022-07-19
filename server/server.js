@@ -234,7 +234,7 @@ app.post('/pgdb/plotdl', (req, res) => {
   feature=feature.charAt(0).toLowerCase();
   // let filetype=body.filetype || 'json'; // plotly JSON
   //let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
-  let glst=body.genes
+  let glst=body.genes //expect as string, comma delimited list
   //console.log(" received req.body:", body, "   glst=", glst)
   let plotType=body.plotType; //which plot: 'age', 'box-gene', 'box-region', ...
   //let glst=req.boby.genes;

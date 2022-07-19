@@ -45,32 +45,28 @@ function ExpAgePlots( {samples, glstCheck }) { //props.samples = sample IDs to p
 	}
 
   function onPlotClick() {
-		let glst=$('#inglst').val().trim()
-		glst=glstCheck(glst)
-		clearPlot()
-		if (glst.length==0) return;
-		// setFStatus(1) //enter plot prep state, show it somehow
-		setPlStatus(1)
-		setPlotJSON(null)
-		//console.log(" curated gene list: ", gtlst)
-		getPlot('age', samples, glst).then(
-			res=>res.json()
-		).then(fn => {
-			 let fname="";
-       console.log(" getPlot returned fname =", fn)
-			 if (fn.length>1) fname=fn[1][0]
-			 if (fname) {
-				 getRStagedJSON(fname, plotFetched, 'plot1')
-			 }
-		})
+		let genes=$('#inglst').val().trim()
+		glstCheck(genes).then( glst=>{
+			clearPlot()
+			if (glst.length==0) return;
+			// setFStatus(1) //enter plot prep state, show it somehow
+			setPlStatus(1)
+			setPlotJSON(null)
+			//console.log(" curated gene list: ", gtlst)
+			getPlot('age', samples, glst).then(
+				res=>res.json()
+			).then(fn => {
+				 let fname="";
+				 console.log(" getPlot returned fname =", fn)
+				 if (fn.length>1) fname=fn[1][0]
+				 if (fname) {
+					 getRStagedJSON(fname, plotFetched, 'plot1')
+				 }
+			})
+		}) //this returns the list of "valid" genes
   }
 
-  function onCheckGeneList() {
-    const glst=glstCheck($('#inglst').val().trim())
-    if (glst!=geneList) setGeneList(glst)
-  }
-
-	// style="width: 100%; height: 100%;"
+  // style="width: 100%; height: 100%;"
 	return(<Row className="d-flex flex-nowrap flex-fill">
 	<Col xs="12" className="d-flex flex-column mt-2">
 		 <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0">
@@ -132,31 +128,26 @@ function ExpBoxPlots({ samples, glstCheck }) {
 	}
 
   function onPlotClick() {
-		let glst=$('#inglst').val().trim()
-		glst=glstCheck(glst)
-		clearPlot()
-		if (glst.length==0) return;
-		// setFStatus(1) //enter plot prep state, show it somehow
-		setPlStatus(1)
-		setPlotJSON(null)
-		//console.log(" curated gene list: ", gtlst)
-		getPlot('box-gene', samples, glst).then(
-			res=>res.json()
-		).then(fn => {
-			 let fname="";
-       //console.log(" getPlot returned fname =", fn)
-			 if (fn.length>1) fname=fn[1][0]
-			 if (fname) {
-				 getRStagedJSON(fname, plotFetched, 'plot1')
-			 }
+		let genes=$('#inglst').val().trim()
+		glstCheck(genes).then( glst=> { //the list of valid genes
+			clearPlot()
+			if (glst.length==0) return;
+			// setFStatus(1) //enter plot prep state, show it somehow
+			setPlStatus(1)
+			setPlotJSON(null)
+			//console.log(" curated gene list: ", gtlst)
+			getPlot('box-gene', samples, glst).then(
+				res=>res.json()
+			).then(fn => {
+				let fname="";
+				//console.log(" getPlot returned fname =", fn)
+				if (fn.length>1) fname=fn[1][0]
+				if (fname) {
+					getRStagedJSON(fname, plotFetched, 'plot1')
+				}
+			})
 		})
-  }
-
-  function onCheckGeneList() {
-    const glst=glstCheck($('#inglst').val().trim())
-    if (glst!=geneList) setGeneList(glst)
-  }
-
+	}
 
   return(<Row className="d-flex flex-nowrap flex-fill">
 	<Col xs="12" className="d-flex flex-column mt-2">
@@ -218,7 +209,7 @@ const RnaExplore = ({ selData, style }) => {
     }
   },[geneCheckInfo])
 
-	function glstCheck(glst) {
+	async function glstCheck(glst) {
     //TODO:  check genes in the database
     setGeneCheckInfo('')
     //let glst=$('#inglst').val()
@@ -230,31 +221,35 @@ const RnaExplore = ({ selData, style }) => {
     glst=glst.trim()
     //if (glst!==geneList) setGeneList(glst)
     if (glst.length<2) { setGeneCheckInfo(nogenes); return }
-    const garr=glst.split(/[,|;:.\s]+/).filter(s => s)
+    const garr=glst.split(/[,|;:.\s]+/).filter(s => s.length>0).map( s=>s.toUpperCase() )
 
     //check list against the database
-    let guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i).sort();
+    let guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i) //.sort();
     glst=guniq.join(',')
-    checkGeneList(guniq, 'gencode25')
+		const gvalid=[]
+    const dt = await checkGeneList(guniq, 'gencode25')
+		/*
       .then( res => {
         return res.json()
       } )
-      .then( dt => {
+      .then( dt => { */
         // 1st row: header, 2nd row: data = id, gene_id, symbol, type
         let rglst=null
         let gmiss=[]
         if (dt.length>1) {
-          rglst= dt.slice(1).map( (v)=>v[2] )
-          rglst=rglst.filter((item, i, ar) => ar.indexOf(item) === i).sort()
+          rglst= dt.slice(1).map( v=>v[2] )
+          rglst=rglst.filter((item, i, ar) => ar.indexOf(item) === i) //.sort()
           guniq.forEach( (v)=> {
                if (rglst.indexOf(v)<0) gmiss.push(v)
+							  else gvalid.push(v)
             })
         } else { gmiss.push(... guniq) }
         const msg= gmiss.length ? `Could not recognize gene symbols: ${gmiss.join(', ')}` :
                           '';
         setGeneCheckInfo(msg)
-      })
-   return glst
+      //}) .then
+   // return glst
+	 return gvalid; //list of gene symbols found in the database
   }
 
 	useScript("https://cdn.plot.ly/plotly-latest.min.js", "plotlyJS");

@@ -19,7 +19,7 @@ props :
    fidx :  idx in fTypes/ftNames
    norm : 0 (counts) or 1 (rpmkm)
 */
-function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, genestxt, onStatusChange, getAllStatus, selsheet}) {
+function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genestxt, brsum, onStatusChange, getAllStatus, selsheet}) {
 
   const [fstatus, setFStatus]=useState(0) // 0 = nothing/ok, 1 = building, -1 = error
   const [saved, setSaved]=useState("")
@@ -32,7 +32,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
   const filename = `${prefix}_${ftype}_n${numsamples}.${fext}`
   //if (fidx==4) fext = 'meta'
 
-  function dlClick() {
+  async function dlClick() {
     //setFStatus( v => (v<0 ? 0 : (v ? -1 : 1)) )
     //return;
     // ^^^^ just for testing
@@ -45,22 +45,15 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
     if (onStatusChange) onStatusChange(fidx, 1)
     let dtype=norm ? 'rpkm' : 'counts'
     if (fidx==1) dtype='tpm'
-    let glst=[]
-    if (norm && genes) {
-      if (typeof genes == 'function') {
-         const genelist=genes() //retrieve the gene list from parent as a comma-delimited list
-         if (genelist) {
-            if (Array.isArray(genelist)) glst=genelist
-            else if (genelist.length>1) { //assume prepared string, comma delimited}
-              glst=genelist.split(',')
-            }
-         }
-      }
-      else if (Array.isArray(genes)) glst=genes
+    let glst='', gvalid=[]
+    let genelst=[]
+    if (norm && getGenes && (typeof getGenes == 'function')) {
+         [glst, gvalid]=await getGenes() //retrieve the gene list from parent as a string with comma-delimited,
+                                   // and gvalid as an array with validated gene symbols
     }
     if (fidx<5)  {
       const ctype=fidx<4 ? fTypes[fidx].charAt(0).toLowerCase() : 'm';
-      buildRSE(filename, samples, ctype, dtype, fext, glst)
+      buildRSE(filename, samples, ctype, dtype, fext, gvalid)
   			 .then( res => {
   				 //console.log("res=", res)
   				 return res.json()
@@ -81,13 +74,13 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, genes, brsum, ge
      }
      if (fidx==5) { //save selsheet as csv
       if (selsheet) {
-        if (glst.length && selsheet.length>1) {
+        if (gvalid.length && selsheet.length>1) {
           const slast=selsheet[0].length-1
           if (selsheet[0][slast].match(/Gene/i)) {
-            selsheet[1][slast]=glst.join(',')
+            selsheet[1][slast]=gvalid.join(',')
           } else {
             selsheet[0].push('Gene_list')
-            selsheet[1].push(glst.join(','))
+            selsheet[1].push(gvalid.join(','))
           }
         }
         let fdata=""
@@ -192,7 +185,8 @@ export function DlgDownload( props ) {
       brsum : null,
       datasets : null,
       samples : null,
-      lastGeneList: '' //last gene list checked
+      lastGeneList: '', //last gene list checked
+      lastValidGenes: [], //last set of valid genes given
 
   })
   const m=refData.current;
@@ -227,48 +221,49 @@ export function DlgDownload( props ) {
     setNorm(raw ? 0:1)
   }
 
-  function glstCheck() {
+  async function glstCheck() { //assumes #inglst exists!
     //TODO:  check genes in the database
     setGeneCheckInfo('')
-    if (norm==0) return;
+    if (norm==0) return ['', []];
     let glst=$('#inglst').val()
-    if (!glst) return;
+    if (!glst) return ['', []];
     glst=glst.trim()
     if (glst!==geneList) setGeneList(glst)
-    if (glst.length<2) return;
+    if (glst.length<2) return ['', []];
     const garr=glst.split(/[,|;:.\s]+/).filter(s => s)
 
     //check list against the database
-    let guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i).sort();
+    const guniq = garr.filter((item, i, ar) => ar.indexOf(item) === i).map( g => g.toUpperCase() ) //.sort();
     glst=guniq.join(',')
     if (glst!==m.lastGeneList) {
       m.lastGeneList=glst;
-      checkGeneList(guniq, 'gencode25')
-      .then( res => {
-        //console.log("res=", res)
+      m.lastValidGenes.length=0;
+      const dt=await checkGeneList(guniq, 'gencode25')
+      /* .then( res => {
         return res.json()
       } )
-      .then( dt => {
+      .then( dt => { */
         // 1st row: header, 2nd row: data = id, gene_id, symbol, type
         let rglst=null
         let gmiss=[]
-        if (dt.length>1) {
+        if (dt && dt.length>1) {
           rglst= dt.slice(1).map( (v)=>v[2] )
-          rglst=rglst.filter((item, i, ar) => ar.indexOf(item) === i).sort()
+          rglst=rglst.filter((item, i, ar) => ar.indexOf(item) === i) //.sort()
           guniq.forEach( (v)=> {
                if (rglst.indexOf(v)<0) gmiss.push(v)
+                  else m.lastValidGenes.push(v)
             })
         }
         const msg= gmiss.length ? `Could not recognize: ${gmiss.join(', ')}` :
-                          'All given genes were recognized.';
+                                  'All given genes were recognized.';
         setGeneCheckInfo(msg)
-      })
+      // }) //.then
    }
-   return glst
+   return [m.lastGeneList, m.lastValidGenes]
   }
 
-  function onCheckGeneList() {
-    const glst=glstCheck()
+  async function onCheckGeneList() {
+    const [glst, gvalid]=await glstCheck()
     if (glst!=geneList) setGeneList(glst)
   }
 
@@ -374,15 +369,15 @@ export function DlgDownload( props ) {
       </Row> : null }
 
     <MxDlRow fidx={4} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets}
-         samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+         samples={m.samples} getGenes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
     { fTypes.map( (it, i) =>
       <MxDlRow key={i} fidx={i} norm={norm} fext={fext} prefix={prefix} datasets={m.datasets}
-           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+           samples={m.samples} getGenes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
      )}
-    <MxDlRow fidx={6} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} brsum={m.brsum}
-           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+    <MxDlRow fidx={6} norm={norm} fext="csv" prefix={prefix}  datasets={m.datasets} brsum={m.brsum}
+           samples={m.samples} getGenes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
     <MxDlRow fidx={5} norm={norm} fext="csv" prefix={prefix} datasets={m.datasets} selsheet={props.selsheet}
-           samples={m.samples} genes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
+           samples={m.samples} getGenes={glstCheck} genestxt={geneList} onStatusChange={onExportStatus} getAllStatus={getExportingStatus} />
     { (geneCheckInfo.length>0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} /> }
     { (exporting>0) && <ToastBox id="tsExporting" title=" Info " text="Export operation in progress, please wait." /> }
   </DlgModal>

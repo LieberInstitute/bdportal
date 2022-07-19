@@ -194,9 +194,11 @@ const RnaSelect = ({ style }) => {
   }
 
   // prep selection sheet as per R.'s instructions
+  // Note: none-selected means ALL selected
+  // (for my sanity, only Dataset and Dx filters are REQUIRED to have a selection)
   let selectionSheet = null
   const sscols=[] //array of 2-column tables that will be joined later
-  let allSet=true;
+  let allSet=true; //actually just Dx and Dataset are enough..
   rGlobs.validSelection=false;
   ['dx', 'sex', 'age', 'race', 'reg', 'dset', 'proto'].forEach( (fid)=>{
       if (!allSet) return
@@ -204,24 +206,32 @@ const RnaSelect = ({ style }) => {
               const range=getFilterAgeRange()
               if (range.length==2) {
                 sscols.push[ [[`${range[0]}..${range[1]}`],[1]] ]
-              } else allSet=false;
+              } else {
+                //allSet=false;
+                sscols.push[ [['-1..120'],[1]] ]
+              }
               return
       }
       //regular sets
       const fset=getFilterSet(fid)
       //console.log(`checking ${fid}:`, fset)
-      if (fset.size==0) {allSet=false; return}
+      if (fset.size==0 && (fset=='dx' || fset=='dset')) {
+        allSet=false; return
+      }
+      //for everything else, none selected means all selected
+
       const fnames=getFilterNames(fid)
+      const isAllSel= (fset.size==0 ? 1 : 0) //none selected means all selected
       let selarr=[]
       if (fid==='age') {
         selarr=fnames.slice(1).map(
-           (n, i) => [ n, fset.has(i+1) ? 1 : 0 ]
+           (n, i) => [ n, fset.has(i+1) ? 1 : isAllSel ]
          )
          sscols.push(selarr)
          return
       }
       selarr=dta[fid].map(
-         fd => [ fnames[fd[3]], fset.has(fd[3]) ? 1 : 0 ]
+         fd => [ fnames[fd[3]], fset.has(fd[3]) ? 1 : isAllSel ]
         )
       sscols.push(selarr)
    })
@@ -253,7 +263,7 @@ const RnaSelect = ({ style }) => {
               {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
-              <span class="info-tx-apply">Apply</span> a selection in every category panel below
+              <span class="info-tx-apply">Apply</span> selections in the category panels below
               to access sample data.
               </div> : null}
             </Row>
