@@ -270,20 +270,21 @@ to be made available everywhere in the app
   box-shadow: none !important;
   border:1px solid #ddd !important;
   text-align: center;
-  line-height:90%;
-  font-size:90%;
+  line-height:15px;
+  font-size:13px;
   /* margin-top:6px; */
   padding: 2px 4px;
   border-radius:2px;
   background-color:#fff;
-  color:#d68;
+  color:#b68;
   z-index:2 !important;
 }
 
 .app-btn-help:hover {
-  color:#a46;
+  color:#924;
   background-color:#f8f8f8;
   border:1px solid #f2f2f2;
+  
 }
 
 .app-help-panel {

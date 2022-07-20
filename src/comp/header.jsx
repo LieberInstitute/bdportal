@@ -246,7 +246,7 @@ export function Header({ page, tab, menuClick }) {
       </div>
 
       <NavItem className="ml-auto nav-right">
-        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;<b>?</b>&nbsp;</button>
+        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;Read me&nbsp;</button>
 
         <img alt="bands" src={imgBands} className="navimgbands" />
         <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
