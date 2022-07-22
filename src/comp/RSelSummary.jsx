@@ -100,14 +100,8 @@ function LoadBrList(props) {
   const btooltip = num ? "" : "Provide a file or a list of Br#s";
   //console.log(` rendering LoadBrList() with num=${num}, props.brloaded=${props.brloaded}`)
   return(
-  <Row className="pt-0 mt-0 mb-2 pb-3 d-flex justify-content-start align-items-center">
-    <Col id="brlist-col" className="d-flex flex-column justify-content-center align-items-center position-relative" style="margin-top:-2rem;">
-    <div class="row brlist-info d-flex justify-content-center">
-        { (num>0) ? <span> Clear the user provided list of brains </span>
-           : <span>
-              Loading a user list of brains will clear the existing selections<br />
-            </span>}
-   </div>
+  <Row className="pt-2 mt-2 mb-2 pb-1 d-flex justify-content-start align-items-center">
+    <Col id="brlist-col" className="d-flex flex-column justify-content-center align-items-center position-relative">
     <div class="row d-flex justify-content-center align-items-center">
       <Button id="b1" className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
          onClick={brListClick}>{btcap}</Button>&nbsp;
@@ -116,6 +110,12 @@ function LoadBrList(props) {
       <DlgBrUpload isOpen={openBrsUpDlg} toggle={toggleBrsDlg} onSubmit={getBrList}
            title="Confirm" />
     </div>
+    <div class="row brlist-info d-flex justify-content-center">
+        { (num>0) ? <span> Clear the user provided list of brains </span>
+           : <span>
+              Loading a list of brains will clear the existing selections<br />
+            </span>}
+   </div>
     </Col>
   </Row>)
 

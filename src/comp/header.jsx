@@ -246,13 +246,13 @@ export function Header({ page, tab, menuClick }) {
       </div>
 
       <NavItem className="ml-auto nav-right">
-        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;Read me&nbsp;</button>
+        <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;Read Me&nbsp;</button>
 
         <img alt="bands" src={imgBands} className="navimgbands" />
         <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
         <img alt="bands_r" src={imgBandsR} className="navimgbands" />
-        {/* <span className="navlogin">Login</span> */}
-        <Login />
+        <span className="navlogin">Login</span>
+        {/* <Login />  */}
         <img alt="brainlogo" src={imgBrCirc} style={{ height: "2rem", paddingRight: "0.5rem" }} />
       </NavItem>
     </Nav>

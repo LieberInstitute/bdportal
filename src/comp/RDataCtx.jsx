@@ -31,7 +31,7 @@ export const dtaNames = {
     reg : ['reg'], // push allData.regions[1] names
     regFull : ['regname'], // push allData.regions[2], i.e. their full names
     dx : ['dx' ], //push allData.dx names, index MUST match their IDs in the dtaXd[x] arr rows
-    dxFull: ['dxname'],
+    dxFull: ['dxname'],   
     dset: [ ], /* an array of arrays of lists of all dataset names (for all experiment types)
                     with dataType prepended:
                   [
@@ -71,8 +71,28 @@ export const dtaNames = {
     ageRanges:   [[0], [0.01, 15.99],[16, 64.99], [AGE_LAST_RANGE] ]
 };
 
+//hard coding dataset Deg files by RNASeq dataset index, for now
+const datasetDegFiles= [ 'deg', '', 
+   'BrainSeq_Phase1.degradation.rda',
+   'BrainSeq_Phase2_DLPFC.degradation.rda',
+   'BrainSeq_Phase2_HIPPO.degradation.rda',
+   'BrainSeq_Phase3_Caudate.degradation.rda'
+   ];
+
+export function getDatasetDegFile(dix) {
+  const r=datasetDegFiles[dix];
+  if (r) return r
+  return ''
+}
+
 export function getDatasetCitation(xt, dix) {
-  return dtaNames.dsetRef[xt][dix]
+ const r=dtaNames.dsetRef[xt][dix]
+ if (r) return r
+ return ''
+}
+
+export function getDatasetName(xt, dix) {
+    return dtaNames.dset[xt][dix]
 }
 
 export function geProtoName(xt, pix) {
@@ -1763,6 +1783,22 @@ export async function saveRStagedFile(relpath, newfname) {
   return href;
 }
 
+export async function saveStaticDataFile(relpath) { // this is a path relative to H5BASE file
+  const a = document.createElement('a');
+  //make sure relpath replaces / with | :
+  relpath=relpath.replace(/\//g, '|')
+  const href=`${MW_SERVER}/stdata/${relpath}`
+  a.href = href ;
+  //a.addEventListener('click', () => {
+  //  setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000); //prevent timeout?
+  //});
+  document.body.appendChild(a); //FF needs this
+  a.click();
+  //a.remove();
+  document.body.removeChild(a); //FF needed this
+  return href;
+}
+
 export async function getRStagedJSON(relpath, callbackFn, ...args) {
   //relpath looks like this: r4247179d263/agePlot_n676.json.gz
   // it's relative to the R_STAGING dir
@@ -1838,7 +1874,6 @@ export function getSelSampleData(xt=0) { // return { datasets: [], samples: []}
   data.samples=sampleIDs
   return data
  }
-
 
 export function arrayEq(a, b) {
   if (a.length!==b.length) return false

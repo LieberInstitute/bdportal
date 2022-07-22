@@ -1,6 +1,6 @@
 import $ from 'jquery'
 
-const tooltipOpts={ delay: { show: 800, hide: 100 }, placement:'bottom', trigger: 'hover', container: 'body'  }
+const tooltipOpts={ delay: { show: 800, hide: 100 }, placement:'auto', trigger: 'hover', container: 'body'  }
 const ttSel='[data-toggle="tooltip"]'
 //should be called on first render useEffect( , [])
 

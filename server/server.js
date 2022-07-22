@@ -32,19 +32,30 @@ const dbpasswd = process.env.DB_PASS;
 let auth_srv = 'http://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
 let dbserver = process.env.DB_SRV;
 let r_filedir='/dbdata/cdb/r_staging'; //default on srv16
+let d_filedir='/ssd/dbdata/h5base'; //default on srv16
 let mail_url = 'http://192.168.77.16:1244/';
 if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
     if (!dbserver) dbserver='gdebsrv';
-    if (hostname=="gryzen")
+    if (hostname=="gryzen") {
              r_filedir="\\\\gdebsrv\\ssdata\\postgresql\\r_staging\\";
-       else if (hostname=="gi7") r_filedir="/data/gdebsrv_ssdata/postgresql/r_staging";
-           else r_filedir="/ssdata/postgresql/r_staging";
+             d_filedir="\\\\gdebsrv\\data1\\postgresql\\h5base\\"
+    }
+       else if (hostname=="gi7") { 
+           r_filedir="/data/gdebsrv_ssdata/postgresql/r_staging";
+           d_filedir="/data/gdebsrv_data1/postgresql/h5base"
+       } else { //gdebsrv itself
+           r_filedir="/ssdata/postgresql/r_staging";
+           d_filedir="/data1/postgresql/h5base";
+       }
     mail_url = 'http://gdebsrv:14244/';
     auth_srv= 'http://192.168.2.2:16600'; //no ssl in my LAN tests
 } else { //LIBD devel, or server, or aws
   if (!dbserver) dbserver='192.168.77.16';
   if (hostname=="linwks34") {
-         if (dbserver=='localhost') r_filedir= '/ssdata/postgresql/r_staging';
+         if (dbserver=='localhost') {
+             r_filedir= '/ssdata/postgresql/r_staging';
+             d_filedir='/ssdata/postgresql/h5base';
+         }
   } //else { //MUST be on srv16 itself, or aws
     //r_filedir='/dbdata/cdb/r_staging';
     //if (hostname!=='srv16') console.log("WARNING: srv16 assumed, r_filedir set to: ", r_filedir)
@@ -401,6 +412,27 @@ app.get('/rstaging/:fpath', (req, res)=> {
     }
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
 })
+
+app.get('/stdata/:fpath', (req, res)=> { // static data file under H5BASE file directory
+  let relpath=req.params.fpath
+  //convert relpath under d_filedir
+  relpath=relpath.replace(/\|/g, '/')
+  db.clog('~~ got stdata query:', relpath);
+  let fpath=path.join(d_filedir, relpath);
+  if (fs.existsSync(fpath)) {
+       //res.download(fpath)
+       //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
+       //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
+       //console.log("Sending file: ", fpath)
+       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png'))
+          res.sendFile(fpath)
+       else
+          res.download(fpath)
+       //res.sendFile(fpath, { headers: cfghdr })
+    }
+    else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
+})
+
 
 app.get('/ruthere', (req, res)=> {
     db.clog(' ping /ruthere received')

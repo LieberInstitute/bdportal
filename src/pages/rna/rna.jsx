@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {useEffect, useState} from "preact/hooks";
+import {useEffect, useState, useRef} from "preact/hooks";
 //import {rGlobs, RDataProvider, FltCtxProvider, useFltCtxUpdate, useRData} from '../../comp/RDataCtx';
 //import { rGlobs, changeXType, useRData }  from '../../comp/RDataCtx';
 import './style.css';
@@ -11,6 +11,11 @@ import { rGlobs, changeXType, useRData }  from '../../comp/RDataCtx';
 
 const RnaPages = ({ params }) => {
 	let tab=params.tab
+  const refData=useRef( {
+    xploreSection: 1, //last Explore section (Age Plot, Box plot)
+    genelist: ['']// latest genelist entered in the last Explore section
+   })
+  //const m=refData.current;
 	//console.log("--- Rna Pages tab requested:", tab)
 	if (tab!=='exp' && tab!=='rep') tab='sel'
 
@@ -21,17 +26,9 @@ const RnaPages = ({ params }) => {
 		rGlobs.validSelection=false;
 	}
 	changeXType(1);
-
-
+  
 	return tab==='sel' ? <RnaSelect /> :
-	    ( tab=='exp' ? <RnaExplore /> :  <RnaReports />)
-
-  /* // used to do it like this, likely not needed anymore
-	return (<>
-		 <RnaSelect style={{ display: tab==="sel" ? "block" : "none" }} />
-		 <RnaExplore style={{ display: tab==="exp" ? "block" : "none" }} />
-		 <RnaReports style={{ display: tab==="rep" ? "block" : "none" }} />
-	   </>) */
+	    ( tab=='exp' ? <RnaExplore mdata={refData.current} /> :  <RnaReports />)
 }
 
 export default RnaPages;

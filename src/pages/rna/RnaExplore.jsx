@@ -24,7 +24,7 @@ function showPlot(div, data) {
 }
 
 
-function ExpAgePlots({ samples, glstCheck }) { //props.samples = sample IDs to plot
+function ExpAgePlots({ samples, glstCheck, mgenes }) { //props.samples = sample IDs to plot
   const [plotJSON, setPlotJSON] = useState(null)
   const [geneList, setGeneList] = useState('')
   const [plstatus, setPlStatus] = useState(0) // 0 - idle, 1 - building-plot
@@ -32,9 +32,10 @@ function ExpAgePlots({ samples, glstCheck }) { //props.samples = sample IDs to p
   function glstClear() {
     setGeneList("")
     $('#inglst').val("")
+    if (mgenes) mgenes[0]="";
     clearPlot()
   }
-
+  
   function plotFetched(plotData, divName) {
     showPlot(divName, plotData)
     setPlStatus(0)
@@ -45,9 +46,10 @@ function ExpAgePlots({ samples, glstCheck }) { //props.samples = sample IDs to p
     $(`#plot1`).html("")
     setPlotJSON(null)
   }
-
+  
   function onPlotClick() {
     let genes = $('#inglst').val().trim()
+    if (mgenes) mgenes[0]=genes
     glstCheck(genes).then(glst => {
       clearPlot()
       if (glst.length == 0) return;
@@ -66,6 +68,11 @@ function ExpAgePlots({ samples, glstCheck }) { //props.samples = sample IDs to p
       })
     }) //this returns the list of "valid" genes
   }
+
+  useEffect( ()=> {
+     if (mgenes && mgenes[0]) 
+     $('#inglst').val(mgenes[0])
+  }, [mgenes])
 
   // style="width: 100%; height: 100%;"
   return (<Row className="d-flex flex-nowrap flex-fill">
@@ -106,7 +113,7 @@ function ExpAgePlots({ samples, glstCheck }) { //props.samples = sample IDs to p
   </Row>)
 }
 
-function ExpBoxPlots({ samples, glstCheck, numregions }) {
+function ExpBoxPlots({ samples, glstCheck, mgenes, numregions }) {
   const [plotJSON, setPlotJSON] = useState(null)
   const [geneList, setGeneList] = useState('')
   const [plstatus, setPlStatus] = useState(0) // 0 - idle, 1 - building-plot
@@ -114,6 +121,7 @@ function ExpBoxPlots({ samples, glstCheck, numregions }) {
   function glstClear() {
     setGeneList("")
     $('#inglst').val("")
+    if (mgenes) mgenes[0]="";
     clearPlot()
   }
 
@@ -130,6 +138,7 @@ function ExpBoxPlots({ samples, glstCheck, numregions }) {
 
   function onPlotClick() {
     let genes = $('#inglst').val().trim()
+    if (mgenes) mgenes[0]=genes
     glstCheck(genes).then(glst => { //the list of valid genes
       clearPlot()
       setPlotJSON(null)
@@ -150,6 +159,7 @@ function ExpBoxPlots({ samples, glstCheck, numregions }) {
       })
     })
   }
+
   function clickByRegion() {
       const ckVal = $('#ckPlotByRegion')[0].checked
       console.log(" ckPlotByRegion =", ckVal)
@@ -157,21 +167,27 @@ function ExpBoxPlots({ samples, glstCheck, numregions }) {
       setPlotJSON(null)
       setByRegion(ckVal)
   }
+
+  useEffect( ()=> {
+    if (mgenes && mgenes[0]) 
+    $('#inglst').val(mgenes[0])
+   }, [mgenes])
+
   const provide=byRegion ? "Enter a gene symbol" : "Provide a list of genes" ;
+
   return (<Row className="d-flex flex-nowrap flex-fill">
     <Col xs="12" className="d-flex flex-column mt-2">
       <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0">
         <Col className="col-auto d-flex p-0 m-0 mr-2">
           <Label className="p-0 m-0 red-info-text" style="font-size:14px;text-align:left;">
             Enter up to 8 genes to plot their expression levels in the selected samples by diagnosis.<br />
-            A single gene can be plot across multiple regions.
           </Label>
         </Col>
         <Col>
-          <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
+          {(numregions>1) && <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
             <CustomInput type="checkbox" id="ckPlotByRegion" onClick={clickByRegion} />
             Plot gene by brain region
-          </div>
+          </div> }
         </Col>
       </Row>
       <Row className="d-flex flex-row flex-nowrap align-items-center ml-1 mr-0 mb-2 ">
@@ -203,8 +219,8 @@ function ExpBoxPlots({ samples, glstCheck, numregions }) {
   </Row>)
 }
 
-const RnaExplore = ({ selData, style }) => {
-  const [nav, setNav] = useState(1)
+const RnaExplore = ({ selData, mdata, style }) => {
+  const [nav, setNav] = useState(mdata.xploreSection)
 
   const [geneCheckInfo, setGeneCheckInfo] = useState('')
 
@@ -271,7 +287,9 @@ const RnaExplore = ({ selData, style }) => {
   useScript("https://cdn.plot.ly/plotly-latest.min.js", "plotlyJS");
 
   function clickNav(e) {
-    setNav(Number(e.target.id))
+    const navid=Number(e.target.id)
+    mdata.xploreSection=navid
+    setNav(navid)
   }
 
   if (!rGlobs.validSelection) {
@@ -290,8 +308,7 @@ const RnaExplore = ({ selData, style }) => {
   const numsmp = smpData.samples.length;
   const numbr = dtBrXsel.size;
   const nRegions = getRegionCounts();
-
-
+ 
   return (<div class="col-12 d-flex flex-nowrap flex-column">
     <Row className="flex-grow-1 pt-1 mt-1 justify-content-start flex-nowrap">
       <Col className="d-flex p-0 m-0 colExpNav justify-content-start">
@@ -329,8 +346,8 @@ const RnaExplore = ({ selData, style }) => {
             </Col>
           </div>
         </Row>
-        {(nav == 1) ? <ExpAgePlots samples={smpData.samples} glstCheck={glstCheck} />
-          : <ExpBoxPlots samples={smpData.samples} glstCheck={glstCheck} numregions={nRegions.length} />}
+        {(nav == 1) ? <ExpAgePlots samples={smpData.samples} glstCheck={glstCheck} mgenes={mdata.genelist}/>
+          : <ExpBoxPlots samples={smpData.samples} glstCheck={glstCheck} mgenes={mdata.genelist} numregions={nRegions.length} />}
       </Col>
     </Row>
     {(geneCheckInfo.length > 0) && <ToastBox id="tsGeneCheck" title=" Info " text={geneCheckInfo} />}

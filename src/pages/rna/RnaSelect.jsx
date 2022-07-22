@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger */
 /* eslint-disable no-lonely-if */
 import $ from 'jquery';
 import { h } from 'preact';
@@ -7,9 +8,9 @@ import './style.css';
 
 import {
   useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
-  applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation, rGlobs,
-  applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
-  getFilterNames, arraySMerge} from '../../comp/RDataCtx'
+  applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation, getDatasetName, 
+  getDatasetDegFile, rGlobs, applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
+  getFilterNames, saveStaticDataFile, arraySMerge} from '../../comp/RDataCtx'
 
 import { FltMList } from '../../comp/FltMList'
 import { Row, Col, Button, Label, Input, CustomInput } from 'reactstrap'
@@ -18,56 +19,8 @@ import RSelSummary from '../../comp/RSelSummary'
 import AgeDualPanel from '../../comp/AgeDualPanel'
 import { clearTooltips, setupTooltips } from '../../comp/ui';
 
-const RnaSelect = ({ style }) => {
-  const [, , , dataLoaded] = useRData()
-  const notifyUpdate = useFltCtxUpdate();
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
-  const [clearCounter, setClearCounter] = useState(0)
-  const [showHelp, setShowHelp] = useState(true)
 
-  const refData=useRef( {
-    ageRange:false, //default: age bins
-    updList: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  },
-    lastAutosel: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  }
-
-  })
-  const m=refData.current
-
-  //const [ updating, setUpdating ] = useState(false) // when dataset selection/switching is instant, disable clicking while updating
-
-
-  //const [brloaded, setBrLoaded] = useState(0)
-
-  useEffect(() => {
-
-    $('.toast').toast({ delay: 7000 })
-
-    setupTooltips()
-    return ()=>{ //clean-up code
-       clearTooltips()
-    }
-  }, [])
-
-  useEffect(() => {
-    clearDsetInfo() //every re-render should clear that
-    //$('.tooltip').hide();
-  })
-
-  if (!dataLoaded) return <h3>Loading..</h3>
-
-  function clearDsetInfo() {
-    const dt = $('#dset-info-content')
-    dt.html(""); dt.hide()
-  }
-
-  function resetFilters() {
-    clearDsetInfo()
-    clearFilters()
-    setClearCounter(clearCounter + 1)
-    notifyUpdate('clear')
-    //simply triggers refresh, but for some components we want to trigger remount
-  }
-
+function DSetInfo ( { dix } ) {
 
   function prepRefHtml(ref) {
     // ref=ref.replace(/\|/g, "<br>")
@@ -94,30 +47,118 @@ const RnaSelect = ({ style }) => {
     return `<b>${rl[1]}</b><br/>${rl[0]},&nbsp;${rl[2]}`
   }
 
-  function onDatasetClick(dix, fid, sel) {
-    let ref = getDatasetCitation(0, dix)
+  async function onDegClick(fdl) {
+    $("#degdlBtn").prop('disabled', true);
+    saveStaticDataFile(fdl).then( ()=> {
+          $("#degdlBtn").prop('disabled', false)
+        }
+     )
+  }
+
+  const degfile=dix>0 ? getDatasetDegFile(dix) : '';
+  let degdl=(degfile.length>0) ? `degradation/${degfile}` : '';
+  const ref = dix>0 ? getDatasetCitation(0, dix) : '';
+  const refhtml = ref ? prepRefHtml(ref) : ''
+  const dsname=getDatasetName(0, dix)
+  
+  //let degbtn='' 
+  const showInfo=(dix && (ref.length>0 || degdl.length>0))
+  //dt.html(`${refhtml}${degbtn}`);
+  //dt.show()
+  //console.log(" ~~~~ rendering DSetInfo with dix =", dix,  showInfo)
+  return (<div id="dset-info-content" style={ { display: showInfo ? 'block' : 'none' }}> 
+   <span class="dsetname"><i>{dsname}</i></span>
+   <span dangerouslySetInnerHTML={ {__html: refhtml}} />
+   <span style={ {display : degdl ? 'inline-block' : 'none' } }>
+     <Button id="degdlBtn" title="Download Degradation matrix for this dataset" 
+        className="btn-sm app-btn app-btn-deg" onClick={ () => onDegClick(degdl) }> Deg. data </Button>
+   </span>
+  </div>)
+}
+
+const RnaSelect = ({ style }) => {
+  const [, , , dataLoaded] = useRData()
+  const notifyUpdate = useFltCtxUpdate();
+
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [clearCounter, setClearCounter] = useState(0)
+  const [showHelp, setShowHelp] = useState(true)
+
+  const [dsetInfo, setDsetInfo] = useState(0) //selected dset index (1-based, set to 0 if none OR multi selected)
+
+  const refData=useRef( {
+    ageRange:false, //default: age bins
+    updList: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  },
+    lastAutosel: { sex:0, age:0, reg:0, race:0, dset:0, dx:0, proto:0  }
+
+  })
+  const m=refData.current
+
+  //const [ updating, setUpdating ] = useState(false) // when dataset selection/switching is instant, disable clicking while updating
+
+
+  //const [brloaded, setBrLoaded] = useState(0)
+
+  useEffect(() => {
+
+    $('.toast').toast({ delay: 7000 })
+
+    setupTooltips()
+    return ()=>{ //clean-up code
+       clearTooltips()
+    }
+  }, [])
+
+  /*
+  useEffect(() => {
+    clearDsetInfo() //every re-render should clear that
+    //$('.tooltip').hide();
+  })*/
+
+  if (!dataLoaded) return <h3>Loading..</h3>
+
+  /*function clearDsetInfo() {
     const dt = $('#dset-info-content')
+    dt.html(""); dt.hide()
+  }*/
+
+  function resetFilters() {
+    //clearDsetInfo()
+    setDsetInfo(0)
+    clearFilters()
+    setClearCounter(clearCounter + 1)
+    notifyUpdate('clear')
+    //simply triggers refresh, but for some components we want to trigger remount
+  }
+
+  function onDatasetClick(dix, fid, sel) {
+    //let ref = getDatasetCitation(0, dix)
+    //const dt = $('#dset-info-content')
     //const nsi=$("#help-msg")
     if (sel && sel.length > 1) {
-      //dt.html('<span class="dset-info-warn"> Warning: selecting samples from more than one dataset! </span>');
-      //dt.show()
-      dt.html("");
-      dt.hide()
-      //if (nsi) nsi.show()
+      setDsetInfo(0)
+      //dt.html("");
+      //dt.hide()
       $("#dsMultiWarn").toast('show')
       return
     }
     if (sel.length <= 1) $("#dsMultiWarn").toast('hide');
-    if (sel.length && ref && ref.length > 0) {
-      //hide the help-msg panel
-      //if (nsi) nsi.hide()
-      const refhtml = prepRefHtml(ref)
-      dt.html(refhtml);
+    
+    if (sel.length==1) {
+      //console.log("setting DsetInfo => ", dix, sel, ref)
+      setDsetInfo(dix)
+      /*
+      const refhtml = ref ? prepRefHtml(ref) : ''
+      const dsname=getDatasetName(0, dix)
+      let degbtn=''
+      if (degdl) degbtn=`<span><Button class="btn-sm app-btn app-btn-deg" onClick={onDegClick}> Deg. data </Button></span>`
+      dt.html(`<span class="dsetname"><i>${dsname}</i></span>${refhtml}${degbtn}`);
       dt.show()
+      */
     } else {
-      dt.html("");
-      dt.hide()
-      //if (nsi) nsi.show()
+      setDsetInfo(0)
+      //dt.html("");
+      //dt.hide()      
     }
   }
 
@@ -133,8 +174,7 @@ const RnaSelect = ({ style }) => {
   const showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq)
 
   function applyFilter(oset, fid) {
-    clearDsetInfo()
-
+    //clearDsetInfo()
     const autosel=(fid=='dset' && Object.keys(oset).length<=2)
     // before updating the counts, clear previous autoselection
     if (autosel) {
@@ -178,7 +218,7 @@ const RnaSelect = ({ style }) => {
 
   function onBrListLoad(brlist) {
     if (!brlist || brlist.length == 0) {
-      clearDsetInfo()
+      //clearDsetInfo()
       //clearFilters()
       clearBrListFilter()
       setClearCounter(clearCounter + 1)
@@ -214,9 +254,9 @@ const RnaSelect = ({ style }) => {
       }
       //regular sets
       const fset=getFilterSet(fid)
-      //console.log(`checking ${fid}:`, fset)
-      if (fset.size==0 && (fset=='dx' || fset=='dset')) {
-        allSet=false; return
+      
+      if (fset.size==0 && (fid=='dx' || fid=='dset')) {
+        allSet=false; return        
       }
       //for everything else, none selected means all selected
 
@@ -238,7 +278,7 @@ const RnaSelect = ({ style }) => {
 
    if (allSet) {
      rGlobs.validSelection=true;
-     //console.log(" sscols :", sscols)
+     // console.log(" validSelection TRUE")
      selectionSheet=[ [ 'Diagnosis', 'Diagnosis_selected', 'Sex', 'Sex_selected',
      'Age', 'Age_selected', 'Ancestry', 'Ancestry_selected', 'Brain_Region', 'Brain_Region_selected',
       'Datasets', 'Datasets_selected', 'Protocols', 'Protocols_selected' ] ];
@@ -246,6 +286,7 @@ const RnaSelect = ({ style }) => {
      //console.log(" selectionSheet :", selectionSheet)
      //TODO: in DlgDownload -> add genes if any save csv
    } else selectionSheet=null
+  
    //TODO: in RelSummary check props.selsheet to display Export/Explore buttons
 
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with sx fset =",getFilterSet('sex'), "  key =", sxkey)
@@ -272,7 +313,7 @@ const RnaSelect = ({ style }) => {
         </Row>
       </Col>
       <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">
-        <div id="dset-info"><div id="dset-info-content"> </div></div>
+        <div id="dset-info"> <DSetInfo dix={dsetInfo} /> </div>
       </Col>
       <Col xs="4" className="d-flex flex-fill" style="z-index:-1;">
       <Row className="m-0 p-0 mr-1 pr-1 d-flex justify-content-start"> </Row>
