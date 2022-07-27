@@ -294,13 +294,13 @@ const RnaSelect = ({ style }) => {
     <Row className="pt-0 mt-0 pb-0 mb-0 justify-content-center flex-nowrap">
       <Col xs="2" className="d-flex flex-column m-0 p-0 pl-1 ml-1 colDemo align-self-stretch justify-content-center">
         <Row className="d-flex position-relative mb-0 pb-0 pl-0 justify-content-start align-self-stretch">
-          <Col xs="7" className="d-flex justify-content-start align-items-center pr-0 mr-0">
-            <Button outline color="danger" className="btn-sm align-self-center" onClick={resetFilters}
+          <Col xs="7" className="d-flex justify-content-start align-items-center pl-0">
+            <Button outline color="danger" className="btn-sm align-self-center ml-0" onClick={resetFilters}
               data-toggle="tooltip" title="Clear all selections"
               style="line-height:80%;font-size:80%">Clear</Button>
           </Col>
-          <Col className="d-flex m-0 p-0 ml-1 align-self-start position-relative" style="height:32px;">
-            <Row className="d-flex justify-content-start align-items-center">
+          <Col className="d-flex m-0 p-0 ml-0 align-self-start position-relative" style="height:32px;">
+            <Row className="d-flex justify-content-start align-items-center w-100">
               {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
@@ -312,7 +312,7 @@ const RnaSelect = ({ style }) => {
           </Col>
         </Row>
       </Col>
-      <Col className="pl-0 pt-0 mt-1 align-self-start" style="left:-6rem; max-width:26rem;min-width:26rem;">
+      <Col className="pl-0 pt-0 mt-1 align-self-start top-info-panel">
         <div id="dset-info"> <DSetInfo dix={dsetInfo} /> </div>
       </Col>
       <Col xs="4" className="d-flex flex-fill" style="z-index:-1;">

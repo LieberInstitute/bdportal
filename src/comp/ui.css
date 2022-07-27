@@ -121,8 +121,15 @@ to be made available everywhere in the app
   /* overflow-x:scroll; */
 }
 
+.top-info-panel {
+  position: relative;
+  left:-6rem !important; 
+  max-width:24rem !important;
+  min-width:24rem !important;  
+}
+
 #dset-info {
-  font-size:85% !important;
+  font-size:13px;
   vertical-align: middle;
   color:#666;
   text-align:left;
@@ -133,7 +140,7 @@ to be made available everywhere in the app
   height:4.2rem !important;
   min-height:4.2rem;
   max-height:4.2rem !important;  
-  min-width:50em;
+  min-width:42rem;
   z-index:50;
 
 }

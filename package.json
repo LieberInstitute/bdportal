@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "build-based": "vite build --base=/bdportal/",
     "build-dev-based": "vite build --base=/dev/bdportal/",
