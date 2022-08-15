@@ -1,7 +1,7 @@
 <html><head>
   <meta content="text/html; charset=UTF-8" http-equiv="content-type">
    <style type="text/css">
-   
+
    p { padding-top:0pt;padding-bottom:2pt;line-height:1.15;orphans:2;widows:2;text-align:left;
        color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;
        font-size:12pt;font-family:"Arial";font-style:normal }
@@ -14,7 +14,7 @@
    .cbody {font-size:12pt;background-color:#ffffff;max-width:824px;padding:36pt 36pt 36pt 72pt}
    .bred{font-weight:bold;color:#b32141;}
    .c5{font-size:12pt;}
-    
+
    .title{padding-top:0pt;color:#666;font-size:20pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    .subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    li{color:#000000;font-family:"Arial"}
@@ -28,10 +28,10 @@
    <title>LIBData Portal Help</title>
   </head>
   <body class="cbody">
-     <h2 class="title" id="brsel-matrix"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute 
+     <h2 class="title" id="brsel-matrix"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
          <span class="bred">B</span>rain <span class="bred">D</span>ata <span class="bred">Portal</span></h2>
      <p>
-       This is a multi-page web application where the page (screen) can be selected using the top-left navigation button:      
+       This is a multi-page web application where the page (screen) can be selected using the top-left navigation button:
     </p><p>
         <span style="overflow: hidden; display: inline-block; margin: 6px 2px; border: 0.00px solid #000000;
           transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 356.00px; height: 115.00px;">
@@ -41,7 +41,7 @@
           This is a button which when clicked displays a drop-down menu with the available application pages.
           The pages not implemented yet are grayed out.
         </p>
-        
+
         <p>
           The entry page is the <span class="bred">Brain Set Builder</span>,
             however if the user
@@ -102,6 +102,29 @@
         </p>
 
 
+        <h4 id="rna-sel">RNA-Seq datasets</h4>
+        <p class="c0 c4">
+          On this page the user can make selections of RNA-Seq expression values by subsetting the available RNA-Seq datasets
+          pre-processed and stored in the database. <br /><br />
+
+          All the datasets shown on this page were processed using <a href="https://www.gencodegenes.org/human/release_25.html">Gencode Release 25</a>
+           as the reference annotation, using the <a href="https://doi.org/10.1186/s12859-021-04142-3">SPEAQeasy pipeline</a> <br />
+
+          Expression values (read counts) were obtained with these methods:
+          <ul>
+           <li><b>gene</b> and <b>exon</b> read counts were obtained with <a href="https://doi.org/10.1093/bioinformatics/btt656">featureCounts</a>.</li>
+           <li><b>junction</b> read counts were obtained with <a href="https://www.biorxiv.org/content/10.1101/436634v5">regtools</a>.</li>
+           <li><b>junction</b> read counts were estimated and normalized as TPM values using <a href="https://www.nature.com/articles/nbt.3519">kallisto</a>
+            or <a href="https://pubmed.ncbi.nlm.nih.gov/28263959/">Salmon</a>.</li>
+          </ul>
+
+        </p>
+
+        <h4 id="rna-explore">RNA-Seq selection exploration</h4>
+        <p class="c0 c4">
+        On the <span style="color:#c34;">Explore</span> tab, a few basic visualisations (plots) can be displayed for the current selection (which is summarized at the top).
+        Use the side bar on the left to select the plot type and enter the gene symbols for which the expression data will be plotted.
+        </p>
 
 
   </body>
