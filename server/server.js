@@ -29,7 +29,7 @@ require('dotenv').config(); // .env should have DB_SRV, DB_USER, DB_PASS
 //console.log("process.env:", process.env)
 const dbuser = process.env.DB_USER;
 const dbpasswd = process.env.DB_PASS;
-let auth_srv = 'http://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
+let auth_srv = 'https://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
 let dbserver = process.env.DB_SRV;
 let r_filedir='/dbdata/cdb/r_staging'; //default on srv16
 let d_filedir='/ssd/dbdata/h5base'; //default on srv16
@@ -162,11 +162,12 @@ app.post('/auth', (req, res) => {
     password: req.body.password,
   }).then(authres=> {
     //{signed_user:, token:}
-    //console.log("response data:", authres.data)
+    console.log("auth response data:", authres.data)
     res.status(200).json(authres.data);
     //log authentication here
     //updateLog(db, req.body.username, 'AUTH')
   }).catch((err) => {
+    console.log("auth FAIL in middleware!");
     res.status(500).json({ message: err });
     //updateLog(db, req.body.username, 'AUTHFAIL')
   });

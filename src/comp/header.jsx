@@ -3,13 +3,16 @@ import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, 
 import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
 import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
-//import axios from 'axios'
+
+import { rGlobs } from './RDataCtx';
+
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
 import imgBandsR from '/assets/bands_r.png'
 import imgBrCirc from '/assets/brain_encircled.svg'
 
-import { DlgLogin } from './DlgLogin';
+//import { DlgLogin } from './DlgLogin';
+import { DlgRLogin } from './DlgRLogin';
 import { DlgConfirm } from './DlgConfirm';
 import axios from 'axios'
 
@@ -86,7 +89,7 @@ export function parsePageTab(loc) {
 function ServerStatus( ) {
   const [status, setStatus]=useState('checking status..')
   const [pgstatus, setPgStatus]=useState('...')
-  console.log(" using mw-server: ", MW_SERVER)
+  //console.log(" using mw-server: ", MW_SERVER)
   useEffect(() => {
 
     axios.get(`${MW_SERVER}/ruthere`, { timeout: 1500 }).then((res) => {
@@ -121,31 +124,35 @@ export function Login({ login }) {
   function toggleLoginDlg() { setLoginModal(!loginModal) }
   function toggleLogoutAsk() { setLogoutAsk(!logoutAsk) }
 
-  const [auth, setAuth] = useState(['', '', null]) //user, pass, jwt/valid
+  const [auth, setAuth] = useState(['', '']) //user, jwt
 
   function loginoutDlg() {
-    if (!auth[2]) {//no authenticated user
+    if (!auth[1]) {//no authenticated user
       setLoginModal(true)
     } else { //do you want to logout?
       setLogoutAsk(true)
     }
   }
   function logout() {
-    setAuth(['', '', null])
+    setAuth(['', ''])
+    rGlobs.login=''
+    rGlobs.login_jwt=''
   }
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-
+  /*
   async function checkLogin(user, pass) {
     const areq = { username: user, password: pass }
     //const headers = { "Content-type": "application/x-www-form-urlencoded" }
     const headers = { "Access-Control-Allow-Origin": "*" }
     try {
-      const res = await axios.post(`${AUTH_SERVER}/auth`, areq, { headers })
+      //const res = await axios.post(`${AUTH_SERVER}/auth`, areq, { headers })
+      const res = await axios.post(`${MW_SERVER}/auth`, areq, { headers })
       if (res) {
-        setAuth([res.data.signed_user, 'x', res.data.token])
+        setAuth([res.data.signed_user, res.data.token])
+        rGlobs.login='';rGlobs.login_jwt='';
         return true
       }
     } catch (err) {
@@ -153,20 +160,27 @@ export function Login({ login }) {
     }
     //await sleep(5000) -- testing only
     return false
-  }
+  } */
+
+  function onLogin(user, token) {
+    //const headers = { "Access-Control-Allow-Origin": "*"}
+    setAuth([user, token])
+    rGlobs.login=user
+    rGlobs.login_jwt=token
+    return true;
+   }
 
   useEffect(() => {
-    setLoginModal(false) //set to true to ask for login at startup
+    setLoginModal(false) //set this to true to ask for login at startup!
   }, []) //run only once!
-
+  //<span style="border:1px solid #ccc;background-color:#eee;font-size:12px;padding:1px 3px;" 
+  //   onClick={ ()=>checkLogin( user, pass ) } > tst </span>
   return (<>
     <span className="navlogin" onClick={() => loginoutDlg()} >
-      {auth[2] ? auth[0] : "Login"}
+      {auth[1] ? auth[0] : "Login"}
     </span>
-    <DlgLogin isOpen={loginModal} toggle={toggleLoginDlg} checkLogin={checkLogin}
-      title="User Login" />
-    <DlgConfirm isOpen={logoutAsk} toggle={toggleLogoutAsk} onConfirm={logout}
-      title="Logout" />
+    <DlgRLogin isOpen={loginModal} toggle={toggleLoginDlg} onLogin={onLogin} title="Log In" />
+    <DlgConfirm isOpen={logoutAsk} toggle={toggleLogoutAsk} onConfirm={logout} title="Logout" />
   </>)
 }
 
@@ -251,8 +265,8 @@ export function Header({ page, tab, menuClick }) {
         <img alt="bands" src={imgBands} className="navimgbands" />
         <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
         <img alt="bands_r" src={imgBandsR} className="navimgbands" />
-        <span className="navlogin">Login</span>
-        {/* <Login />  */}
+        {/* <span className="navlogin">Login</span> */}
+         <Login />  
         <img alt="brainlogo" src={imgBrCirc} style={{ height: "2rem", paddingRight: "0.5rem" }} />
       </NavItem>
     </Nav>

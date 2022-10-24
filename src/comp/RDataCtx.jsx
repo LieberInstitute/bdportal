@@ -17,6 +17,8 @@ export const dtaSelTFull=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation',   '
 // the above must match the order of entries in the NavHeader
 
 export const rGlobs={
+     login : '',
+     login_jwt : '',
      selXType : 0, //currently targeted experiment/assay type + 1; 0 is the 'brain matrix', i.e. no selected data type
      prevSelXType : -1,
      dataLoaded : false,
