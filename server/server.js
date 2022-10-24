@@ -40,7 +40,7 @@ if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
              r_filedir="\\\\gdebsrv\\ssdata\\postgresql\\r_staging\\";
              d_filedir="\\\\gdebsrv\\data1\\postgresql\\h5base\\"
     }
-       else if (hostname=="gi7") { 
+       else if (hostname=="gi7") {
            r_filedir="/data/gdebsrv_ssdata/postgresql/r_staging";
            d_filedir="/data/gdebsrv_data1/postgresql/h5base"
        } else { //gdebsrv itself
@@ -126,6 +126,23 @@ app.use(  (req, res, next) => {
 
 app.get('/', (req, res) => {
     res.status(400).send('Invalid Request');
+});
+
+
+app.post('/authck', (req, res) => {
+  //const jwt_token = req.headers.authorization;
+  const jwt_token = req.body.token;
+  let uname = req.body.username; // does not matter
+  try {
+    // override username with the one in the encoded token
+      const decoded_token = jwt.verify(jwt_token, jwt_shh);
+      if (uname == decoded_token)  //override prev given username
+          res.send(uname)
+      else res.status(403).send("JWT error: username mismatch!")
+  } catch(err) {
+       res.status(403).send("Unauthorized Access /user AUTH");
+    return;
+  }
 });
 
 app.post('/auth', (req, res) => {
