@@ -173,7 +173,7 @@ export function Login({ login }) {
   useEffect(() => {
     setLoginModal(false) //set this to true to ask for login at startup!
   }, []) //run only once!
-  //<span style="border:1px solid #ccc;background-color:#eee;font-size:12px;padding:1px 3px;" 
+  //<span style="border:1px solid #ccc;background-color:#eee;font-size:12px;padding:1px 3px;"
   //   onClick={ ()=>checkLogin( user, pass ) } > tst </span>
   return (<>
     <span className="navlogin" onClick={() => loginoutDlg()} >
@@ -266,7 +266,7 @@ export function Header({ page, tab, menuClick }) {
         <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
         <img alt="bands_r" src={imgBandsR} className="navimgbands" />
         {/* <span className="navlogin">Login</span> */}
-         <Login />  
+         <Login />
         <img alt="brainlogo" src={imgBrCirc} style={{ height: "2rem", paddingRight: "0.5rem" }} />
       </NavItem>
     </Nav>

@@ -25,14 +25,14 @@ function arrShow(c) {
 
 //const columns=['#','Bint', 'Dx', 'Anc.', 'Sex', 'Age','RnaSeq', 'DNAm', 'WGS', ' dropped ' ];
 
-const xtcols=['RNAseq', 'DNAm', 'WGS'] // adjust this in the future as other exp data types are added
+const xtcols=['RNAseq', 'DNAm/450k', 'DNAm/WGBS', 'WGS'] // adjust this in the future as other exp data types are added
 const xtcolors=['#c9e9d1', '#bfdeff', '#f6cdd1' , '#fff0c1',  '#dbd0f0']
 //                 green,    blue,     red    ,   yellow,       purple
 const xtgrey='#cdcdcd'
-const numsortCols=[   1,                               5,     6,       7,      8,      9]
-const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI' ] //region columns to be added
+const numsortCols=[   1,                                5,     6,     7,      8,      9]
+const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
 const stickyCols=3; //stick #, BrNum, Dx
-const stickyWs=[ 54, 64, 76 ]; //pixels
+const stickyWs=[ 54, 64, 78 ]; //pixels
 
 function eqSets(s1, s2) {
 	if (s1.size!==s2.size) return false

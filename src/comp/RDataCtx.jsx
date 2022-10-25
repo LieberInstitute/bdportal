@@ -9,10 +9,10 @@ import {APP_BASE_URL, MW_SERVER} from '../appcfg'
 export const dtaDTypes=[] //to be populated with the loaded data allData.dtypes content - 0 based
 
 // this should match, from 1 on, the wordy description of the dtaDTypes entries (at least) -- to be used in the dropdown menu!
-export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methyl.',    'WGS', 'scRNAseq', 'long RNAseq', 'small RNA']
+export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNAm-450k', 'DNAm-WGBS', 'WGS', 'scRNAseq', 'small RNAseq', ]
 //                            0               1                2               3          4          5           6
-export const dtaSelTFull=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation',   'Whole Genome Sequencing',
-      'single cell RNAseq', 'long RNAseq', 'small RNAseq']
+export const dtaSelTFull=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation - 450k',  'DNA methylation - WGBS',
+                          'Whole Genome Sequencing',  'single cell RNAseq', 'small RNAseq' ]
 
 // the above must match the order of entries in the NavHeader
 
@@ -33,7 +33,7 @@ export const dtaNames = {
     reg : ['reg'], // push allData.regions[1] names
     regFull : ['regname'], // push allData.regions[2], i.e. their full names
     dx : ['dx' ], //push allData.dx names, index MUST match their IDs in the dtaXd[x] arr rows
-    dxFull: ['dxname'],   
+    dxFull: ['dxname'],
     dset: [ ], /* an array of arrays of lists of all dataset names (for all experiment types)
                     with dataType prepended:
                   [
@@ -60,8 +60,9 @@ export const dtaNames = {
     */
     // hard-coded for now (an array for each xp type, like dset)
     proto: [ [1, 'PolyA', 'Ribo-Zero HMR', 'Ribo-Zero Gold'],
-             [2, '450k', 'WGBS'],
-             [3, 'WGS']
+             [2, '450k'],
+             [3, 'WBGS'],
+             [4,  'WGS'],
             ],
     // ---- experiment type independent:
     race : [ 'race' ], // other entries added when loading brains object
@@ -74,7 +75,7 @@ export const dtaNames = {
 };
 
 //hard coding dataset Deg files by RNASeq dataset index, for now
-const datasetDegFiles= [ 'deg', '', 
+const datasetDegFiles= [ 'deg', '',
    'BrainSeq_Phase1.degradation.rda',
    'BrainSeq_Phase2_DLPFC.degradation.rda',
    'BrainSeq_Phase2_HIPPO.degradation.rda',
@@ -475,7 +476,7 @@ export function loadData(allData) {
   dtaDTypes.length=0;
   allData.dtypes.forEach( (e)=>{ dtaDTypes.push(e)} );
 
-  console.log('[loadData] loading data..');
+  console.log('[loadData] loading data..', numDataTypes, dtaDTypes);
 
   //plain arrays loaded here:
   ['sex', 'race'].forEach( (e) => {
@@ -567,7 +568,7 @@ export function loadData(allData) {
       while (--z) poc[i].push(0)
    }
   //-- load brains
-  dtaBrains.length=0; // array of [ brint,  dx#, race#, sex#, age, pmi, has_seq, has_geno, dropped ]
+  dtaBrains.length=0; // array of [ brint,  dx#, race#, sex#, age, pmi, mod, has_seq, has_geno, dropped ]
   dtaBrains.push([]); //to make brain indexes start at 1 and match dtaBrains array idx
   dtaBrIdx.length=0;  //cleared, array which has just 1 hash mapping a brint to a dtaBrains index
 
