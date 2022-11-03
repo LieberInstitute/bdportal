@@ -54,7 +54,7 @@ function prepTable(byRegion, mcache) {
 		//TODO : build rds rows
 		rcols=dtaNames.reg.slice(1) //just region names
 		dtBrXsel.forEach( brix=> {
-		  const [brint, dxix, raix, six, age, pmi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
+		  const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
 			// array of [ xt0-smpcount, xt1smpcount, ... ] for each region
 			const rxtcounts=rcols.map( () =>new Array(xtcols.length).fill(0) ) // zero init
 			xtcols.forEach( (v,xt)=> {
@@ -65,7 +65,7 @@ function prepTable(byRegion, mcache) {
 					 } )
 				}
 			})
-       rds.push([brix, brint, dxix, raix, six, age, pmi, ...rxtcounts])
+       rds.push([brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts])
 		})
     if (mcache) { //memoize this
        mcache.brnum=dtBrXsel.size;
@@ -77,7 +77,7 @@ function prepTable(byRegion, mcache) {
   // simplified table, only total sample counts per experiment data type
   // rds should be array of [brint, dxix, raix, six, age, pmi, counts...]
 	dtBrXsel.forEach( brix=> {
-		const [brint, dxix, raix, six, age, pmi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
+		const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
 		const counts=[]
 		xtcols.forEach( (v,xt)=> {
 			let sd = br2Smp[xt];
@@ -85,7 +85,7 @@ function prepTable(byRegion, mcache) {
 			if (sd && sd[brix]) snum=sd[brix].length;
 			counts.push(snum)
 		})
-		rds.push([brix, brint, dxix, raix, six, age, pmi, ...counts])
+		rds.push([brix, brint, dxix, raix, six, age, pmi, mi, ...counts])
    })
 
    if (mcache) { //memoize this
@@ -106,7 +106,7 @@ function tableFilter(tblrows, brset) {
 }
 
 function getBrTblRow(rd, brix, i) {
-	const [brint, dxix, raix, six, age, pmi, hasSeq, hasGeno, dropped]=rd;
+	const [brint, dxix, raix, six, age, pmi, mi, hasSeq, hasGeno, dropped]=rd;
 	let rs = br2Smp[0];
 	let numrs = 0
 	if (rs && rs[brix]) {
@@ -124,7 +124,8 @@ function getBrTblRow(rd, brix, i) {
 	}
 	return(<tr key={i}>
 		<td>{i}.</td>	<td>Br{brint}</td><td>{dtaNames.dx[dxix]}</td>
-		<td>{dtaNames.race[raix]}</td> <td>{dtaNames.sex[six]}</td>	<td>{age}</td> <td>{pmi}</td>
+		<td>{dtaNames.race[raix]}</td> <td>{dtaNames.sex[six]}</td>	<td>{age}</td>
+		<td>{pmi}</td> <td>{dtaNames.mod[mi]}</td>
 		<td>{numrs}</td>	<td>{numds}</td>		<td>{numws}</td>
 		{/* <td>{dropped ? 'dropped' : ''}</td> */}
 	</tr>)
@@ -150,11 +151,11 @@ const BrTable = ( props ) => {
 			}
 	  })
 
-		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, ...rxtcounts]
+		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, mod, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
-			const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
+			const [brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
 			const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-							`${dtaNames.sex[six]}`, age, pmi]
+							`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
 			let lacc=0;
 			return(<tr key={`tr${r}`}>{
 			outrd.map(  (e,i)=> {
@@ -185,9 +186,9 @@ const BrTable = ( props ) => {
 		</tr>)
 	 }
 		// --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
-	 const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+	 const [brix, brint, dxix, raix, six, age, pmi, mi, ...counts] =rd;
 	 const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-							`${dtaNames.sex[six]}`, age, pmi]
+							`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
 	 let lacc=0
    const shcounts=[]
 
@@ -313,7 +314,7 @@ const BrBrowse = ( ) => {
 		 }
 
     function calcMaxXRwidth() {
-			return (window.innerWidth - m.relWidth-78);
+			return (window.innerWidth - m.relWidth-74);
 		}
 
     function onBtnClick(e) {
@@ -357,7 +358,7 @@ const BrBrowse = ( ) => {
          m.tblRows.forEach( (rd,i)=>{
             const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
             let reqmet=true
-            m.reqXType.forEach( v=> { reqmet &= (counts[v]>0) })
+            m.reqXType.forEach( v=> { reqmet &= (counts[v+1]>0) })
             if (reqmet) brSet.add(brix)
          })
      }
@@ -365,6 +366,7 @@ const BrBrowse = ( ) => {
 	 }
 
 	 function toggleXType(xt) {
+		 //console.log("clicked xt=", xt, "showXType is:", m.showXType)
 		 m.showXType[xt] = !m.showXType[xt]
 		 //must trigger re-render to rebuild BrTable
 		 //m.tblkey++;
@@ -372,6 +374,7 @@ const BrBrowse = ( ) => {
 	 }
 
 	 function toggleReqXType(xt) {
+		//console.log("clicked xt=", xt, " m.reqXType is:", m.reqXType)
 		 if (m.reqXType.has(xt))
 		    m.reqXType.delete(xt)
 		 else m.reqXType.add(xt)
@@ -404,9 +407,9 @@ const BrBrowse = ( ) => {
           if (byRegion) {
             tblrows.forEach( (rd, r)=>{
               const shcounts=[]
-              const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts]=rd
+              const [brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
               const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-                      `${dtaNames.sex[six]}`, age, pmi]
+                      `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
               rxtcounts.forEach( (rc,i)=>{
                  rc.forEach( (c,j)=> {
                    if (showXTs[j]) outrd.push(c) //do not export unless shown
@@ -418,9 +421,9 @@ const BrBrowse = ( ) => {
           }
           // simplified table:
           tblrows.forEach( (rd, r)=>{
-            const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+            const [brix, brint, dxix, raix, six, age, pmi, mi, ...counts] =rd;
             const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-                       `${dtaNames.sex[six]}`, age, pmi]
+                       `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
             counts.forEach( (c,i)=> {
                 if (showXTs[i]) outrd.push(c);
             })
@@ -504,10 +507,10 @@ const BrBrowse = ( ) => {
 					<Col className="d-flex flex-column text-align-center justify-content-center align-items-center col-auto">
 					   <span class="br-xck-caption align-self-start"><br /> Show sample counts for:</span>
 							{ xtcols.map( (xn, xt)=>
-							<div key={`ckXt${xt}`} class="pl-4 ml-1 row d-flex align-self-start flex-row xt-ckbox">
-						    <div className="ckbox-label" data-toggle="tooltip" data-placement="right" title="" >
+							<div key={`ckXt${xt}`} class="ml-1 row d-flex align-self-center flex-row xt-ckbox">
+						    <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
 								<span class='ckbox-br-xt'>
-								   <span style={ { height:'18px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;#&nbsp;</span>
+								   <span style={ { height:'18px', marginLeft:'-30px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;#&nbsp;</span>
 									 {xn}
 								</span>
 							   <CustomInput type="checkbox" id={`ckXt${xt}`} onClick={ () => toggleXType(xt)} checked={m.showXType[xt]} />

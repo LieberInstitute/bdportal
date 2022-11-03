@@ -9,8 +9,8 @@ import {APP_BASE_URL, MW_SERVER} from '../appcfg'
 export const dtaDTypes=[] //to be populated with the loaded data allData.dtypes content - 0 based
 
 // this should match, from 1 on, the wordy description of the dtaDTypes entries (at least) -- to be used in the dropdown menu!
-export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNAm-450k', 'DNAm-WGBS', 'WGS', 'scRNAseq', 'small RNAseq', ]
-//                            0               1                2               3          4          5           6
+export const dtaSelTypes=[ 'Brain Matrix', 'bulk RNAseq', 'DNAm-450k', 'DNAm-WGBS', 'WGS', 'scRNAseq', 'small RNAseq' ]
+//                            0               1                2               3       4          5           6
 export const dtaSelTFull=[ 'Brain Matrix', 'bulk RNAseq', 'DNA methylation - 450k',  'DNA methylation - WGBS',
                           'Whole Genome Sequencing',  'single cell RNAseq', 'small RNAseq' ]
 
@@ -65,6 +65,7 @@ export const dtaNames = {
              [4,  'WGS'],
             ],
     // ---- experiment type independent:
+    mod : [ 'mod' ], // actual entries added when loading brains object
     race : [ 'race' ], // other entries added when loading brains object
     //raceIdx : {} , // { "AA":1, "AS":2, "CAUC":3, "HISP":4 }, //other entries loaded when loading brains object
     sex : [ 'sex' ],
@@ -119,7 +120,7 @@ export const allDset2db= [ ] //array of arrays of datasets.id per experiment typ
 // global data (unaffected by filters): -- ATTN: must be populated by loadData()
 // all the demo data for each brain (with dtaNames indexes):
 export const dtaBrains = [ ];
-// array of [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
+// array of [ brint,  dx-idx, race-idx, sex-idx, age, pmi, mod, has_seq, has_geno, dropped ]
 // bridx used anywhere else should match the index in this array, so dtaBrains[0] is always []
 //    so actual data starts at dtaBrains[1] for bridx 1
 
@@ -479,7 +480,7 @@ export function loadData(allData) {
   console.log('[loadData] loading data..', numDataTypes, dtaDTypes);
 
   //plain arrays loaded here:
-  ['sex', 'race'].forEach( (e) => {
+  ['sex', 'race', 'mod'].forEach( (e) => {
       let dtn=dtaNames[e];
       dtn.length=0; dtn.push(e);
       Array.prototype.push.apply(dtn, allData[e]);
@@ -617,13 +618,13 @@ export function loadData(allData) {
   dtaBrIdx.push(br2idx);
   noXBrs.clear();
   allData.brains.forEach( (bd)=>{
-    const [idx, brint, dxi, ri, si, age, pmi, hasSeq, hasGt, drop]=bd;
+    const [idx, brint, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop]=bd;
     if (dtaBrains.length!==idx) {
        //console.log();
        throw new Error(`[loadData] Error: brain index ${idx} mismatch (${dtaBrains.length})`);
     }
     noXBrs.add(idx); //will remove later after seen in JSON sdata
-    dtaBrains.push([brint, dxi, ri, si, age, pmi, hasSeq, hasGt, drop]);
+    dtaBrains.push([brint, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop]);
     br2idx[brint] = idx;
     if (!drop) {
       //update dtBrOriCounts:
@@ -706,7 +707,7 @@ export function loadData(allData) {
       //if (xtix===0)
       protooc[p]++;
       // -- update dtOriCounts.dx sample counts:
-      const [ , dxi, raidx, sidx, age, pmi, hasSeq, hasGt, drop ] = dtaBrains[bridx];
+      const [ , dxi, raidx, sidx, age, pmi, mod, hasSeq, hasGt, drop ] = dtaBrains[bridx];
       // never count dropped brains!
       if (!drop) {
         let ax=age2RangeIdx(age);
@@ -1335,7 +1336,7 @@ export function updateCounts() {
         // i.e. no new brains are allowed to pass the filters, hence no new samples from those brains are counted
         if (selType0 && XtX>=0 && XtX!=xt && !dtBrXsel.has(brix))
                continue;
-        const [ , dx, r, s, a, pmi, seq, gt, drop ] = dtaBrains[brix];
+        const [ , dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
         if (drop) continue // NEVER count dropped brains!
 
         //another hard skip is if with_seq or with_gt are set and this entry doesn't have it
@@ -1478,7 +1479,7 @@ export function updateCounts() {
    //now update dtBrXCounts with all the noXBrs that pass the filters (add them to all arrays)
    if (selType0 && XtX<0)
      noXBrs.forEach( (brix)=>{
-       const [ , dx, r, s, a, pmi, seq, gt, drop ] = dtaBrains[brix];
+       const [ , dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
         if (drop) return //NEVER count dropped brains
         //another hard skip is if with_seq or with_gt are set and this entry doesn't have it
        if (dtFilters.with_seq && !seq) return;
@@ -1570,13 +1571,13 @@ export function getBrSelData(showSmpCounts, brSet) {
     for (let i=0;i<extraCols;i++)
       hdr.push(dtaDTypes[showSmpCounts[i]]+'_samples')
   }
-  // array of [brnum, dx, race, sex, age, pmi, numsmpxt1, ... ]
+  // array of [brnum, dx, race, sex, age, pmi, mod, numsmpxt1, ... ]
   rows.push(hdr)
   brSet.forEach( brix => {
-     const [brint, dxix, raix, six, age, pmi]=dtaBrains[brix]
+     const [brint, dxix, raix, six, age, pmi, mod]=dtaBrains[brix]
      //this DOES list dropped brains
      const row=[`Br${brint}`, dtaNames.dx[dxix],
-        dtaNames.race[raix], dtaNames.sex[six], age, pmi]
+        dtaNames.race[raix], dtaNames.sex[six], age, pmi, mod]
 
      if (extraCols)
        for (let i=0; i<extraCols; i++) {

@@ -89,6 +89,7 @@ function RMatrix( props ) {
               }
               clearOnlyStates();
               appliedStates[0]=onlyStates[0]; //states as last applied
+              //console.log("building matrix with ", dtaXTypes, regcounts)
               const jc=jqRender(dtaXTypes, regcounts);
               addHandlers(jc)  // hover and click handlers
               addApplyButton(jc)
