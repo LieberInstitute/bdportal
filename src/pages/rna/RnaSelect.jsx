@@ -7,9 +7,9 @@ import '../../comp/ui.css';
 import './style.css';
 
 import {
-  useFltCtx, useFltCtxUpdate, useRData, getFilterData, getFilterSet, getFilterCond,
-  applyFilterSet, applyFilterCond, clearFilters, dtFilters, getDatasetCitation, getDatasetName, 
-  getDatasetDegFile, rGlobs, applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
+  useFltCtxUpdate, useRData, getFilterData, getFilterSet, applyFilterSet, 
+  clearFilters, getDatasetCitation, getDatasetName,  getDatasetDegFile, 
+  rGlobs, applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
   getFilterNames, saveStaticDataFile, arraySMerge} from '../../comp/RDataCtx'
 
 import { FltMList } from '../../comp/FltMList'

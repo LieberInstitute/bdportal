@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
 import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
 
-import { rGlobs } from './RDataCtx';
+import { rGlobs, useLoginCtxUpdate } from './RDataCtx';
 
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
@@ -126,6 +126,9 @@ export function Login({ login }) {
 
   const [auth, setAuth] = useState(['', '']) //user, jwt
 
+  const loginStateUpdate=useLoginCtxUpdate();
+
+
   function loginoutDlg() {
     if (!auth[1]) {//no authenticated user
       setLoginModal(true)
@@ -135,38 +138,21 @@ export function Login({ login }) {
   }
   function logout() {
     setAuth(['', ''])
-    rGlobs.login=''
-    rGlobs.login_jwt=''
+    //rGlobs.login=''
+    //rGlobs.login_jwt=''
+    loginStateUpdate('','')
   }
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  /*
-  async function checkLogin(user, pass) {
-    const areq = { username: user, password: pass }
-    //const headers = { "Content-type": "application/x-www-form-urlencoded" }
-    const headers = { "Access-Control-Allow-Origin": "*" }
-    try {
-      //const res = await axios.post(`${AUTH_SERVER}/auth`, areq, { headers })
-      const res = await axios.post(`${MW_SERVER}/auth`, areq, { headers })
-      if (res) {
-        setAuth([res.data.signed_user, res.data.token])
-        rGlobs.login='';rGlobs.login_jwt='';
-        return true
-      }
-    } catch (err) {
-      console.log(`Error : ${err}`)
-    }
-    //await sleep(5000) -- testing only
-    return false
-  } */
-
+  
   function onLogin(user, token) {
     //const headers = { "Access-Control-Allow-Origin": "*"}
     setAuth([user, token])
-    rGlobs.login=user
-    rGlobs.login_jwt=token
+    //rGlobs.login=user
+    //rGlobs.login_jwt=token
+    loginStateUpdate(user, token)
     return true;
    }
 

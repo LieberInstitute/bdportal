@@ -2,7 +2,7 @@ import $ from 'jquery';
 import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
-   dtaBrains, anyActiveFilters, getFilterSet,
+   dtaBrains, anyActiveFilters, getFilterSet, useLoginCtx,
    getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts, getSelSampleData,
    arrayEq, subjTable, subjXTable, updateBrCountsFromBrSet } from './RDataCtx';
 
@@ -26,7 +26,7 @@ import { clearTooltips, setupTooltips } from './ui';
      props.brloaded   : number of BrNums loaded
      props.onBrList() : callback being passed the brlist array
 */
-function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable } ) {
+function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
 
   const [isFullBrSave, toggleFullBrSave]=useModal()
 
@@ -49,7 +49,7 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable } ) {
               : <DlgSaveCSV data={getBrSelData([0,1,2], brSet)} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
      }
      <Col className="col-auto m-2">
-       <Button className="btn-light btn-sm app-btn" disabled >
+        <Button className="btn-light btn-sm app-btn" disabled={login.length==0} >
           Request Genotypes</Button>
      </Col>
    </Row>
@@ -132,6 +132,7 @@ function RSelSummary( props ) {
   // props.onBrList() handler
   // props.brloaded can receive back the updated brlist count
   const [fltUpdId, fltFlip] = useFltCtx(); //external update, should update these counts
+  const [login, loginJWT] = useLoginCtx();
   const [xdata, countData, brCounts] = useRData(); //dtXsel, dtCounts, dtBrCounts
 
   const [isDlgExport, toggleDlgExport] = useModal(); //for full Export dialog
@@ -334,8 +335,8 @@ function RSelSummary( props ) {
   const selbrCount = brSet.size
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
-  const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
-    //console.log("----}} RSelSummary render with brSet:", brSet)
+  //const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
+  console.log("----}} RSelSummary render with login:", login)
 
   return (
   <Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
@@ -430,7 +431,8 @@ function RSelSummary( props ) {
 
             </Col> : <Col>
                    {selXType ? showSampleSelWarn()
-                           : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} getBrowseTable={props.getBrowseTable} brSet={props.brSet} />
+                           : <BrSetButtons numbr={numbr} show={showsel} browse={props.browse} login={login}
+                              getBrowseTable={props.getBrowseTable} brSet={props.brSet} />
 
                        }
                    </Col>

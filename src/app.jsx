@@ -8,7 +8,7 @@ import { render } from 'preact';
 import {Header, navRoutes, parsePageTab, useHashLoc, currentLoc} from './comp/header'
 import {Container, Col, Row, Nav, NavItem} from 'reactstrap';
 import {useRef} from 'preact/hooks'
-import { rGlobs, RDataProvider, FltCtxProvider } from './comp/RDataCtx'
+import { rGlobs, RDataProvider, FltCtxProvider, LoginCtxProvider } from './comp/RDataCtx'
 //import {PageContent} from './pages/bmatrix/page'
 import BrPages from './pages/br/br'
 import RnaPages from './pages/rna/rna'
@@ -52,7 +52,7 @@ function App() {
 
 	const goPages=getPage()
 	// key={`${page}_${tab}`}
-	return (<>
+	return (<LoginCtxProvider>
      <Header page={page} tab={tab} menuClick={menuClick} />
 		 <Container fluid className="content d-flex h-100">
 		   <FltCtxProvider>
@@ -61,7 +61,7 @@ function App() {
  			 </RDataProvider>
 		  </FltCtxProvider>
 		 </Container>
-		</>
+     </LoginCtxProvider>
 	);
 }
 

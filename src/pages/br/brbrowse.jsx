@@ -5,8 +5,8 @@ import './style.css';
 import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 	Row, Col, Input, Button, Label, CustomInput} from 'reactstrap';
 import axios from 'axios'
-import {rGlobs, changeXType, RDataProvider, FltCtxProvider, dtaNames, dtFilters,
-	useFltCtx, dtaBrains, dtBrXsel, updateBrCountsFromBrSet, dtBrCounts, dtaBrIdx, br2Smp, useFltCtxUpdate,
+import {rGlobs, changeXType, RDataProvider, dtaNames, dtFilters,
+	dtaBrains, dtBrXsel, updateBrCountsFromBrSet, dtBrCounts, dtaBrIdx, br2Smp, 
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'

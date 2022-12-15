@@ -1713,6 +1713,47 @@ export function FltCtxProvider (props) {
     )
 }
 
+//------- LoginCtx
+const LoginCtx = createContext();
+const LoginCtxUpdate = createContext();
+
+export function useLoginCtx() {
+    const ctx=useContext(LoginCtx);
+    //making sure this is not used outside a provider
+    if (ctx === undefined) {
+        throw new Error(`useLoginCtx must be used within LoginCtxProvider!`)
+    }
+    return ctx;
+}
+export function useLoginCtxUpdate() {
+    const ctx=useContext(LoginCtxUpdate);
+    //making sure this is not used outside a provider
+    if (ctx === undefined) {
+        throw new Error(`useLoginCtxUpdate must be used within LoginCtxProvider!`)
+    }
+    return ctx;
+}
+
+export function LoginCtxProvider (props) {
+  const [loginState,  setLoginState] = useState(['', '']) //login, login_jwt (as per rGlobs)
+
+  //-- this should only be called when login/logout
+  function updateLoginState(username, jwt) {
+    setLoginState( [ username , jwt] )
+    rGlobs.login=username
+    rGlobs.login_jwt=jwt
+  }
+
+  return (
+   <LoginCtx.Provider value={loginState}>
+       <LoginCtxUpdate.Provider value={updateLoginState}>
+           {props.children}
+       </LoginCtxUpdate.Provider>
+   </LoginCtx.Provider>
+  )
+}
+
+
 //////////////  --- data prep & fetching functions:
 export async function checkGeneList(glst, annotation) {
   if (!annotation) annotation='Gencode25'
