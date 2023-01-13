@@ -40,18 +40,20 @@
 
 .btn-download  {
   padding-right:32px;
+  padding-left:12px;
   background-image: url('download.svg');
-  background-size: 18px 22px;
+  background-size: 16px 20px;
   background-repeat: no-repeat;
-  background-position: 90% center;
+  background-position: 86% center;
 }
 
 .btn-xplore  {
-  padding-right:2.2rem;
+  padding-right:32px;
+  padding-left:12px;
   background-image: url('explore.svg');
-  background-size: 24px 28px;
+  background-size: 16px 22px;
   background-repeat: no-repeat;
-  background-position: 90% center;
+  background-position: 86% center;
  }
 
  .brlist-info {

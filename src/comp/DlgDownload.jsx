@@ -55,10 +55,11 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
       const ctype=fidx<4 ? fTypes[fidx].charAt(0).toLowerCase() : 'm';
       buildRSE(filename, samples, ctype, dtype, fext, gvalid)
   			 .then( res => {
-  				 //console.log("res=", res)
+  				 //console.log("dl got res=", res)
   				 return res.json()
   			  } )
   			 .then( fn => {
+            //console.log("dl got fn=", fn)
   					// 1st row: header, 2nd row: data = filename
   					let fname=""
   					if (fn.length>1) fname=fn[1][0]
@@ -68,7 +69,11 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
                if (onStatusChange) onStatusChange(fidx, 0)
   					   //simulate a link->click to download the file:
                saveRStagedFile(fname).then( href=>setSaved(href) )
-  					}
+  					} else {
+              setFStatus(-1)
+              if (onStatusChange) onStatusChange(fidx, 0)
+              
+            }
   			 })
       return;
      }

@@ -1,4 +1,5 @@
 import {DlgModal} from './DlgModal'
+import { mwMail } from './RDataCtx';
 import $ from 'jquery';
 import {Row, Col, Input, Button} from 'reactstrap'
 
@@ -13,8 +14,8 @@ export function DlgReqGeno(props) {
   }
 
   function submitRequest() {
-    //onsole.log("submit request with brlist=", brarr)
-
+    console.log("submit request with brlist=", brarr)
+    mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(1,5))
     return true;
   }
 

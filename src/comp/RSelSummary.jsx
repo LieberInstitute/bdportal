@@ -27,6 +27,9 @@ import { clearTooltips, setupTooltips } from './ui';
      props.brloaded   : number of BrNums loaded
      props.onBrList() : callback being passed the brlist array
 */
+
+const plzlog = "Login to enable this button"
+
 function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
 
   const [isFullBrSave, toggleFullBrSave]=useModal()
@@ -50,7 +53,7 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
   // style={ browse ? null : { display: "none" } }
 
   // data={getBrSelData([0,1,2], brSet)}
-  const plzlog = "Login to enable this button"
+
   const reqgenotip = login.length==0 ? plzlog : "Request genotype data for current selection";
   const exporttip = login.length==0 ? plzlog : "Export CSV table with selected brains info";
   return (<Col>
@@ -79,7 +82,8 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
        : <span class="red-info-text br-set-info">
         Inspect/save the selection set using the Browse button, or navigate to the
         experiment data page using the top-left menu.<br /><br />
-        When navigating away from this page, only demographics selections and the user loaded Br# list will be carried over.
+        When navigating away from this page, only demographics selections and the 
+        user loaded Br# list will be carried over.
        </span>
     }
    </Row>
@@ -357,8 +361,9 @@ function RSelSummary( props ) {
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
   //const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
-  console.log("----}} RSelSummary render with login:", login)
-
+  //console.log("----}} RSelSummary render with login:", login)
+  const exporttip = login.length==0 ? plzlog : "Export CSV table with selected brains info";
+  const rexporttip = login.length==0 ? plzlog : "Export expression data for selected samples";
   return (
   <Col className="pl-0 ml-0 mt-0 pt-0 d-flex flex-column sel-summary text-align-center justify-content-center align-items-center">
 
@@ -438,7 +443,7 @@ function RSelSummary( props ) {
             { props.selsheet ?
               <Row className="d-flex flex-nowrap justify-content-center mt-3">
                  <Col className="col-auto mr-3">
-                     <Button className="btn-light btn-sm app-btn btn-download" onClick={clickDlgExport}>
+                     <Button className="btn-light btn-sm app-btn btn-download" disabled={login.length==0} title={`${rexporttip}`} onClick={clickDlgExport}>
                        Export</Button>
                     { restrictedDatasets.length ?
                          <DlgRequest datasets={restrictedDatasets} isOpen={isDlgExport} toggle={toggleDlgExport} />

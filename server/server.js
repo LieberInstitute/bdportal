@@ -34,13 +34,13 @@ let dbserver = process.env.DB_SRV;
 let r_filedir='/dbdata/cdb/r_staging'; //default on srv16
 let d_filedir='/ssd/dbdata/h5base'; //default on srv16
 let mail_url = 'http://192.168.77.16:1244/';
-if (hostname=="gryzen" || hostname=="gi7" || hostname=="gdebsrv") {
+if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
     if (!dbserver) dbserver='gdebsrv';
     if (hostname=="gryzen") {
              r_filedir="\\\\gdebsrv\\ssdata\\postgresql\\r_staging\\";
              d_filedir="\\\\gdebsrv\\data1\\postgresql\\h5base\\"
     }
-       else if (hostname=="gi7") {
+       else if (hostname=="glin") {
            r_filedir="/data/gdebsrv_ssdata/postgresql/r_staging";
            d_filedir="/data/gdebsrv_data1/postgresql/h5base"
        } else { //gdebsrv itself
@@ -193,9 +193,11 @@ app.post('/status', (req, res)=> {
 */
 
 app.post('/mail', (req, res) => {
+  console.log("received mail request:", req.body)
   axios.post(mail_url, req.body).then(ares=> {
     res.status(200).json(ares.data);
   }).catch((err) => {
+    console.log("mail req err:", err)
     res.status(500).json({ message: err });
   });
 });
@@ -246,14 +248,36 @@ app.post('/pgdb/adl', (req, res) => {
    // [fname, sarr, glst, feature, dtype, fxt ]
    db.query(qry, qparms
             , (err, dbrows)=>{
+      
       if (err) {
+        //console.log( "pdgb/adl error: ", err)
         res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
       }
       else {
-        //console.log( "pdgb/adl response: ", res)
+        //console.log( "pdgb/adl response: ", dbrows)
         res.json(dbrows);
       }
    });
+})
+
+app.post('/ulog', (req, res) => {
+  let body=req.body
+  const user=`'${body.user}'`
+  const action=`'${body.action}'::user_act`
+  //action MUST be one of: 'login', 'explore', 'request', 'req_geno', 'download'
+  
+  const dtype=body.dtype ? `'${body.dtype}'::expDataType` : 'rnaseq'
+  //dtype one of: 'rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype'
+
+  const reqtext=body.reqtext ? `'${body.reqtext}'` : 'NULL'
+  let dsets="'NULL'"
+  if (body.dsets) { // must be an array of dataset_ids
+    dsets="{"+body.dsets.join(',') +"}" 
+  }
+  
+  const iqry='insert into user log (login, activity, dtype, dsets, reqtext) '+
+              `values ($user)`
+  
 })
 
 app.post('/gtreq', (req, res) => {

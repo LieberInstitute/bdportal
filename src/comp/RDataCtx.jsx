@@ -1823,6 +1823,22 @@ export async function getPlot(plType, sarr, glst, feat='g') {
   return fetch(`${MW_SERVER}/pgdb/plotdl`, reqOpts)
 }
 
+export async function mwMail(mto, msubj, mbody) {
+  if (mbody && Array.isArray(mbody)) mbody=mbody.join("\n") 
+  if (!msubj) msubj="bdportal node mailer"
+  if (!mto) mto="geo.pertea@gmail.com"
+  let mfrom='webapps@libd.org' // has to be
+  if (rGlobs.login) 
+      msubj=`${msubj} [${rGlobs.login}@libd.org]`
+	const mailOpts = {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ from: mfrom, to: mto, subject:msubj, msg:mbody })
+  };
+  //console.log(" -- sending req body:", reqOpts.body)
+  return fetch(`${MW_SERVER}/mail`, mailOpts)
+}
+
 export async function saveRStagedFile(relpath, newfname) {
   const a = document.createElement('a');
   //make sure relpath replaces / with | :
