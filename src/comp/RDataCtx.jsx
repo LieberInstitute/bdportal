@@ -76,17 +76,31 @@ export const dtaNames = {
 };
 
 //hard coding dataset Deg files by RNASeq dataset index, for now
-const datasetDegFiles= [ 'deg', '',
+const datasetDegFiles= [ 'deg',
+   'Astellas_DG.degradation.rda',
    'BrainSeq_Phase1.degradation.rda',
    'BrainSeq_Phase2_DLPFC.degradation.rda',
    'BrainSeq_Phase2_HIPPO.degradation.rda',
    'BrainSeq_Phase3_Caudate.degradation.rda'
    ];
+const eqtl_DE_devel= [ 'eqtlde',
+  null, //Astellas
+  ['http://eqtl.brainseq.org/phase1/eqtl/', 'http://eqtl.brainseq.org/phase1/sz/','http://eqtl.brainseq.org/phase1/devel/'], //BrainSeq Phase1
+  ['http://eqtl.brainseq.org/phase2/eqtl', 'http://eqtl.brainseq.org/phase2/sz/', 'http://eqtl.brainseq.org/phase2/devel/'], //BrainSeq Phase2_DLPFC
+  ['http://eqtl.brainseq.org/phase2/eqtl', 'http://eqtl.brainseq.org/phase2/sz/', 'http://eqtl.brainseq.org/phase2/devel/'], //BrainSeq Phase2_HIPPO
+  ['https://erwinpaquolalab.libd.org/caudate_eqtl/', '','']//BrainSeq_Phase3_Caudate
+];
 
 export function getDatasetDegFile(dix) {
   const r=datasetDegFiles[dix];
   if (r) return r
   return ''
+}
+
+export function getEqtlUrls(dix) {
+  const r= eqtl_DE_devel[dix];
+  if (r) return r;
+  return ['','','']
 }
 
 export function getDatasetCitation(xt, dix) {
@@ -1560,24 +1574,25 @@ export function getRegionCounts() {
 
 export function getBrSelData(showSmpCounts, brSet) {
   if (!brSet) brSet=dtBrXsel
+  const xtcols=['RNAseq', 'DNAm/450k', 'DNAm/WGBS', 'WGS']
 //returns an array with rows of data for brains in dtBrAllsel
 // if showSmpCounts is an array, it has the experiment data types
 //      to report sample counts for (0 based), e.g. [0, 1] for RNASeq, DNAmet
   const rows=[]
   let extraCols=0;
-  const hdr=['BrNum', 'Dx', 'Race', 'Sex', 'Age', 'PMI'] //, 'Dropped'];
+  const hdr=['BrNum', 'Dx', 'Race', 'Sex', 'Age', 'PMI', 'MoD'] //, 'Dropped'];
   if (Array.isArray(showSmpCounts)) {
     extraCols=showSmpCounts.length
     for (let i=0;i<extraCols;i++)
-      hdr.push(dtaDTypes[showSmpCounts[i]]+'_samples')
+      hdr.push(xtcols[showSmpCounts[i]])
+      //hdr.push(dtaDTypes[showSmpCounts[i]]+'_samples')
   }
   // array of [brnum, dx, race, sex, age, pmi, mod, numsmpxt1, ... ]
   rows.push(hdr)
   brSet.forEach( brix => {
-     const [brint, dxix, raix, six, age, pmi, mod]=dtaBrains[brix]
-     //this DOES list dropped brains
-     const row=[`Br${brint}`, dtaNames.dx[dxix],
-        dtaNames.race[raix], dtaNames.sex[six], age, pmi, mod]
+     const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix]
+     const row=[`Br${brint}`, dtaNames.dx[dxix],  dtaNames.race[raix],
+                              dtaNames.sex[six], age, pmi, dtaNames.mod[mi]]
 
      if (extraCols)
        for (let i=0; i<extraCols; i++) {

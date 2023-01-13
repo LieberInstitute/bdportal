@@ -146,7 +146,7 @@ export function Login({ login }) {
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  
+
   function onLogin(user, token) {
     //const headers = { "Access-Control-Allow-Origin": "*"}
     setAuth([user, token])

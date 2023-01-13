@@ -149,7 +149,7 @@ useEffect(() => {
   }
 }, []);
 
-if (!dataLoaded) return <h3>Loading..</h3>
+//if (!dataLoaded) return <h3>Loading..</h3>
 
 // data loaded, we are safe to show the pages for this data type
 //changeXType(0); //update counts etc.

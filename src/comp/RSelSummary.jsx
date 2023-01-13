@@ -13,6 +13,7 @@ import './RSelSummary.css'
 import { DlgDownload } from './DlgDownload';
 import { DlgRequest } from './DlgRequest';
 import { DlgSaveCSV } from './DlgSaveTable';
+import { DlgReqGeno } from './DlgReqGeno';
 import {ToastBox} from './ToastBox'
 
 import { useModal } from './useModal';
@@ -29,29 +30,49 @@ import { clearTooltips, setupTooltips } from './ui';
 function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
 
   const [isFullBrSave, toggleFullBrSave]=useModal()
-
+  const [isReqGeno, toggleReqGeno]=useModal()
   function clickBrBrowseButton() {
     navigateTo('brsel', 'browse')
   }
 
+  function getBrNumSet() {
+    console.log(" ... getBrNumSet() called!")
+    const brset=brSet?brSet:dtBrXsel
+    const barr=[]
+    brset.forEach( brix => {
+       const [brint, ...rest]=dtaBrains[brix]
+       barr.push(`Br${brint}`)
+    })
+    return barr
+  }
+
   if (!show || numbr<1) return null;
+  // style={ browse ? null : { display: "none" } }
+
+  // data={getBrSelData([0,1,2], brSet)}
+  const plzlog = "Login to enable this button"
+  const reqgenotip = login.length==0 ? plzlog : "Request genotype data for current selection";
+  const exporttip = login.length==0 ? plzlog : "Export CSV table with selected brains info";
   return (<Col>
    <Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
-    <Col className="col-auto m-2">
-          <Button className="btn-light btn-sm app-btn" onClick={toggleFullBrSave} style={ browse ? null : { display: "none" } }
-                     data-toggle="tooltip" title="Download CSV table with selected brains">
-            Download table</Button>
+    <Col className="col-auto m-0">
           <Button className="btn-light btn-sm app-btn" onClick={clickBrBrowseButton} style={ !browse ? null : { display: "none" } }
                    data-toggle="tooltip" title="Browse and save the selected brain set">
             Browse Set</Button>
+
+     </Col>
+     <Col className="col-auto m-0">
+     <Button className="btn-light btn-sm app-btn" disabled={login.length==0} onClick={toggleFullBrSave}
+                    data-toggle="tooltip" data-placement="bottom" title={`${exporttip}`}>Export Set</Button>
      </Col>
      { browse ? <DlgSaveCSV getData={getBrowseTable} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
-              : <DlgSaveCSV data={getBrSelData([0,1,2], brSet)} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
+              : <DlgSaveCSV data={getBrSelData([0,1,2,3], brSet)} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
      }
-     <Col className="col-auto m-2">
-        <Button className="btn-light btn-sm app-btn" disabled={login.length==0} >
-          Request Genotypes</Button>
+     <Col className="col-auto m-0">
+        <Button className="btn-light btn-sm app-btn" disabled={login.length==0} onClick={toggleReqGeno}
+           data-toggle="tooltip" title={`${reqgenotip}`} > Request Genotypes</Button>
      </Col>
+     <DlgReqGeno getData={getBrNumSet}  email={`${login}@libd.org`} isOpen={isReqGeno} toggle={toggleReqGeno} />
    </Row>
    <Row className="d-flex justify-content-center mt-2">
      { browse ?  <span class="red-info-text br-set-info"> &nbsp; </span>
@@ -197,7 +218,7 @@ function RSelSummary( props ) {
     return ()=>{ //clean-up code
        clearTooltips()
     }
-  }, [showsel, havebr])
+  }, [showsel, havebr, login])
 
   useEffect( ()=> {
     if (mixprotos.length>1)  {
@@ -372,7 +393,7 @@ function RSelSummary( props ) {
               { subjXTable(numbr) }
             </Row>
               {(numbr>0) && <Row className="pt-2">  <Button className="btn-sm app-btn" style="font-size:90% !important;line-height:80% !important;"
-                  data-toggle="tooltip" title="Download CSV with the above subject summary" onClick={clickSaveBrSum}>Download totals</Button>
+                  data-toggle="tooltip" title="Download CSV with the above subject summary" onClick={clickSaveBrSum}>Export totals</Button>
               <DlgSaveCSV title="Export subject summary table" getData={getBrSummary} fname={`subject_summary_n${numbr}`}
                                              isOpen={dlgSaveBrSum}  toggle={toggleSaveBrSum} />
               </Row>}

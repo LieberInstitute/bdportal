@@ -7,8 +7,8 @@ import '../../comp/ui.css';
 import './style.css';
 
 import {
-  useFltCtxUpdate, useRData, getFilterData, getFilterSet, applyFilterSet, 
-  clearFilters, getDatasetCitation, getDatasetName,  getDatasetDegFile, 
+  useFltCtxUpdate, useRData, getFilterData, getFilterSet, applyFilterSet,
+  clearFilters, getDatasetCitation, getDatasetName,  getDatasetDegFile, getEqtlUrls,
   rGlobs, applyBrList, clearBrListFilter, getBrListFilter, anyActiveFilters, getFilterAgeRange,
   getFilterNames, saveStaticDataFile, arraySMerge} from '../../comp/RDataCtx'
 
@@ -21,7 +21,6 @@ import { clearTooltips, setupTooltips } from '../../comp/ui';
 
 
 function DSetInfo ( { dix } ) {
-
   function prepRefHtml(ref) {
     // ref=ref.replace(/\|/g, "<br>")
     let rl = ref.trim().split(/\|/)
@@ -60,19 +59,32 @@ function DSetInfo ( { dix } ) {
   const ref = dix>0 ? getDatasetCitation(0, dix) : '';
   const refhtml = ref ? prepRefHtml(ref) : ''
   const dsname=getDatasetName(0, dix)
-  
-  //let degbtn='' 
+  const [ueqtl, ude, udev]=getEqtlUrls(dix)
+  //let degbtn=''
   const showInfo=(dix && (ref.length>0 || degdl.length>0))
   //dt.html(`${refhtml}${degbtn}`);
   //dt.show()
   //console.log(" ~~~~ rendering DSetInfo with dix =", dix,  showInfo)
-  return (<div id="dset-info-content" style={ { display: showInfo ? 'block' : 'none' }}> 
-   <span class="dsetname"><i>{dsname}</i></span>
-   <span dangerouslySetInnerHTML={ {__html: refhtml}} />
-   <span style={ {display : degdl ? 'inline-block' : 'none' } }>
-     <Button id="degdlBtn" title="Download Degradation matrix for this dataset" 
-        className="btn-sm app-btn app-btn-deg" onClick={ () => onDegClick(degdl) }> Deg. data </Button>
-   </span>
+  return (<div id="dset-info-content" style={ { display: showInfo ? 'block' : 'none' }}>
+   <div class="dsi-main">
+     <span class="dsetname"><i>{dsname}</i></span>
+     <span dangerouslySetInnerHTML={ {__html: refhtml}} />
+   </div>
+   <div class="dsi-rside">
+   <div class="dsi-rstack" style={ {visibility : (ueqtl || ude) ? 'visible' : 'hidden' } }>
+    {ueqtl && <span title="eQTL browser"><a href={`${ueqtl}`} rel="noreferrer" target="_blank">eQTLs</a></span>}
+    { (ueqtl && ude) && <span>&nbsp;&nbsp;</span> }
+    {ude && <span title="Differential Expression results"><a href={`${ude}`} rel="noreferrer" target="_blank">DE</a></span>}
+   </div>
+   <div class="dsi-rstack" style={ {visibility : (udev) ? 'visible' : 'hidden' } }>
+    {udev && <span title="Developmental plots"><a href={`${udev}`} rel="noreferrer" target="_blank">Devel.</a></span>}
+   </div>
+   <div class="dsi-rstack" style={ {visibility : degdl ? 'visible' : 'hidden' } }>
+     <Button id="degdlBtn" title="Download degradation matrix for this dataset"
+           className="btn-sm app-btn app-btn-deg"
+           onClick={ () => onDegClick(degdl) }> Deg. data </Button>
+     </div>
+   </div>
   </div>)
 }
 
@@ -143,7 +155,7 @@ const RnaSelect = ({ style }) => {
       return
     }
     if (sel.length <= 1) $("#dsMultiWarn").toast('hide');
-    
+
     if (sel.length==1) {
       //console.log("setting DsetInfo => ", dix, sel, ref)
       setDsetInfo(dix)
@@ -158,7 +170,7 @@ const RnaSelect = ({ style }) => {
     } else {
       setDsetInfo(0)
       //dt.html("");
-      //dt.hide()      
+      //dt.hide()
     }
   }
 
@@ -254,9 +266,9 @@ const RnaSelect = ({ style }) => {
       }
       //regular sets
       const fset=getFilterSet(fid)
-      
+
       if (fset.size==0 && (fid=='dx' || fid=='dset')) {
-        allSet=false; return        
+        allSet=false; return
       }
       //for everything else, none selected means all selected
 
@@ -286,7 +298,7 @@ const RnaSelect = ({ style }) => {
      //console.log(" selectionSheet :", selectionSheet)
      //TODO: in DlgDownload -> add genes if any save csv
    } else selectionSheet=null
-  
+
    //TODO: in RelSummary check props.selsheet to display Export/Explore buttons
 
   //console.log("  ~~~~~~~~~~~ RnaSelect page rendering! with sx fset =",getFilterSet('sex'), "  key =", sxkey)
@@ -295,9 +307,9 @@ const RnaSelect = ({ style }) => {
       <Col xs="2" className="d-flex flex-column m-0 p-0 pl-1 ml-1 colDemo align-self-stretch justify-content-center">
         <Row className="d-flex position-relative mb-0 pb-0 pl-0 justify-content-start align-self-stretch">
           <Col xs="7" className="d-flex justify-content-start align-items-center pl-0">
-            <Button outline color="danger" className="btn-sm align-self-center ml-0" onClick={resetFilters}
+            <Button outline color="danger" className="btn-sm align-self-center ml-1" onClick={resetFilters}
               data-toggle="tooltip" title="Clear all selections"
-              style="line-height:80%;font-size:80%">Clear</Button>
+              style="line-height:80%;font-size:80%;">Clear</Button>
           </Col>
           <Col className="d-flex m-0 p-0 ml-0 align-self-start position-relative" style="height:32px;">
             <Row className="d-flex justify-content-start align-items-center w-100">

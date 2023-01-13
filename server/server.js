@@ -256,6 +256,18 @@ app.post('/pgdb/adl', (req, res) => {
    });
 })
 
+app.post('/gtreq', (req, res) => {
+  let body=req.body
+  //let brlist=body.brlist;
+  //console.log(" received req.body:", body, "   glst=", glst)
+  //const barr=(brlist)?brlist.split(',') : []
+  let brarr=body.brnums;
+  if (brarr.length===0) res.status(500).send(
+      { error: ':user error', message: " empty BrNum list provided"}
+  )
+  //TODO: write the list to file, send the list to geo.pertea@libd.org
+
+})
 
 app.post('/pgdb/plotdl', (req, res) => {
   let body=req.body
