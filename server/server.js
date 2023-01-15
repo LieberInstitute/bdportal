@@ -193,7 +193,7 @@ app.post('/status', (req, res)=> {
 */
 
 app.post('/mail', (req, res) => {
-  console.log("received mail request:", req.body)
+  //console.log("received mail request:", req.body)
   axios.post(mail_url, req.body).then(ares=> {
     res.status(200).json(ares.data);
   }).catch((err) => {
@@ -271,13 +271,22 @@ app.post('/ulog', (req, res) => {
 
   const reqtext=body.reqtext ? `'${body.reqtext}'` : 'NULL'
   let dsets="'NULL'"
-  if (body.dsets) { // must be an array of dataset_ids
-    dsets="{"+body.dsets.join(',') +"}" 
+  if (body.dsets && Array.isArray(body.dsets)) { // must be an array of dataset_ids (int)
+    dsets="'{"+body.dsets.join(',') +"}'" 
   }
   
-  const iqry='insert into user log (login, activity, dtype, dsets, reqtext) '+
-              `values ($user)`
-  
+  const iqry='insert into userlog (login, activity, dtype, dsets, reqtext) '+
+              `values (${user}, ${action}, ${dtype}, ${dsets}, ${reqtext})`
+  db.query(iqry, [], (err, dbrows)=>{
+          if (err) {
+            console.log( "ulog error: ", err)
+            res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+          }
+          else {
+            console.log( "ulog response: ", dbrows)
+            res.json(dbrows);
+          }
+       });
 })
 
 app.post('/gtreq', (req, res) => {
