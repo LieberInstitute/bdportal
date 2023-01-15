@@ -1824,11 +1824,11 @@ export async function getPlot(plType, sarr, glst, feat='g') {
 }
 
 export async function mwMail(mto, msubj, mbody) {
-  if (mbody && Array.isArray(mbody)) mbody=mbody.join("\n") 
+  if (mbody && Array.isArray(mbody)) mbody=mbody.join("\n")
   if (!msubj) msubj="bdportal node mailer"
   if (!mto) mto="geo.pertea@gmail.com"
   let mfrom='webapps@libd.org' // has to be
-  if (rGlobs.login) 
+  if (rGlobs.login)
       msubj=`${msubj} [${rGlobs.login}@libd.org]`
 	const mailOpts = {
 		method: 'POST',
@@ -1837,6 +1837,24 @@ export async function mwMail(mto, msubj, mbody) {
   };
   //console.log(" -- sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/mail`, mailOpts)
+}
+
+export async function logAction(uaction, udsets, ureqtext) { //udsets must be an array!
+  //action must be one of: 'login', 'explore', 'request', 'req_geno', 'download'
+  //const dtypes=['rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype'];
+  if (!rGlobs.login) return;
+  let udtype='rnaseq'
+  if (rGlobs.selXType==0 || uaction=='req_geno') udtype='genotype';
+  const logdat={
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: rGlobs.login, action: uaction, dtype:udtype, dsets:udsets, reqtext:ureqtext })
+  }
+  const res=await fetch(`${MW_SERVER}/ulog`, logdat)
+  //console.log("logAction() receveived:", res)
+  if (res) {
+    const jres=await res.json()
+    return jres;
+  }
 }
 
 export async function saveRStagedFile(relpath, newfname) {
