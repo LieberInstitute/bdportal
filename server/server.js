@@ -22,12 +22,15 @@ const config = require('./config.json');
 //ATTN: make sure config.json has these properly set and localized
 // r_filedir must match the R_FILE_STAGING directory (or a local mounted directory of it)
 const dbname = config['dbname'] || 'rse';
-const app_port = config['app_port'] || 4095;
+let app_port = config['app_port'] || 4095;
 
 //const hostname = process.env.HOSTNAME; //WHY is this undefined?!
 const hostname = os.hostname()
 require('dotenv').config(); // .env should have DB_SRV, DB_USER, DB_PASS
 //console.log("process.env:", process.env)
+if (process.env.DEV_PORT && process.env.DEV_PORT!=app_port) {
+  app_port=process.env.DEV_PORT
+}
 const dbuser = process.env.DB_USER;
 const dbpasswd = process.env.DB_PASS;
 let auth_srv = 'https://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
@@ -62,7 +65,7 @@ if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
              d_filedir='/ssdata/postgresql/h5base';
              ddl_basepath='/ssdata/cdb_www_docroot/cdbFileStore';
              //ddl_baseurl='http://geowks.lieber.local/cdbFileStore';
-             ddl_baseurl='http://192.168.77.3/cdbFileStore';
+             ddl_baseurl='http://linwks34.lieber.local/cdbFileStore';
          }
   } //else { //MUST be on srv16 itself, or aws
     //r_filedir='/dbdata/cdb/r_staging';
@@ -76,19 +79,6 @@ const auth_url = `${auth_srv}/auth`;
 db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
 
 const jwt_shh =  process.env.JWTSHH
-
-/* -- config as in Bill's timesheet server
-const jwtsecret = config['jwtsecret'];
-const authserver = config['authserver'];
-const cafile = config['cafile'];
-const mailserver = config['mailserver'];
-const mailport = config['mailport'];
-
-// const dburl = "mongodb://" + dbserver + ":27017/timesheets";
-const authurl = "https://" + authserver + "/auth";
-const namecheckurl = "https://" + authserver + "/auth/exists";
-const mailurl = "http://" + mailserver + ":" + mailport + "/";
-*/
 
 const db_creds = {
   user: dbuser,
@@ -119,8 +109,6 @@ function poolTest() {
 // ----------------------------------
 // parsers for POST data
 // -- bodyParser functionality now built in express 4.16+
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); //parse JSON-encoded POST requests
 //to allow parsing of url-encoded POST requests (application/x-www-form-urlencoded):
 app.use(express.urlencoded({ extended: true }));
@@ -158,7 +146,7 @@ app.post('/authck', (req, res) => {
 
 app.post('/auth', (req, res) => {
   //Bill's request was also passing ca : fs.readFileSync(cafile) as request param
-  /* for axios, certificate can be passed as a  httpsAgent parameter
+  /* for axios, certificate can be passed as a httpsAgent parameter
      which can be read in advance, before the routing:
 
     const agent = new https.Agent({ ca: fs.readFileSync("./resource/bundle.crt"),
@@ -247,7 +235,7 @@ app.post('/pgdb/adl', (req, res) => {
    let filetype=body.filetype || 'rse';
    let fxt = filetype.charAt(0).toLowerCase()=='r' ? '' : filetype.charAt(0).toLowerCase();
    let glst=body.genes
-   //console.log(" received req.body:", body, "   glst=", glst)
+   console.log(` >>> got rse dl request for ${body.samples.length} samples, genes:`, glst)
    let fname=body.fname;
    //let glst=req.boby.genes;
    const garr=(glst)?glst.split(',') : []
@@ -277,40 +265,44 @@ app.post('/pgdb/adl', (req, res) => {
 })
 
 
-function logUpdate(actdata, res) {
+function logActivity(actdata, res, nowait=false) {
   // actdata must have { user, action, dtype, dsets, reqtext }  
   const user=`'${actdata.user}'`
   const action=`'${actdata.action}'::user_act`
-  //action MUST be one of: 'login', 'explore', 'request', 'req_geno', 'download'
-  
+  //action MUST be one of: 'login', 'export', 'req_unlock', 'req_geno', 'email', 'explore'
+
   const dtype=actdata.dtype ? `'${actdata.dtype}'::expDataType` : 'rnaseq'
-  //dtype one of: 'rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype'
+  //dtype one of: 'rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype', 'pheno'
 
   const reqtext=actdata.reqtext ? `'${actdata.reqtext}'` : 'NULL'
   let dsets="NULL";
-  if (actdata.dsets && Array.isArray(actdata.dsets)) { // must be an array of dataset_ids (int)
-    dsets="'{"+actdata.dsets.join(',') +"}'" 
+  if (actdata.dsets && Array.isArray(actdata.dsets)) { // must be an array of dataset names (strings)
+    dsets="'{\""+actdata.dsets.join('","')+"\"}'" ;
   }
   
   const iqry='insert into userlog (login, activity, dtype, dsets, reqtext) '+
               `values (${user}, ${action}, ${dtype}, ${dsets}, ${reqtext})`
-  return db.wquery(iqry,[]); //wait for query to execute
-  /*            
-  db.query(iqry, [], (err, dbrows)=>{
-          if (err) {
-            //console.log( "ulog error: ", err)
-            if (res) res.status(500).send({ error: err.severity+': '+err.code, message: err.message });
-          }
-          else {
-            //console.log( "ulog response: ", dbrows)
-            if (res) res.json(dbrows);
-          }
-       });
-  */
+  if (nowait) { // async execution:    
+    db.query(iqry, [], (err, dbrows)=>{
+      if (err) {
+        //console.log( "ulog error: ", err)
+        if (res) res.status(500).send({ error: err.severity+': '+err.code, message: err.message });
+      }
+      else {
+        //console.log( "ulog response: ", dbrows)
+        if (res) res.send('OK');
+      }
+    });
+    // but if we do async another db query might come in while this one is still running
+    // so another db connection will be requested!
+   } else { //default - wait for the query    
+      db.wquery(iqry,[]); //wait for query to execute
+      if (res) res.send('OK');
+  }
 }
 
 app.post('/ulog', (req, res) => {
-  logUpdate(req.body, res);
+  logActivity(req.body, res);
 })
 
 app.post('/gtreq', (req, res) => {
@@ -320,19 +312,19 @@ app.post('/gtreq', (req, res) => {
   try {
     // set username with the one in the encoded token
       login = jwt.verify(jwt_token, jwt_shh);
-      //res.send('OK'); //submit background job below
   } catch(err) {
        res.status(403).send("Unauthorized Access /user AUTH");
        return;
   }
   let brarr=req.body.brnums;
   if (brarr.length===0) {
-      logUpdate({user:login, action:'req_geno', dtype:'genotype'});
+      logActivity({user:login, action:'req_geno', dtype:'genotype', reqtext:'error: 0 BrNums'});
       res.status(500).send(
           { error: ':user error', message: " empty BrNum list provided"} );
       return;    
   }
-  logUpdate({user:login, action:'req_geno', dtype:'genotype', reqtext:brarr.join(',')});
+  logActivity({user:login, action:'req_geno', dtype:'genotype', reqtext:brarr.join(',')});
+  console.log(`>>>>>> starting genotypes prep job for ${login} (${brarr.length})`)
   fs.mkdtemp(`${ddl_basepath}/gtdl-`, (err, outdir) => {
     if (err) {
         console.log(`Error at mkdtemp ${ddl_basepath}/gtdl-`, err)
@@ -349,18 +341,20 @@ app.post('/gtreq', (req, res) => {
           return;
         }
         const outf=`${outdir}/genotypes_n${brarr.length}.vcf.gz`;
-        // test only (~14s): add: chr1:150000000-200000000
+        // test only (~14s): add: chr1:150000000-200000000, or chr1:50000000-240000000 for longer times
         let shellcmd=`bash ${d_filedir}/genotypes/gt_subset.sh ${genotypes} ${fbr} ${outf}`;
-        //console.log("running shell cmd: ", shellcmd);
+        console.log("      running shell cmd: ", shellcmd);
+        //res.send('gt task started.');
         exec(shellcmd, (error, stdout, stderr) => {
          if (error) {
-           console.error(`exec error: ${error}`);
+           console.log(`exec error: ${error}`);
            console.log(`Exit code: ${error.exitCode}`);
            return;
          }
          // job finished, send email
         let dlurl=outf.replace(ddl_basepath, ddl_baseurl);
         //console.log("shell command done - sending url:", dlurl);
+        console.log(`<< genotypes done for ${login} (${brarr.length})`)
         sendMail({ to: `${login}@libd.org`, subject: `genotypes (${brarr.length}) ready for download`, 
              msg: `Requested genotypes (${brarr.length}) are ready for download here:\n${dlurl}\n`+
              "\nThe link will expire in 3 days.\n"})
@@ -370,7 +364,7 @@ app.post('/gtreq', (req, res) => {
   
   });
 
-  res.send('Job submitted');
+  res.send('starting gt job');
 
 })
 
@@ -410,39 +404,6 @@ app.post('/pgdb/plotdl', (req, res) => {
      }
   });
 })
-
-//const mdata={};
-//const jzfile='rnaseq_samples.json.gz';
-//-- load json.gz file
-/* const fetchZjson = async (url) => {
-function fetchZjson(fname) {
-   const compr = new Uint8Array(
-     fs.readFileSync(fname)
-     );
-   const decompr = fflate.decompressSync(compr);
-   //console.log("Decompressed len: ", decompr.byteLength);
-   const str = fflate.strFromU8(decompr);
-   return JSON.parse(str);
-}
-
-function resRNASeqSelector(res, dta) {
-  //TODO: cookie/session data to restore last selection?
-  //TODO: caching so there is no need to return the whole thing again?
-  res.json(dta);
-}
-//
-let res=fetchZjson(jzfile);
-console.log("loading json.gz file..")
-//let objs=Object.keys(res); console.log(objs);
-for(var prop in res) mdata[prop]=res[prop];
-*/
-/* ---- example route:
-app.get('/rnaseq', (req, res) => {
-  // main rnaseq entry - sample selector
-  console.log('/rnaseq req!')
-  resRNASeqSelector(res, mdata);
-})
-*/
 
 function errorHandler(err, req, res, next) {
   res.status(500)
@@ -552,7 +513,7 @@ app.get('/stdata/:fpath', (req, res)=> { // static data file under H5BASE file d
   let relpath=req.params.fpath
   //convert relpath under d_filedir
   relpath=relpath.replace(/\|/g, '/')
-  db.clog('~~ got stdata query:', relpath);
+  db.clog('>>> got stdata query:', relpath);
   let fpath=path.join(d_filedir, relpath);
   if (fs.existsSync(fpath)) {
        //res.download(fpath)
