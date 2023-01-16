@@ -10,6 +10,7 @@ const { Pool, Client } = require("pg");
 //const async = require("async");
 //const request = require("request");
 const fs = require('fs');
+const { exec } = require('child_process');
 const path = require('path');
 const db = require('./db');
 //const { emitWarning } = require('process');
@@ -34,6 +35,10 @@ let dbserver = process.env.DB_SRV;
 let r_filedir='/dbdata/cdb/r_staging'; //default on srv16
 let d_filedir='/ssd/dbdata/h5base'; //default on srv16
 let mail_url = 'http://192.168.77.16:1244/';
+// direct download path/url for prepared files
+let ddl_basepath="/dbdata/cdb/www_fstore/cdbFileStore";
+let ddl_baseurl="http://srv16.lieber.local/cdbFileStore";
+
 if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
     if (!dbserver) dbserver='gdebsrv';
     if (hostname=="gryzen") {
@@ -55,12 +60,18 @@ if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
          if (dbserver=='localhost') {
              r_filedir= '/ssdata/postgresql/r_staging';
              d_filedir='/ssdata/postgresql/h5base';
+             ddl_basepath='/ssdata/cdb_www_docroot/cdbFileStore';
+             //ddl_baseurl='http://geowks.lieber.local/cdbFileStore';
+             ddl_baseurl='http://192.168.77.3/cdbFileStore';
          }
   } //else { //MUST be on srv16 itself, or aws
     //r_filedir='/dbdata/cdb/r_staging';
     //if (hostname!=='srv16') console.log("WARNING: srv16 assumed, r_filedir set to: ", r_filedir)
   //}
 }
+
+const genotypes=`${d_filedir}/genotypes/maf01.n2630.rsann.bcf`
+
 const auth_url = `${auth_srv}/auth`;
 db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
 
@@ -192,16 +203,21 @@ app.post('/status', (req, res)=> {
   });
 */
 
+function sendMail( mobj, res ) {
+  //mobj must have {from: 'webapp@libd.org', to: 'email', subject: 'subject', msg: 'msg'}
+  if (!mobj.from) mobj.from='webapps@libd.org';
+  axios.post(mail_url, mobj).then(ares=> {
+    if (res) res.status(200).json(ares.data);
+  }).catch((err) => {
+    console.log("mail err:", err);
+    if (res) res.status(500).json({ message: err });
+  });
+}
+
 app.post('/mail', (req, res) => {
   //console.log("received mail request:", req.body)
-  axios.post(mail_url, req.body).then(ares=> {
-    res.status(200).json(ares.data);
-  }).catch((err) => {
-    console.log("mail req err:", err)
-    res.status(500).json({ message: err });
-  });
+  sendMail(req.body, res);
 });
-
 
 app.post('/pgdb/gcheck', (req, res) => {
    let body=req.body
@@ -260,45 +276,100 @@ app.post('/pgdb/adl', (req, res) => {
    });
 })
 
-app.post('/ulog', (req, res) => {
-  let body=req.body
-  const user=`'${body.user}'`
-  const action=`'${body.action}'::user_act`
+
+function logUpdate(actdata, res) {
+  // actdata must have { user, action, dtype, dsets, reqtext }  
+  const user=`'${actdata.user}'`
+  const action=`'${actdata.action}'::user_act`
   //action MUST be one of: 'login', 'explore', 'request', 'req_geno', 'download'
   
-  const dtype=body.dtype ? `'${body.dtype}'::expDataType` : 'rnaseq'
+  const dtype=actdata.dtype ? `'${actdata.dtype}'::expDataType` : 'rnaseq'
   //dtype one of: 'rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype'
 
-  const reqtext=body.reqtext ? `'${body.reqtext}'` : 'NULL'
-  let dsets="'NULL'"
-  if (body.dsets && Array.isArray(body.dsets)) { // must be an array of dataset_ids (int)
-    dsets="'{"+body.dsets.join(',') +"}'" 
+  const reqtext=actdata.reqtext ? `'${actdata.reqtext}'` : 'NULL'
+  let dsets="NULL";
+  if (actdata.dsets && Array.isArray(actdata.dsets)) { // must be an array of dataset_ids (int)
+    dsets="'{"+actdata.dsets.join(',') +"}'" 
   }
   
   const iqry='insert into userlog (login, activity, dtype, dsets, reqtext) '+
               `values (${user}, ${action}, ${dtype}, ${dsets}, ${reqtext})`
+  return db.wquery(iqry,[]); //wait for query to execute
+  /*            
   db.query(iqry, [], (err, dbrows)=>{
           if (err) {
-            console.log( "ulog error: ", err)
-            res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+            //console.log( "ulog error: ", err)
+            if (res) res.status(500).send({ error: err.severity+': '+err.code, message: err.message });
           }
           else {
-            console.log( "ulog response: ", dbrows)
-            res.json(dbrows);
+            //console.log( "ulog response: ", dbrows)
+            if (res) res.json(dbrows);
           }
        });
+  */
+}
+
+app.post('/ulog', (req, res) => {
+  logUpdate(req.body, res);
 })
 
 app.post('/gtreq', (req, res) => {
-  let body=req.body
-  //let brlist=body.brlist;
-  //console.log(" received req.body:", body, "   glst=", glst)
-  //const barr=(brlist)?brlist.split(',') : []
-  let brarr=body.brnums;
-  if (brarr.length===0) res.status(500).send(
-      { error: ':user error', message: " empty BrNum list provided"}
-  )
-  //TODO: write the list to file, send the list to geo.pertea@libd.org
+  //let body=req.body // must have tok, brnums
+  const jwt_token = req.body.tok;
+  let login='';
+  try {
+    // set username with the one in the encoded token
+      login = jwt.verify(jwt_token, jwt_shh);
+      //res.send('OK'); //submit background job below
+  } catch(err) {
+       res.status(403).send("Unauthorized Access /user AUTH");
+       return;
+  }
+  let brarr=req.body.brnums;
+  if (brarr.length===0) {
+      logUpdate({user:login, action:'req_geno', dtype:'genotype'});
+      res.status(500).send(
+          { error: ':user error', message: " empty BrNum list provided"} );
+      return;    
+  }
+  logUpdate({user:login, action:'req_geno', dtype:'genotype', reqtext:brarr.join(',')});
+  fs.mkdtemp(`${ddl_basepath}/gtdl-`, (err, outdir) => {
+    if (err) {
+        console.log(`Error at mkdtemp ${ddl_basepath}/gtdl-`, err)
+        res.status(500).send( err );
+        return;
+     }
+     fs.chmodSync(outdir, 0o775);
+    //write file with list of brnums requested
+    const fbr=`${outdir}/brnums.txt`
+    fs.writeFile(fbr, brarr.join("\n"), (err)=>{
+        if (err) {
+          console.log(`Error at writeFile ${fbr}`, err)
+          res.status(500).send( err );
+          return;
+        }
+        const outf=`${outdir}/genotypes_n${brarr.length}.vcf.gz`;
+        // test only (~14s): add: chr1:150000000-200000000
+        let shellcmd=`bash ${d_filedir}/genotypes/gt_subset.sh ${genotypes} ${fbr} ${outf}`;
+        //console.log("running shell cmd: ", shellcmd);
+        exec(shellcmd, (error, stdout, stderr) => {
+         if (error) {
+           console.error(`exec error: ${error}`);
+           console.log(`Exit code: ${error.exitCode}`);
+           return;
+         }
+         // job finished, send email
+        let dlurl=outf.replace(ddl_basepath, ddl_baseurl);
+        //console.log("shell command done - sending url:", dlurl);
+        sendMail({ to: 'geo.pertea@gmail.com', subject: `genotypes ${brarr.length} ready for download`, 
+             msg: `Requested genotypes are ready for download here:\n${dlurl}`})
+       }); //exec()
+   
+    }); //writeFile()
+  
+  });
+
+  res.send('Job submitted');
 
 })
 

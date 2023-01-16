@@ -88,7 +88,7 @@ module.exports = {
       })
     },
     //async/await version
-    async queryAsync(text, params) {
+    async wquery(text, params) {
         const qrycfg={ text, values: params, rowMode: 'array' }
         const start = Date.now()
         const res = await pool.query(qrycfg)
