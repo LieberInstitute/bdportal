@@ -2,7 +2,7 @@ import $ from 'jquery';
 import {useState, useEffect, useRef} from 'preact/hooks';
 import { rGlobs, useRData,  useFirstRender, br2Smp, smp2Br,
    smpBrTotals, dtBrOriCounts, dtFilters, dtaNames,  useFltCtx,
-   dtaBrains, anyActiveFilters, getFilterSet, useLoginCtx,
+   dtaBrains, anyActiveFilters, getFilterSet, useLoginCtx, reqGenotypes,
    getBrSelData, getSelDatasets, dtBrXsel, getRegionCounts, getSelSampleData,
    arrayEq, subjTable, subjXTable, updateBrCountsFromBrSet } from './RDataCtx';
 
@@ -30,12 +30,21 @@ import { clearTooltips, setupTooltips } from './ui';
 
 const plzlog = "Login to enable this button"
 
+
 function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
 
   const [isFullBrSave, toggleFullBrSave]=useModal()
   const [isReqGeno, toggleReqGeno]=useModal()
   function clickBrBrowseButton() {
     navigateTo('brsel', 'browse')
+  }
+
+  const refData=useRef({ lastgtReqSet: 0 }) //just the total guarding for now
+  const m=refData.current
+
+  function getBrCount() {
+    const brset=brSet?brSet:dtBrXsel;
+    return brset.size;
   }
 
   function getBrNumSet() {
@@ -48,13 +57,34 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
     return barr
   }
 
+  //useEffect( ()=> {
+  //  if (login.length>0)
+  //     $('#btnGtReq').prop("disabled",false);
+  //})
+
   if (!show || numbr<1) return null;
   // style={ browse ? null : { display: "none" } }
 
   // data={getBrSelData([0,1,2], brSet)}
 
+  function submitGenoRequest() {
+    //console.log("submit request with brlist=", brarr)
+      //$('#btnGtReq').prop("disabled",true);
+      const brarr=getBrNumSet()
+      m.lastgtReqSet=brarr.length
+      reqGenotypes(brarr).then( (t)=>{
+           console.log(" reqGenotypes() task started:", t)
+         });
+    //logAction('req_geno', [4,3,1,2], brarr.join(','))
+    //mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(0,4))
+    return true;
+  }
+
+
   const reqgenotip = login.length==0 ? plzlog : "Request genotype data for current selection";
   const exporttip = login.length==0 ? plzlog : "Export CSV table with selected brains info";
+  const reqGenoDisable=(login.length==0 || m.lastgtReqSet===numbr)
+  //console.log("~~~ rendering buttons with numbr", numbr, "   lastnumbr", m.lastgtReqSet)
   return (<Col>
    <Row id="brsetbtns" className="d-flex flex-nowrap align-items-center justify-content-between mt-2">
     <Col className="col-auto m-0">
@@ -71,10 +101,10 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
               : <DlgSaveCSV data={getBrSelData([0,1,2,3], brSet)} isOpen={isFullBrSave} fname={`brain_set_n${numbr}`} toggle={toggleFullBrSave} />
      }
      <Col className="col-auto m-0">
-        <Button className="btn-light btn-sm app-btn" disabled={login.length==0} onClick={toggleReqGeno}
-           data-toggle="tooltip" title={`${reqgenotip}`} > Request Genotypes</Button>
+        <Button id="btnGtReq" className="btn-light btn-sm app-btn" disabled={reqGenoDisable} onClick={toggleReqGeno}
+           data-toggle="tooltip" title={`${reqgenotip}`} >Request Genotypes</Button>
      </Col>
-     <DlgReqGeno getData={getBrNumSet}  email={`${login}@libd.org`} isOpen={isReqGeno} toggle={toggleReqGeno} />
+     <DlgReqGeno getData={getBrCount}  email={`${login}@libd.org`} onSubmit={submitGenoRequest} isOpen={isReqGeno} toggle={toggleReqGeno} />
    </Row>
    <Row className="d-flex justify-content-center mt-2">
      { browse ?  <span class="red-info-text br-set-info"> &nbsp; </span>
@@ -178,8 +208,9 @@ function RSelSummary( props ) {
   }
 
   const brSet = props.brSet ? props.brSet : dtBrXsel ;
+  //console.log("props.brSet:", props.brSet);
+  //console.log( "dtBrXsel:", dtBrXsel);
 
-  const regflt=(dtFilters.reg.size>0)
   let dsflt=dtFilters.dset; //only used for RNASeq downloading for now
   let showsel = anyActiveFilters(true); //ignore checkboxes (genotyped/seq), depends also on selXtype
   //let showsel = true;
@@ -265,7 +296,6 @@ function RSelSummary( props ) {
         if (a[i]!==b[i]) return false
     return true
   }
-
 
   function regTable() {
     return( <Row className="flex-nowrap justify-content-center p-1">
@@ -360,7 +390,7 @@ function RSelSummary( props ) {
   const selDslabel = (selDatasets.length>0) ? (selDatasets.length>1 ? 'Datasets' : 'Dataset') : '';
   const nRegions=showDlButton ? getRegionCounts() : []
   //const regLabel=nRegions.length>1 ? 'Brain regions' : 'Brain region'
-  //console.log("----}} RSelSummary render with login:", login)
+  //console.log("----}} RSelSummary render with login:", login, " selBrCount ", selbrCount);
   const exporttip = login.length==0 ? plzlog : "Export CSV table with selected brains info";
   const rexporttip = login.length==0 ? plzlog : "Export expression data for selected samples";
   return (

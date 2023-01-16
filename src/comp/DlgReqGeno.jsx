@@ -4,27 +4,21 @@ import $ from 'jquery';
 import {Row, Col, Input, Button} from 'reactstrap'
 
 export function DlgReqGeno(props) {
-  let brarr=[]
+  //let brarr=[]
+  let brcount=0;
+
   function onShow() {
-     if (props.getData)  {
-        brarr=props.getData()
-     }
-     $('#numbr').html(`<b>${brarr.length}</b>`)
+     if (props.getData)
+        brcount=props.getData()
+     $('#numbr').html(`<b>${brcount}</b>`)
   }
 
-  function submitRequest() {
-    //console.log("submit request with brlist=", brarr)
-    reqGenotypes(brarr);
-    //logAction('req_geno', [4,3,1,2], brarr.join(','))
-    //mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(0,4))
-    return true;
-  }
-
-  return ( <DlgModal { ...props} title="Requesting genotype data" button={'Request'} onShow={onShow} onSubmit={submitRequest} buttonClose="Cancel" >
+  //onSubmit must be set in the caller
+  return ( <DlgModal { ...props} title="Requesting genotype data" button={'Request'} onShow={onShow} buttonClose="Cancel" >
       <p style="font-size:95%;">
         <br />
         After clicking the <i>"Request"</i> button below, a VCF.gz file with the genotype data of the
-        selected brain set (<span id="numbr"><b>{brarr.length}</b></span>) will be assembled in the background.
+        selected brain set (<span id="numbr"><b>{brcount}</b></span>) will be assembled in the background.
         <br /> <br />
         Depending on the number of subjects and server load, this can be a lengthy operation and it might take a while.
 

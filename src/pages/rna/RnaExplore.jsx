@@ -7,8 +7,7 @@ import { Row, Col, Button, Label, Input, CustomInput, Nav, NavItem, NavLink } fr
 import { ToastBox } from '../../comp/ToastBox'
 import {
   subjXTable, getRegionCounts, getSelDatasets, getSelSampleData, dtBrXsel,
-  checkGeneList, useScript, getRStagedJSON, getPlot, rGlobs
-} from '../../comp/RDataCtx';
+  checkGeneList, useScript, getRStagedJSON, getPlot, rGlobs, logAction } from '../../comp/RDataCtx';
 
 import { clearTooltips, setupTooltips } from '../../comp/ui';
 
@@ -23,6 +22,16 @@ function showPlot(div, data) {
   }
 }
 
+async function logPlot(plType, glst) { //log samples?
+  if (rGlobs.login) {
+    const ds=getSelDatasets();
+    const datasets=ds.map((dd)=> dd[0]);
+    let genes=glst;
+    if (Array.isArray(glst)) genes=glst.join(',');
+    return await logAction('explore', datasets, `plot-${plType}: ${genes}`);
+  }
+  return 1; //Promise.resolve(1);
+}
 
 function ExpAgePlots({ samples, glstCheck, mgenes }) { //props.samples = sample IDs to plot
   const [plotJSON, setPlotJSON] = useState(null)
@@ -35,7 +44,7 @@ function ExpAgePlots({ samples, glstCheck, mgenes }) { //props.samples = sample 
     if (mgenes) mgenes[0]="";
     clearPlot()
   }
-  
+
   function plotFetched(plotData, divName) {
     showPlot(divName, plotData)
     setPlStatus(0)
@@ -46,10 +55,11 @@ function ExpAgePlots({ samples, glstCheck, mgenes }) { //props.samples = sample 
     $(`#plot1`).html("")
     setPlotJSON(null)
   }
-  
-  function onPlotClick() {
+
+  async function onPlotClick() {
     let genes = $('#inglst').val().trim()
     if (mgenes) mgenes[0]=genes
+    if (genes.length>1) await logPlot('age', genes);
     glstCheck(genes).then(glst => {
       clearPlot()
       if (glst.length == 0) return;
@@ -70,8 +80,8 @@ function ExpAgePlots({ samples, glstCheck, mgenes }) { //props.samples = sample 
   }
 
   useEffect( ()=> {
-     if (mgenes && mgenes[0]) 
-     $('#inglst').val(mgenes[0])
+     if (mgenes && mgenes[0])
+        $('#inglst').val(mgenes[0])
   }, [mgenes])
 
   // style="width: 100%; height: 100%;"
@@ -136,9 +146,11 @@ function ExpBoxPlots({ samples, glstCheck, mgenes, numregions }) {
     setPlotJSON(null)
   }
 
-  function onPlotClick() {
+  async function onPlotClick() {
     let genes = $('#inglst').val().trim()
     if (mgenes) mgenes[0]=genes
+    if (genes.length>1)
+       await logPlot(byRegion ? 'box-region':'box-gene', genes);
     glstCheck(genes).then(glst => { //the list of valid genes
       clearPlot()
       setPlotJSON(null)
@@ -169,7 +181,7 @@ function ExpBoxPlots({ samples, glstCheck, mgenes, numregions }) {
   }
 
   useEffect( ()=> {
-    if (mgenes && mgenes[0]) 
+    if (mgenes && mgenes[0])
     $('#inglst').val(mgenes[0])
    }, [mgenes])
 
@@ -308,7 +320,7 @@ const RnaExplore = ({ selData, mdata, style }) => {
   const numsmp = smpData.samples.length;
   const numbr = dtBrXsel.size;
   const nRegions = getRegionCounts();
- 
+
   return (<div class="col-12 d-flex flex-nowrap flex-column">
     <Row className="flex-grow-1 pt-1 mt-1 justify-content-start flex-nowrap">
       <Col className="d-flex p-0 m-0 colExpNav justify-content-start">

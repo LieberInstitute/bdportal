@@ -3,7 +3,7 @@ import { DlgModal } from './DlgModal';
 import './spinners.css';
 import {useState, useRef, useEffect} from "preact/hooks";
 import {Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
-import {buildRSE, saveRStagedFile, checkGeneList} from './RDataCtx';
+import {buildRSE, saveRStagedFile, checkGeneList, logAction} from './RDataCtx';
 import {saveFile, rowCSV, rowTSV} from "./gutils";
 
 import {ToastBox} from './ToastBox';
@@ -51,8 +51,10 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
          [glst, gvalid]=await getGenes() //retrieve the gene list from parent as a string with comma-delimited,
                                    // and gvalid as an array with validated gene symbols
     }
+    const smplist=samples.join(',');
     if (fidx<5)  {
       const ctype=fidx<4 ? fTypes[fidx].charAt(0).toLowerCase() : 'm';
+      await logAction('export', datasets, `rse-${ctype}: ${smplist}`);
       buildRSE(filename, samples, ctype, dtype, fext, gvalid)
   			 .then( res => {
   				 //console.log("dl got res=", res)
@@ -72,7 +74,7 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
   					} else {
               setFStatus(-1)
               if (onStatusChange) onStatusChange(fidx, 0)
-              
+
             }
   			 })
       return;
@@ -93,7 +95,9 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
         if (fmt==1) selsheet.forEach( row => fdata+=rowCSV(row) )
           else selsheet.forEach( row => fdata+=rowTSV(row) )
         setFStatus(0)
+        await logAction('export', datasets, fdata);
         if (onStatusChange) onStatusChange(fidx, 0) //allow other downloads
+
         saveFile(fdata,  filename).then( ()=>setSaved(''))
        }
      }
@@ -104,10 +108,10 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
           else brsum.forEach( row => fdata+=rowTSV(row) )
         setFStatus(0)
         if (onStatusChange) onStatusChange(fidx, 0) //allow other downloads
+        await logAction('export', datasets, fdata);
         saveFile(fdata,  filename).then( ()=>setSaved(''))
      }
   }
-
 
   useEffect( ()=>{
     setSaved("")
@@ -130,7 +134,8 @@ function MxDlRow ({prefix, fidx, norm, fext, datasets, samples, getGenes, genest
         else if (fidx==6) fcaption='Subjects summary table'
   }
 
-  let disabled=(norm==0 && fidx==1) || (numds>1 && fidx>0 && fidx<4)
+  let disabled=(norm==0 && fidx==1) || (numds>1 && fidx>1 && fidx<4);
+  //if multiple datasets, disable exon and junction downloads!
   return( <Col className="m-0 p-0 pl-1" style="border-top:1px solid #ddd;">
      <Row className="form-group d-flex flex-nowrap justify-content-between mb-0 pb-0"
           style="font-size:90%;min-height:22px;">

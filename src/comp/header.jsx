@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
 import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
 
-import { rGlobs, useLoginCtxUpdate } from './RDataCtx';
+import { rGlobs, useLoginCtxUpdate, logAction } from './RDataCtx';
 
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
@@ -136,10 +136,10 @@ export function Login({ login }) {
       setLogoutAsk(true)
     }
   }
+
   function logout() {
     setAuth(['', ''])
-    //rGlobs.login=''
-    //rGlobs.login_jwt=''
+    //explicit logout:
     loginStateUpdate('','')
   }
 

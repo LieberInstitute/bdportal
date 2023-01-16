@@ -1268,7 +1268,7 @@ export function updateCounts() {
          if (xc>1) throw new Error('Error: multiple intersection data types not implemented yet!');
          //get the first (and only for now) value
          XtX=dtFilters.brXtX.values().next().value; //get first item
-         console.log(">>>> brXtX filter:", XtX)
+         //console.log(">>>> brXtX filter:", XtX)
          //scan the targeted XType for intersection FIRST
          for (xi=0;xi<numDataTypes;xi++) if (xi===XtX) { xtiList.push(XtX); break }
          for (xi=0;xi<numDataTypes;xi++) if (xi!==XtX) xtiList.push(xi);
@@ -1753,10 +1753,15 @@ export function LoginCtxProvider (props) {
   const [loginState,  setLoginState] = useState(['', '']) //login, login_jwt (as per rGlobs)
 
   //-- this should only be called when login/logout
-  function updateLoginState(username, jwt) {
+  async function updateLoginState(username, jwt) {
     setLoginState( [ username , jwt] )
+    if (!username) {
+      //logging out
+      await logAction('login', null, 'logout')
+    }
     rGlobs.login=username
     rGlobs.login_jwt=jwt
+    if (username) await logAction('login');
   }
 
   return (
@@ -1841,19 +1846,22 @@ export async function mwMail(mto, msubj, mbody) {
 
 export async function logAction(uaction, udsets, ureqtext) { //udsets must be an array!
   //action must be one of: 'login', 'explore', 'request', 'req_geno', 'download'
-  //const dtypes=['rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype'];
+  const dtypes=['rnaseq', 'dnam', 'wgs', 'lrna', 'mirna', 'scrna', 'genotype', 'pheno'];
   if (!rGlobs.login) return;
-  let udtype='rnaseq'
-  if (rGlobs.selXType==0 || uaction=='req_geno') udtype='genotype';
+  let udtype='rnaseq';
+  if (rGlobs.selXType>0 && rGlobs.selXType<6) udtype=dtypes[rGlobs.selXType-1];
+  if (rGlobs.selXType==0) if (uaction=='req_geno') udtype='genotype'
+                                            else udtype='pheno';
   const logdat={
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user: rGlobs.login, action: uaction, dtype:udtype, dsets:udsets, reqtext:ureqtext })
   }
-  return fetch(`${MW_SERVER}/ulog`, logdat)
-  /* -- better not wait, it delays taking some actions
-  const res=await fetch(`${MW_SERVER}/ulog`, logdat)
+  //return fetch(`${MW_SERVER}/ulog`, logdat)
+  // -- better not wait, it delays taking some actions
+  //const res=
+  await fetch(`${MW_SERVER}/ulog`, logdat)
   //console.log("logAction() receveived:", res)
-  if (res) {
+  /*if (res) {
     const jres=await res.json()
     return jres;
   }*/
@@ -1865,7 +1873,15 @@ export async function reqGenotypes(barr) { //barr must be an array!
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tok:rGlobs.login_jwt, brnums:barr })
   }
-  return fetch(`${MW_SERVER}/gtreq`, reqdat)
+  //console.log("sending genotypes request..");
+  const res=await fetch(`${MW_SERVER}/gtreq`, reqdat)
+  //res=await fetch(`${MW_SERVER}/pgdb/gcheck`, reqOpts)
+  if (res) {
+    //console.log("gt req placed, res:", res);
+    const tres=await res.text();
+    //console.log("   res.text():", tres)
+    return tres;
+  }
 }
 
 export async function saveRStagedFile(relpath, newfname) {
@@ -2025,7 +2041,9 @@ export function subjXTable(numbr) {
   const dxr=dtBrCounts.cxDxRace
   const c2dx=dtBrCounts.cx2dx
   const dxs=dtBrCounts.cxDxSex
+  //FIXME: order of sex columns is unstable (should be always F,M)
   const c2s=dtBrCounts.cx2s
+  //console.log("cxDxSex:", dxs, " cx2s:", c2s)
   const c2r=dtBrCounts.cx2r
   let csums=[], rsums=[], scsums=[] //, csum=[]
   //-- sorting this table to match the regular Dx, Race order in the data
@@ -2039,6 +2057,8 @@ export function subjXTable(numbr) {
   let scis=dxs[0].map((e,i)=>i) // for sex
   ris.sort( (a,b)=> c2dx[a]-c2dx[b])
   cis.sort( (a,b)=> c2r[a]- c2r[b])
+  scis.sort( (a,b)=> c2s[a]- c2s[b])
+
   let dxrSrt=ris.map( (e,i)=>dxr[e] )
   for (let r=0;r<dxrSrt.length;r++) {
       rsums.push(0)//rsums[r]=0
@@ -2052,6 +2072,7 @@ export function subjXTable(numbr) {
   }
   // same as for race, re-sort and compute sums for sex columns
   let dxsSrt=sris.map( (e,i)=>dxs[e] )
+
   for (let r=0;r<dxsSrt.length;r++) {
       // rsums.push(0) -- should be the same
       dxsSrt[r]=scis.map( (e,i)=> {

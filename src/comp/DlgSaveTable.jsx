@@ -2,6 +2,7 @@ import $ from 'jquery';
 import {DlgModal } from './DlgModal';
 import {useState, useRef} from "preact/hooks";
 import {saveFile, rowCSV, rowTSV} from "./gutils";
+import { logAction } from './RDataCtx';
 
 import {Row, Col, Input, Button, Label, FormGroup, } from 'reactstrap';
 
@@ -55,6 +56,7 @@ export function DlgSaveCSV( props ) { //props.hide() must exist
       let fdata=""
       if (fmt==1) arrdata.forEach( row => fdata+=rowCSV(row) )
          else arrdata.forEach( row => fdata+=rowTSV(row) )
+      logAction('export', null, fdata);
       saveFile(fdata,  fname, props.mimeType)
   }
   const title=props.title || "Save table"
