@@ -1827,13 +1827,13 @@ export async function mwMail(mto, msubj, mbody) {
   if (mbody && Array.isArray(mbody)) mbody=mbody.join("\n")
   if (!msubj) msubj="bdportal node mailer"
   if (!mto) mto="geo.pertea@gmail.com"
-  let mfrom='webapps@libd.org' // has to be
+  //let mfrom='webapps@libd.org' // has to be
   if (rGlobs.login)
       msubj=`${msubj} [${rGlobs.login}@libd.org]`
 	const mailOpts = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ from: mfrom, to: mto, subject:msubj, msg:mbody })
+		body: JSON.stringify({ to: mto, subject:msubj, msg:mbody })
   };
   //console.log(" -- sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/mail`, mailOpts)
@@ -1849,12 +1849,23 @@ export async function logAction(uaction, udsets, ureqtext) { //udsets must be an
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user: rGlobs.login, action: uaction, dtype:udtype, dsets:udsets, reqtext:ureqtext })
   }
+  return fetch(`${MW_SERVER}/ulog`, logdat)
+  /* -- better not wait, it delays taking some actions
   const res=await fetch(`${MW_SERVER}/ulog`, logdat)
   //console.log("logAction() receveived:", res)
   if (res) {
     const jres=await res.json()
     return jres;
+  }*/
+}
+
+export async function reqGenotypes(barr) { //barr must be an array!
+  if (!rGlobs.login) return;
+  const reqdat={
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tok:rGlobs.login_jwt, brnums:barr })
   }
+  return fetch(`${MW_SERVER}/gtreq`, reqdat)
 }
 
 export async function saveRStagedFile(relpath, newfname) {

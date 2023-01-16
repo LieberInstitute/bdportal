@@ -52,7 +52,7 @@ export default defineConfig(({ command, mode }) => {
         '/rstaging': pgdb_proxy,
         '/pgplrinit': pgdb_proxy
         */
-      '^/(pgdb|auth|mail|ruthere|pgplrinit|rstaging|ulog|stdata)' : nodemw_srv
+      '^/(pgdb|auth|mail|ruthere|pgplrinit|rstaging|ulog|gtreq|stdata)' : nodemw_srv
       }
 
     },

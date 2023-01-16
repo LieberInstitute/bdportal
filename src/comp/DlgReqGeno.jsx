@@ -1,11 +1,10 @@
 import {DlgModal} from './DlgModal'
-import { mwMail, logAction } from './RDataCtx';
+import { mwMail, logAction, reqGenotypes } from './RDataCtx';
 import $ from 'jquery';
 import {Row, Col, Input, Button} from 'reactstrap'
 
 export function DlgReqGeno(props) {
   let brarr=[]
-
   function onShow() {
      if (props.getData)  {
         brarr=props.getData()
@@ -14,9 +13,10 @@ export function DlgReqGeno(props) {
   }
 
   function submitRequest() {
-    console.log("submit request with brlist=", brarr)
-    logAction('req_geno', [3,2,1], brarr.join(','))
-    mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(1,5))
+    //console.log("submit request with brlist=", brarr)
+    reqGenotypes(brarr);
+    //logAction('req_geno', [4,3,1,2], brarr.join(','))
+    //mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(0,4))
     return true;
   }
 

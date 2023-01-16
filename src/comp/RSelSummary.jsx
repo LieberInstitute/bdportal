@@ -39,7 +39,6 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
   }
 
   function getBrNumSet() {
-    console.log(" ... getBrNumSet() called!")
     const brset=brSet?brSet:dtBrXsel
     const barr=[]
     brset.forEach( brix => {
@@ -82,7 +81,7 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
        : <span class="red-info-text br-set-info">
         Inspect/save the selection set using the Browse button, or navigate to the
         experiment data page using the top-left menu.<br /><br />
-        When navigating away from this page, only demographics selections and the 
+        When navigating away from this page, only demographics selections and the
         user loaded Br# list will be carried over.
        </span>
     }
