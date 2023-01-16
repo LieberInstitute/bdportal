@@ -361,8 +361,9 @@ app.post('/gtreq', (req, res) => {
          // job finished, send email
         let dlurl=outf.replace(ddl_basepath, ddl_baseurl);
         //console.log("shell command done - sending url:", dlurl);
-        sendMail({ to: 'geo.pertea@gmail.com', subject: `genotypes ${brarr.length} ready for download`, 
-             msg: `Requested genotypes are ready for download here:\n${dlurl}`})
+        sendMail({ to: `${login}@libd.org`, subject: `genotypes (${brarr.length}) ready for download`, 
+             msg: `Requested genotypes (${brarr.length}) are ready for download here:\n${dlurl}\n`+
+             "\nThe link will expire in 3 days.\n"})
        }); //exec()
    
     }); //writeFile()
