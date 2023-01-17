@@ -1,4 +1,5 @@
 #/bin/bash
+dest=$1
 ##should update .env first
 lasthash=$(git rev-parse --short HEAD)
 lastdate=$(git log -1 --format='%ai' | awk '{print $1}')
@@ -23,12 +24,22 @@ esac
 echo "mwsrv = $mwsrv"
 sed -i -E "s|_MWSERVER=.*|_MWSERVER=http://${mwsrv}:4095|" .env
 /bin/rm -rf dist/*
-npm run build-dev-based
+brun='-dev'
+bdir='dev/bdportal'
+if [[ $dest == 'devel']]; then
+  brun='-devel'
+  bdir='devel/bdportal'
+else if [[ $dest == 'root' || $dest == 'bdportal' || $dest == '/' ]]; then
+  brun=''
+  bdir='bdportal'
+fi
+echo -e "running:\n npm run build$brun-based"
+npm run build$brun-based
 
 if [[ "$rdest" ]]; then
- ssh $rdest "/bin/rm -rf $docroot/dev/bdportal/* "
+ ssh $rdest "/bin/rm -rf $docroot/$bdir/* "
  rdest="${rdest}:"
-else 
- /bin/rm -rf $docroot/dev/bdportal/* 
+else
+ /bin/rm -rf $docroot/$bdir/*
 fi
-rsync -av dist/ ${rdest}${docroot}/dev/bdportal/
+rsync -av dist/ ${rdest}${docroot}/$bdir/

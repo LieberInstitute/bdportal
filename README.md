@@ -8,8 +8,13 @@ npm install
 npm run dev
 #### ---------------------
 
-# build for production with minification
-npm run build
+### build for production with minification
+# deploy under /bdportal
+npm run build-based
+# deploy under /dev/bdportal
+npm run build-based
+# deploy under /devel/bdportal
+npm run build-based
 
 # test the production build locally
 npm run preview

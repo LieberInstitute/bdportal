@@ -8,7 +8,7 @@
     "build": "vite build",
     "build-based": "vite build --base=/bdportal/",
     "build-dev-based": "vite build --base=/dev/bdportal/",
-    "build-based-dev": "vite build --base=/dev/bdportal/",
+    "build-devel-based": "vite build --base=/devel/bdportal/",
     "preview": "vite preview",
     "lint": "eslint src"
   },
