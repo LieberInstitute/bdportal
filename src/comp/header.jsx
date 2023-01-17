@@ -157,7 +157,7 @@ export function Login({ login }) {
    }
 
   useEffect(() => {
-    setLoginModal(false) //set this to true to ask for login at startup!
+    setLoginModal(true) //set this to true to ask for login at startup!
   }, []) //run only once!
   //<span style="border:1px solid #ccc;background-color:#eee;font-size:12px;padding:1px 3px;"
   //   onClick={ ()=>checkLogin( user, pass ) } > tst </span>
