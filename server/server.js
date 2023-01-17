@@ -551,6 +551,10 @@ app.get('/pgplrinit', (req, res)=> {
   //res.status(400).send('x');
 })
 
-
+// pre-initialize 5 db sessions:
+for (let i=0;i<5;i++) {
+  db.query('select * from r_version()', [], ()=>1);
+}
 //adding some fake dummy sub-tabs for the RNASeq entry
 app.listen(app_port, () => console.log('listening on port', app_port))
+
