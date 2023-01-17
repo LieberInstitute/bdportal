@@ -17,17 +17,18 @@ export function DlgReqGeno(props) {
   return ( <DlgModal { ...props} title="Requesting genotype data" button={'Request'} onShow={onShow} buttonClose="Cancel" >
       <p style="font-size:95%;">
         <br />
-        After clicking the <i>"Request"</i> button below, a VCF.gz file with the genotype data of the
-        selected brain set (<span id="numbr"><b>{brcount}</b></span>) will be assembled in the background.
+        If choosing the <i>"Request"</i> button below, a custom VCF.gz file with the genotype data of the
+        selected subjects (<span id="numbr"><b>{brcount}</b></span>) will begin assembling in the background.
         <br /> <br />
-        Depending on the number of subjects and server load, this can be a lengthy operation and it might take a while.
+        Depending on the number of subjects and server load, this can be a lengthy operation
+        (15min+) and the resulting file can be several gigabytes in size.
 
-        <br /> <br />When the file is ready, a download link will be e-mailed to <b>{props.email}</b>.
+        <br /> <br />When the file is ready a download link will be e-mailed to <b>{props.email}</b>.
 
       </p>
-      <Row className="d-flex flex-nowrap flex-row align-items-center justify-content-center" style="font-size:95%;">
-        <Col>Are you sure you want to begin preparing this genotype file for download?</Col>
-      </Row>
+      {/* <Row className="d-flex flex-nowrap flex-row align-items-center justify-content-center" style="font-size:95%;">
+        <Col>Please confirm this genotype data request</Col>
+</Row> */}
       {/*  button="Request"
         <p><br />
         The following datasets are restricted. Please enter access codes for each dataset or

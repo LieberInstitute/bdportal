@@ -9,8 +9,8 @@
    table td,table th{padding:0}
    .c1{color:#a10036;font-weight:700;text-decoration:none;vertical-align:baseline;font-size:16pt;font-family:"Arial";font-style:normal}
    .c6{padding-top:18pt;padding-bottom:6pt;line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
-   .c4{color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:12pt;font-family:"Arial";font-style:normal}
-   .c0{padding-top:0pt;padding-bottom:2pt;line-height:1.15;orphans:2;widows:2;text-align:left}
+   .c4{color:#222;font-weight:400;text-decoration:none;vertical-align:baseline;font-size:12pt;line-height:140%;font-family:"Arial";font-style:normal}
+   .c0{padding-top:0pt;padding-bottom:2pt;line-height:140%;orphans:2;widows:2;text-align:left}
    .cbody {font-size:12pt;background-color:#ffffff;max-width:824px;padding:36pt 36pt 36pt 72pt}
    .bred{font-weight:bold;color:#b32141;}
    .c5{font-size:12pt;}
@@ -39,7 +39,7 @@
         </span></p>
         <p>
           This is a button which when clicked displays a drop-down menu with the available application pages.
-          The pages not implemented yet are grayed out.
+          The pages not available yet are grayed out.
         </p>
 
         <p>
@@ -63,7 +63,9 @@
             and then clicking the <span class="bred" style="color:#c34">Apply</span> button that appears at the top of a category panel
               whenever the highlighted criteria have changed for that panel. </p>
           <p class="c0 c4"> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and
-            all the subject counts in the other category panels will be updated to reflect the applied selection.
+            all the subject counts in the other category panels will be updated to reflect the applied selection. Note that applying a selection in a panel
+            does not update its own displayed counts - such that the user can still see the counts for each category in that panel.
+            in the category
          </p>
          <h4>Region / Data type selection</h4>
 
@@ -83,11 +85,23 @@
           </td>
          </tr></table>
 
+         <p class="c0 c4">The <b>Load Br# list</b> button opens a dialog which allows uploading or entering an list of "brain numbers" in the usual format
+         at LIBD (e.g. <b><code>Br5362</code></b>). Any text file that has such <i>Br####</i> identifiers can be uploaded by
+         the user (including full CSVs with many other data columns, like RNAseq sample metadata exported from the
+         <span class="bred">Bulk RNAseq</span> page), or text that can be directly entered/pasted in the provided text box.<br/><br/>
+         Provided Br#s will be verified against the internal database and only the matching ones will be considered.
+         <br/>
+
+         Please note that upon providing a custom Br# list this way, the current selection filters <b>will be cleared</b>
+         and all the category panels will be updated to reflect the counts as constrained to the list of Br#s provided.<br/>
+         However the selection can then be further refined by applying further selections in any of the panels.
+         </p>
+
         <h4 id="brsel-browse">Brain Set Browser</h4>
         <p class="c0 c4">
         The <span style="color:#c34">Browse</span> tab of the <b>Brain Set Builder</b> allows the inspection of the subject data for all the selected subjects,
         and exporting the resulting table as a CSV/TSV file.
-        It also allows further customization of the subject data table based on sequencing information for each brain.
+        It also allows further customization of the subject data table based on the available sequencing information for each brain.
         <br /><br />
         The default table shows the demographics data along with the total number of sequencing samples for each experiment data type, as loaded in the database.
         <br /><br />
@@ -97,19 +111,39 @@
         The subject set table can be customized to include/exclude the columns specific to experiment data types (the first set of checkboxes, which are all checked by default),
         but also to further restrict the subject set to only those brains that have specific experiment data type available (the second set of checkboxes on the right).
         <br />
-        Note that for the set of checkboxes on the right, a subject shall only be included in the dataset when it has experiment data available for <i>all</i> the data types checked.
+        Note that for the list of checkboxes on the right, a subject shall only be included in the dataset when it has experiment data available
+        for <i>all</i> the data types checked in that list.
 
+        <br/><br/><br/>
+          Finally, use the <b>Export Set</b> button to save a CSV/TSV with the current subject selection and their metadata.
         </p>
 
-
-        <h4 id="rna-sel">RNA-Seq datasets</h4>
+        <h4 id="rna-sel">Bulk RNAseq</h4>
         <p class="c0 c4">
           On this page the user can make selections of RNA-Seq expression values by subsetting the available RNA-Seq datasets
           pre-processed and stored in the database. <br /><br />
 
-          All the datasets shown on this page were processed using <a href="https://www.gencodegenes.org/human/release_25.html">Gencode Release 25</a>
+          Please note that the numbers (counts) displayed in each selection panel represent the <b>number of RNAseq experiments (sample)</b>,
+          not subject counts. Similar to the way selection works in the <span class="bred">Brain Set Builder</span> UI, applying a selection in any panel will
+          update the counts in any other panel (but not its own).<br />
+          Similarly the <b>Load Br# list</b> can be used to load a custom set of <i>Br####</i> identifiers -- for example a CSV saved with
+          the <b>Export set</b> button in </b><span class="bred">Brain Set Builder</span>). Just like on that page, loading a custom Br# list
+          will clear the existing filters in order to reflect the distribution of the provided Br#s in all the category panels,
+          but the selection can then be further refined by applying selections in any of the panels.
+          <br/><br/>
+          At least a dataset and a primary diagnosis must be selected before the user can gain access to the samples for the selection.
+          <br/><br/>
+          Selecting multiple datasets is discouraged (due to batch effect considerations, different sequencing protocols etc.).
+          For that reason the <b>Datasets</b> panel is the only panel where single selection is enforced, i.e. selecting a list item
+          (dataset) in that panel "deselects" the previous selection (as usual, the new selection still has to be "applied"). <br/>
+          However multiple datasets can still be selected by using <i>Ctrl</i>i>+click on multiple datasets in that list, which allows
+          selecting RNAseq samples <i>across</i> datasets.
+        </p>
+          <h4 id="rna-explore">RNAseq data preprocessing</h4>
+          <p class="c0 c4">
+          The RNAseq datasets shown on this page were processed using <a href="https://www.gencodegenes.org/human/release_25.html">Gencode Release 25</a>
            as the reference annotation, using the <a href="https://doi.org/10.1186/s12859-021-04142-3">SPEAQeasy pipeline</a> <br />
-
+          <br/>
           Expression values (read counts) were obtained with these methods:
           <ul>
            <li><b>gene</b> and <b>exon</b> read counts were obtained with <a href="https://doi.org/10.1093/bioinformatics/btt656">featureCounts</a>.</li>
@@ -117,7 +151,6 @@
            <li><b>junction</b> read counts were estimated and normalized as TPM values using <a href="https://www.nature.com/articles/nbt.3519">kallisto</a>
             or <a href="https://pubmed.ncbi.nlm.nih.gov/28263959/">Salmon</a>.</li>
           </ul>
-
         </p>
 
         <h4 id="rna-explore">RNA-Seq selection exploration</h4>

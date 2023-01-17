@@ -316,6 +316,8 @@ const RnaSelect = ({ style }) => {
               {/*<Button className="btn-sm btn-light align-self-center app-btn-help ml-4" onClick={() => setShowHelp(!showHelp)}
                 data-toggle="tooltip" title="Toggle help text display">?</Button> */}
               {showHelp ? <div id="help-msg" class="app-help-panel align-self-center">
+              <span style="color:#777;">Counts reflect the number of RNAseq experiments (samples) for each category.</span>
+              <br/>
               <span class="info-tx-apply">Apply</span> selections in the category panels below
               to access sample data.
               </div> : null}
