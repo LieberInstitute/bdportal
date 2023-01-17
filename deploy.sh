@@ -26,12 +26,14 @@ sed -i -E "s|_MWSERVER=.*|_MWSERVER=http://${mwsrv}:4095|" .env
 /bin/rm -rf dist/*
 brun='-dev'
 bdir='dev/bdportal'
-if [[ $dest == 'devel']]; then
+if [[ $dest == 'devel' ]]; then
   brun='-devel'
   bdir='devel/bdportal'
-else if [[ $dest == 'root' || $dest == 'bdportal' || $dest == '/' ]]; then
-  brun=''
-  bdir='bdportal'
+else 
+  if [[ $dest == 'root' || $dest == 'bdportal' || $dest == '/' ]]; then
+    brun=''
+    bdir='bdportal'
+  fi
 fi
 echo -e "running:\n npm run build$brun-based"
 npm run build$brun-based
