@@ -72,9 +72,9 @@ function BrSetButtons({ numbr, show, browse, brSet, getBrowseTable, login } ) {
       //$('#btnGtReq').prop("disabled",true);
       const brarr=getBrNumSet()
       m.lastgtReqSet=brarr.length
-      reqGenotypes(brarr).then( (t)=>{
+      reqGenotypes(brarr) /*.then( (t)=>{
            console.log(" reqGenotypes() task started:", t)
-         });
+         });*/
     //logAction('req_geno', [4,3,1,2], brarr.join(','))
     //mwMail("geo.pertea@gmail.com", "here get the list", brarr.slice(0,4))
     return true;
