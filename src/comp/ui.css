@@ -308,6 +308,7 @@ to be made available everywhere in the app
 }
 .app-btn:disabled {
   color:#4a4a4a !important;
+  background-color:#ccc !important;  
 }
 
 .app-btn-close, .app-btn-close:focus {

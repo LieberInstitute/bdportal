@@ -505,7 +505,7 @@ const BrBrowse = ( ) => {
 			  <Row id="rowFltCtl" className="pl-2 pr-0 pt-1 mt-2 mb-0 d-flex justify-content-start align-items-start"
 				           style="padding-bottom:8px;border-bottom: 1px solid #ddd;">
 					<Col className="d-flex flex-column text-align-center justify-content-center align-items-center col-auto">
-					   <span class="br-xck-caption align-self-start"><br /> Show sample counts for:</span>
+					   <span class="br-xck-caption align-self-start"><br />Keep sample counts for:</span>
 							{ xtcols.map( (xn, xt)=>
 							<div key={`ckXt${xt}`} class="ml-1 row d-flex align-self-center flex-row xt-ckbox">
 						    <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
@@ -519,9 +519,9 @@ const BrBrowse = ( ) => {
 							) }
 					</Col>
 					<Col className="d-flex flex-column text-align-center justify-content-center align-items-start"
-					                style="border-left:1px solid #dfdfdf;" >
-          { byRegion ? <span class="br-xck-caption">Only show brains having <br /> in the same region:</span>
-					   : <span class="br-xck-caption"><br />Only show brains with:</span>
+					                style="border-left:3px solid #ccc;" >
+          { byRegion ? <span class="br-xck-caption"><b> Filter to subjects that have <br /> in the same region:</b></span>
+					   : <span class="br-xck-caption"><br /><b>Filter to subjects that have:</b> </span>
 					}
 
 					{ xtcols.map( (xn, xt)=>
