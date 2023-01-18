@@ -35,7 +35,7 @@
     <h3>Logging in</h3>
     <p>A login dialog is presented at the start of the application, allowing user authentication using the LIBD email (username only, no need for
       <i>@libd.org</i>) and password.<br/><br/>
-     Authentication is only needed in order to actually export/download data from the application. The login dialog can be dismissed without loggin in,
+     Authentication is needed in order to export/download data from the application. The login dialog can be dismissed without loggin in,
      in which case data selection and exploration are still possible, but actual data exports (including genotypes) will not be available
      unless the user is authenticated. <br/><br/>
      Logging in can take place at any point during/after the data selection (using the <span class="red">Login</span>
@@ -72,14 +72,14 @@
     </p>
 
          <h2><span class="c6 bred">Brain Set Builder</span> page</h2>
-         <p>The <span class="bred">Brain Set Builder</span>
+          <p>The <span class="bred">Brain Set Builder</span>
             page allows the user to get an overview of the available data types for the subjects loaded in the database,
             and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability
-            of experiment data for the subjects.</p>
-          
+            of experiment data for the subjects.
+          </p>          
           <p>
-            The <span class="bred">Brain Set Builder</span> page has two sections (tabs): 
-            <span class="red">Select</span> and <span class="red">Browse</span>, selectable to the right of the main page navigation button:<br/>
+            The <span class="bred">Brain Set Builder</span> page has two sections (tabs): <span class="red">Select</span> and 
+            <span class="red">Browse</span>, selectable to the right of the main page navigation button:<br/><br/>
             <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
               <img alt="" src="images/brain_set_builder-tabs.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
             </span>
@@ -169,8 +169,10 @@
           <b>Request Genotypes</b> button to request a VCF.gz file with the imputed genotypes for the selected subjects.<br/><br/>
 
           When choosing the "Request Genotypes" button and confirming the request, a custom VCF.gz file with the imputed genotype data of the 
-          selected subjects will begin assembling in the background on the database server. This process can be a length operation (15-20 minutes or more),
-          depending on the number of subjects and server load. The resulting file can be several gigabytes in size. When the file is ready, a direct download 
+          selected subjects will begin assembling in the background on the database server. This can be a lengthy operation (15-20 minutes or more),
+          depending on the number of subjects and server load. The user can continue to use the web application normally while the genotypes file 
+          is being built.
+          <br/>The resulting genotypes file can be up to several gigabytes in size. When the file is ready, a direct download 
           link to the custom genotypes file will be e-mailed to the user. Please note that the genotypes download link expires in 3 days after receiving 
           the notification email.
         </p>
