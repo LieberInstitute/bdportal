@@ -2,9 +2,9 @@
   <meta content="text/html; charset=UTF-8" http-equiv="content-type">
    <style type="text/css">
 
-   p { padding-top:0pt;padding-bottom:2pt;line-height:1.15;orphans:2;widows:2;text-align:left;
-       color:#000000;font-weight:400;text-decoration:none;vertical-align:baseline;
-       font-size:12pt;font-family:"Arial";font-style:normal }
+   p { padding-top:0pt;padding-bottom:2pt;orphans:2;widows:2;text-align:left;
+       color:#222;font-weight:400;text-decoration:none;vertical-align:baseline;
+       font-size:12pt;line-height:135%;font-family:"Arial";font-style:normal }
    ol{margin:0;padding:0}
    table td,table th{padding:0}
    .c1{color:#a10036;font-weight:700;text-decoration:none;vertical-align:baseline;font-size:16pt;font-family:"Arial";font-style:normal}
@@ -13,6 +13,7 @@
    .c0{padding-top:0pt;padding-bottom:2pt;line-height:140%;orphans:2;widows:2;text-align:left}
    .cbody {font-size:12pt;background-color:#ffffff;max-width:824px;padding:36pt 36pt 36pt 72pt}
    .bred{font-weight:bold;color:#b32141;}
+   .red{font-weight:normal;color:#b32141;}
    .c5{font-size:12pt;}
 
    .title{padding-top:0pt;color:#666;font-size:20pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
@@ -30,8 +31,28 @@
   <body class="cbody">
      <h2 class="title" id="brsel-matrix"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
          <span class="bred">B</span>rain <span class="bred">D</span>ata <span class="bred">Portal</span></h2>
-     <p>
-       This is a multi-page web application where the page (screen) can be selected using the top-left navigation button:
+
+    <h3>Logging in</h3>
+    <p>A login dialog is presented at the start of the application, allowing user authentication using the LIBD email (username only, no need for
+      <i>@libd.org</i>) and password.<br/><br/>
+     Authentication is only needed in order to actually export/download data from the application. The login dialog can be dismissed without loggin in,
+     in which case data selection and exploration are still possible, but actual data exports (including genotypes) will not be available
+     unless the user is authenticated. <br/><br/>
+     Logging in can take place at any point during/after the data selection (using the <span class="red">Login</span>
+     link at the top-right side of the header), it does not affect the current selection, and it should immediately enable the data export/request
+     buttons in the application.
+     <br/><br/>
+      <b>Note:</b>&nbsp;in some browsers, when the user is filling the login form, there might be a warning displayed about
+      login security, stating that the connection "is not secure". This is not accurate because even though the main web
+      application is running on an unecrypted connection, the login dialog itself is specifically running from a different
+      connection/site which is secure and encrypted (https). Thus the password entered in that dialog is relayed to an
+      authentication server using only encrypted connections and it is never passed to the main web application.
+     </p>
+
+    <h3>General navigation</h3>
+    <p>   This is a multi-page web application, please do not use the <i>Back</i> button (&#x2190;) of the browser. Instead, in order to
+      navigate between pages, the active page or section of the web app should be selected using the top-left navigation button:
+    </p>
     </p><p>
         <span style="overflow: hidden; display: inline-block; margin: 6px 2px; border: 0.00px solid #000000;
           transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 356.00px; height: 115.00px;">
@@ -48,24 +69,20 @@
             is just interested in available datasets for specific data types (e.g. <span class="bred">Bulk RNAseq </span> data),
             the user can navigate directly to the data type of interest by using this top-left navigation button.
         </p>
-        <p><b>Note:</b> avoid using the <i>Back</i> button of the browser to navigate between the application pages!
 
-        </p>
-
-         <h2 class="c6"><span class="c1">Brain Set Builder</span></h2>
-         <p class="c0"><span class="c5">The </span><span class="bred">Brain Set Builder</span>
-          <span class="c4">&nbsp;page allows the user to get an overview of the available data types for the subjects loaded in the database,
+         <h2 class="c6 bred">Brain Set Builder</h2>
+         <p>The <span class="bred">Brain Set Builder</span>
+            page allows the user to get an overview of the available data types for the subjects loaded in the database,
             and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability
-            of experiment data for the subjects.</span></p><p class="c0 c2">
-          <span class="c4"></span></p>
+            of experiment data for the subjects.</p>
 
-          <p class="c0 c4">In order to create a set of subjects a selection must be made by clicking to highlight one or more features in the available panels
+          <p>In order to create a set of subjects a selection must be made by clicking to highlight one or more features in the available panels
             and then clicking the <span class="bred" style="color:#c34">Apply</span> button that appears at the top of a category panel
               whenever the highlighted criteria have changed for that panel. </p>
-          <p class="c0 c4"> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and
-            all the subject counts in the other category panels will be updated to reflect the applied selection. Note that applying a selection in a panel
-            does not update its own displayed counts - such that the user can still see the counts for each category in that panel.
-            in the category
+          <p> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will be actually <i>applied</i> and
+            all the subject counts in the other category panels will be updated to reflect the applied selection.
+            <br/><br/>Note that applying a selection in a panel does not change its own displayed counts - such that the user can still see the potential selection
+            counts for the other categories in that panel.
          </p>
          <h4>Region / Data type selection</h4>
 
@@ -75,22 +92,22 @@
             <img alt="" src="images/matrix_selection.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
           </span>
           </td><td style="vertical-align:top;padding-left:6px;">
-          <span class="c0 c4">
+          <p>
             The table in the center of the page shows how many subjects were sequenced by various data types across brain regions, as loaded in the database.
-            <br /><br />A subject can have samples sequenced from multiple brain regions and different data types, so they are counted independently per brain region
-            and data type in this table.
-            <br /><br /> Selecting the first region cell locks the selection to that experiment data type (column). The selection of region cells in this matrix
+            <br /><br />A subject can have samples sequenced from multiple brain regions, or different experimental assays,
+            so they are counted independently per brain region and assay data type in this table.
+            <br /><br /> Selecting the first region cell locks the selection to that data type (column). The selection of region cells in this matrix
             will restrict the subjects to only those that have sequencing data for the selected brain regions, for the selected data type (column).
-          </span>
+          </p>
           </td>
          </tr></table>
 
-         <p class="c0 c4">The <b>Load Br# list</b> button opens a dialog which allows uploading or entering an list of "brain numbers" in the usual format
+         <p>The <b>Load Br# list</b> button opens a dialog which allows uploading or entering an list of "brain numbers" in the usual format
          at LIBD (e.g. <b><code>Br5362</code></b>). Any text file that has such <i>Br####</i> identifiers can be uploaded by
          the user (including full CSVs with many other data columns, like RNAseq sample metadata exported from the
          <span class="bred">Bulk RNAseq</span> page), or text that can be directly entered/pasted in the provided text box.<br/><br/>
          Provided Br#s will be verified against the internal database and only the matching ones will be considered.
-         <br/>
+         <br/><br/>
 
          Please note that upon providing a custom Br# list this way, the current selection filters <b>will be cleared</b>
          and all the category panels will be updated to reflect the counts as constrained to the list of Br#s provided.<br/>
@@ -98,7 +115,7 @@
          </p>
 
         <h4 id="brsel-browse">Brain Set Browser</h4>
-        <p class="c0 c4">
+        <p>
         The <span style="color:#c34">Browse</span> tab of the <b>Brain Set Builder</b> allows the inspection of the subject data for all the selected subjects,
         and exporting the resulting table as a CSV/TSV file.
         It also allows further customization of the subject data table based on the available sequencing information for each brain.
@@ -118,29 +135,30 @@
           Finally, use the <b>Export Set</b> button to save a CSV/TSV with the current subject selection and their metadata.
         </p>
 
-        <h4 id="rna-sel">Bulk RNAseq</h4>
-        <p class="c0 c4">
+        <h2 class="c6 bred" id="rna-sel">Bulk RNAseq</h4>
+        <p>
           On this page the user can make selections of RNAseq expression values by subsetting the available bulk RNAseq datasets
           pre-processed and stored in the database. <br /><br />
 
           Please note that the numbers (counts) displayed in each selection panel represent the <b>number of RNAseq experiments (sample)</b>,
           not subject counts. Similar to the way selection works in the <span class="bred">Brain Set Builder</span> UI, applying a selection in any panel will
-          update the counts in any other panel (but not its own).<br />
+          update the counts in any other panel (but not its own).<br /><br/>
           Similarly the <b>Load Br# list</b> can be used to load a custom set of <i>Br####</i> identifiers -- for example a CSV saved with
           the <b>Export set</b> button in </b><span class="bred">Brain Set Builder</span>). Just like on that page, loading a custom Br# list
           will clear the existing filters in order to reflect the distribution of the provided Br#s in all the category panels,
           but the selection can then be further refined by applying selections in any of the panels.
           <br/><br/>
-          At least a dataset and a primary diagnosis must be selected before the user can gain access to the samples for the selection.
+          At least a dataset and a primary diagnosis must be selected before the user can gain access to the samples for the selection (i.e.
+          to show the "Export" and the "Explore" buttons)
           <br/><br/>
           Selecting multiple datasets at once is discouraged (due to batch effect considerations, different sequencing protocols etc.).
           For that reason the <b>Datasets</b> panel is the only list where single selection is the default, i.e. simply selecting a list item
-          (dataset) in that panel cancels the previous selection (as usual, the new selection still has to be "applied"). <br/>
+          (dataset) in that panel cancels the previous selection (as usual, the new selection still has to be "applied"). <br/><br/>
           However multiple datasets can still be selected by using <i>Ctrl</i>+click on multiple datasets in that panel, thus allowing
           RNAseq sample selection <i>across</i> datasets.
         </p>
           <h4 id="rna-explore">RNAseq data preprocessing</h4>
-          <p class="c0 c4">
+          <p>
           The RNAseq datasets shown on this page were processed using <a href="https://www.gencodegenes.org/human/release_25.html">Gencode Release 25</a>
            as the reference annotation, using the <a href="https://doi.org/10.1186/s12859-021-04142-3">SPEAQeasy pipeline</a> <br />
           <br/>
@@ -154,10 +172,10 @@
         </p>
 
         <h4 id="rna-explore">RNAseq selection exploration</h4>
-        <p class="c0 c4">
+        <p>
         On the <span style="color:#c34;">Explore</span> tab (also activated when the <i>"Explore"</i> button is clicked for a valid selection),
         a few basic visualisations (plots) can be displayed for the current selection (which is again summarized at the top).
-        <br/>
+        <br/><br/>
         Use the side bar menus on the left to select the plot type and enter the gene names for which the expression data shall be plotted.
         </p>
 
