@@ -26,11 +26,12 @@
    h5{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    h6{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
    </style>
-   <title>LIBData Portal Help</title>
+   <title>LIBData Portal Guide</title>
   </head>
   <body class="cbody">
-     <h2 class="title" id="brsel-matrix"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
-         <span class="bred">B</span>rain <span class="bred">D</span>ata <span class="bred">Portal</span></h2>
+     <!-- h2 class="title"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
+         <span class="bred">D</span>ata <span class="bred">Portal</span></h2 -->
+    <h2 class="title"><span class="bred">LIBD Data Portal</span></h2>
 
     <h3>Logging in</h3>
     <p>A login dialog is presented at the start of the application, allowing user authentication using the LIBD email (username only, no need for
@@ -49,7 +50,7 @@
       authentication server using only encrypted connections and it is never passed to the main web application.
      </p>
 
-    <h3>General navigation</h3>
+    <h3 id="brsel-matrix">General navigation</h3>
     <p>   This is a multi-page web application, please do not use the <i>Back</i> button (&#x2190;) of the browser. Instead, in order to
       navigate between pages, the active page or section of the web app should be selected using the top-left navigation button:
     </p>
@@ -76,9 +77,9 @@
             page allows the user to get an overview of the available data types for the subjects loaded in the database,
             and make an informed selection of a set of subjects of interest based on diagnosis and demographics as well as availability
             of experiment data for the subjects.
-          </p>          
+          </p>
           <p>
-            The <span class="bred">Brain Set Builder</span> page has two sections (tabs): <span class="red">Select</span> and 
+            The <span class="bred">Brain Set Builder</span> page has two sections (tabs): <span class="red">Select</span> and
             <span class="red">Browse</span>, selectable to the right of the main page navigation button:<br/><br/>
             <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
               <img alt="" src="images/brain_set_builder-tabs.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
@@ -86,20 +87,20 @@
           </p>
 
           <h3>The <span class="red">Select</span> tab</h3>
-          The main tab of the <span class="red">Brain Set Builder</span> page allows inspection and selection of subjects by demographics/phenotype data, 
+          The main tab of the <span class="red">Brain Set Builder</span> page allows inspection and selection of subjects by demographics/phenotype data,
           brain region assay data availability, or a user provided list of brain identifiers.
 
           <h4>Subject selection by phenotype</h4>
           <p>In order to create a set of subjects a selection must be made by clicking to highlight one or more categories in the available panels
             and then clicking the <span class="bred" style="color:#c34">Apply</span> button that appears at the top of a category panel
-              whenever the highlighted criteria have changed for that panel. 
+              whenever the highlighted criteria have changed for that panel.
               <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
                  <img alt="" src="images/apply-before.png" style="display:block;margin: 0 auto;" title="Selection not applied yet">
               </div>
           </p>
-          <p> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will actually 
-            become effective and the counts in the other category panels will be updated to reflect the applied selection. 
-            The current selection is applied (effective) if the <span style="color:#c34"><b>Apply</b></span> button is 
+          <p> Only after clicking the <span style="color:#c34"><b>Apply</b></span> button the selection will actually
+            become effective and the counts in the other category panels will be updated to reflect the applied selection.
+            The current selection is applied (effective) if the <span style="color:#c34"><b>Apply</b></span> button is
             no longer visible and the selected categories are displayed in a higher contrast:
 
             <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
@@ -129,7 +130,7 @@
 
          <h4>Selection by list of brain identifiers</h4>
          <p>Another way to select subjects and inspect their information is to provide a list of subjects (brains).
-         The <b>Load Br# list</b> button opens a dialog which allows uploading or directly entering a list of "brain numbers" 
+         The <b>Load Br# list</b> button opens a dialog which allows uploading or directly entering a list of "brain numbers"
          in the usual LIBD brain identifier format (e.g. <b><code>Br5362</code></b>). A text file that has such <i>Br####</i> identifiers can be uploaded by
          the user (including full CSVs with many other data columns, like RNAseq samples metadata exported from the
          <span class="bred">Bulk RNAseq</span> page), or text that can be directly entered/pasted in the text input area of that dialog.<br/><br/>
@@ -156,24 +157,24 @@
         but also to further restrict the subject set to only those brains that have specific experiment data type available (the second set of checkboxes on the right).
         <br />
         <br />
-        Note that in this  <span style="color:#c34">Browse</span> tab, the subject selection can be further refined (filtered) 
+        Note that in this  <span style="color:#c34">Browse</span> tab, the subject selection can be further refined (filtered)
         by using the list of checkboxes on the right:
         <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
           <img alt="" src="images/browse-brain-filter.png" style="display:block;margin: 0 auto;" title="Applied selection">
        </div><br/>
-       If any entry is checked in this list, a subject shall only be included in the selection when it has experiment data 
+       If any entry is checked in this list, a subject shall only be included in the selection when it has experiment data
        available for all data types that are checked in that list.
 
         <br/><br/><br/>
-          Finally, use the <b>Export Set</b> button to save a CSV/TSV with the current subject selection and their metadata, or use the 
+          Finally, use the <b>Export Set</b> button to save a CSV/TSV with the current subject selection and their metadata, or use the
           <b>Request Genotypes</b> button to request a VCF.gz file with the imputed genotypes for the selected subjects.<br/><br/>
 
-          When choosing the "Request Genotypes" button and confirming the request, a custom VCF.gz file with the imputed genotype data of the 
+          When choosing the "Request Genotypes" button and confirming the request, a custom VCF.gz file with the imputed genotype data of the
           selected subjects will begin assembling in the background on the database server. This can be a lengthy operation (15-20 minutes or more),
-          depending on the number of subjects and server load. The user can continue to use the web application normally while the genotypes file 
+          depending on the number of subjects and server load. The user can continue to use the web application normally while the genotypes file
           is being built.
-          <br/>The resulting genotypes file can be up to several gigabytes in size. When the file is ready, a direct download 
-          link to the custom genotypes file will be e-mailed to the user. Please note that the genotypes download link expires in 3 days after receiving 
+          <br/>The resulting genotypes file can be up to several gigabytes in size. When the file is ready, a direct download
+          link to the custom genotypes file will be e-mailed to the user. Please note that the genotypes download link expires in 3 days after receiving
           the notification email.
         </p>
 
@@ -194,7 +195,7 @@
           </ul>
 
           <br/>
-            The <span class="bred">Bulk RNAseq</span> page has two sections (tabs): 
+            The <span class="bred">Bulk RNAseq</span> page has two sections (tabs):
             <span class="red">Select</span> and <span class="red">Explore</span>, selectable to the right of the main page navigation button:<br/>
             <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
               <img alt="" src="images/bulk_rnaseq-tabs.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
@@ -207,13 +208,13 @@
           Please note that the numbers (counts) displayed in each selection panel represent the <b>number of RNAseq experiments (samples)</b>,
           not subject counts. Similar to the way selection works in the <span class="bred">Brain Set Builder</span> UI, applying a selection in any panel will
           update the counts in any other panel (but not its own).<br /><br/>
-          
+
           Similarly the <b>Load Br# list</b> button can be used to load a custom set of <i>Br####</i> identifiers -- for example a CSV saved with
           the <b>Export set</b> button in <span class="bred">Brain Set Builder</span>). Just like on that page, loading a custom Br# list
           will clear the existing filters in order to reflect the distribution of the provided Br#s in all the category panels,
           but the selection can then be further refined by applying selections in any of the panels.
           <br/><br/>
-          
+
           At least a dataset and a primary diagnosis must be selected before the user can gain access to the samples for the selection (i.e.
           to show the "Export" and the "Explore" buttons)
           <br/><br/>
@@ -221,17 +222,17 @@
           For that reason the <b>Datasets</b> panel is the only list where single selection is the default, i.e. simply selecting a list item
           (dataset) in that panel cancels the previous selection (as usual, the new selection still has to be "applied"). <br/><br/>
           However multiple datasets can still be selected by using <i>Ctrl</i>+click on multiple datasets in that panel, thus allowing
-          RNAseq sample selection <i>across</i> datasets.          
+          RNAseq sample selection <i>across</i> datasets.
         </p>
         <h4>Publication info</h4>
-        Some of the bulk RNAseq datasets that have been already published have reference information and other dataset-specific related links (e.g. a link to the 
-        the LIBD EQTL browser for that dataset). A panel with this reference information is displayed above 
+        Some of the bulk RNAseq datasets that have been already published have reference information and other dataset-specific related links (e.g. a link to the
+        the LIBD EQTL browser for that dataset). A panel with this reference information is displayed above
         the "Datasets" panel when such a dataset is selected in that list.
         <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
           <img alt="" src="images/reference_publication.png" style="display:block;margin: 0 auto;" title="Applied selection">
         </div><br/>
 
-        
+
         <h4 id="rna-explore">Bulk RNAseq <span style="color:#c34">Explore</span> tab</h4>
         <p>
         On the <span style="color:#c34;">Explore</span> tab (also activated when the <i>"Explore"</i> button is clicked for a valid selection),
