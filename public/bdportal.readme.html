@@ -2,10 +2,11 @@
   <meta content="text/html; charset=UTF-8" http-equiv="content-type">
    <style type="text/css">
 
-   p { padding-top:0pt;padding-bottom:0pt;orphans:2;widows:2;text-align:left;
+   p { padding-top:2pt;padding-bottom:2pt;orphans:2;widows:2;text-align:left;
        color:#222;font-weight:400;text-decoration:none;vertical-align:baseline;
        font-size:12pt;line-height:135%;font-family:"Arial";font-style:normal }
-   ol{margin:0;padding:0}
+   ol{margin:4px;padding:4px}
+   li{margin:2px;padding:2px}
    table td,table th{padding:0}
    .c1{color:#a10036;font-weight:700;text-decoration:none;vertical-align:baseline;font-size:16pt;font-family:"Arial";font-style:normal}
    .c6{padding-top:18pt;padding-bottom:6pt;line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
@@ -16,13 +17,14 @@
    .red{font-weight:normal;color:#b32141;}
    .c5{font-size:12pt;}
 
-   .title{padding-top:0pt;color:#666;font-size:20pt;padding-bottom:3pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+
+   .title{padding-top:0pt;color:#666;font-size:20pt;font-family:"Arial";page-break-after:avoid;orphans:2;widows:2;text-align:left}
    .subtitle{padding-top:0pt;color:#666666;font-size:15pt;padding-bottom:16pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    li{color:#000000;font-family:"Arial"}
-   h1{padding-top:20pt;color:#000000;font-size:20pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
-   h2{padding-top:18pt;color:#000000;font-size:16pt;padding-bottom:6pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
-   h3{padding-top:16pt;color:#434343;font-size:14pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
-   h4{padding-top:14pt;color:#423c3c;font-size:12pt;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+   h1{padding-top:20pt;color:#222;font-size:20pt;padding-bottom:2pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+   h2{padding-top:12pt;color:#222;font-size:16pt;padding-bottom:1pt;font-family:"Arial";page-break-after:avoid;orphans:2;widows:2;text-align:left}
+   h3{padding-top:6pt;color:#434343;font-size:14pt;padding-bottom:1pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
+   h4{padding-top:4pt;color:#423c3c;font-size:12pt;padding-bottom:1pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    h5{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    h6{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
    </style>
@@ -31,8 +33,7 @@
   <body class="cbody">
      <!-- h2 class="title"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
          <span class="bred">D</span>ata <span class="bred">Portal</span></h2 -->
-    <h2 class="title"><span class="bred">LIBD Data Portal</span></h2>
-
+    <h2 class="title" style="margin-bottom:0;padding-bottom:0;"><span class="bred">LIBD Data Portal</span> guide</h2>
     <h3>Logging in</h3>
     <p>A login dialog is presented at the start of the application, allowing user authentication using the LIBD email (username only, no need for
       <i>@libd.org</i>) and password.<br/><br/>
@@ -45,9 +46,9 @@
      <br/><br/>
       <b>Note:</b>&nbsp;in some browsers, when the user is filling the login form, there might be a warning displayed about
       login security, stating that the connection "is not secure". This is not accurate because even though the main web
-      application is running on an unecrypted connection, the login dialog itself is specifically running from a different
-      connection/site which is secure and encrypted (https). Thus the password entered in that dialog is relayed to an
-      authentication server using only encrypted connections and it is never passed to the main web application.
+      application is running on an unecrypted connection, the login form itself is using a different  connection which is
+      secure and encrypted (https). Thus the password entered in that dialog is relayed to an authentication server using
+      only encrypted connections and it is never passed to the main web application.
      </p>
 
     <h3 id="brsel-matrix">General navigation</h3>
@@ -86,10 +87,11 @@
             </span>
           </p>
 
-          <h3>The <span class="red">Select</span> tab</h3>
+          <h3>The <span class="bred">Select</span> tab</h3>
+          <p>
           The main tab of the <span class="red">Brain Set Builder</span> page allows inspection and selection of subjects by demographics/phenotype data,
           brain region assay data availability, or a user provided list of brain identifiers.
-
+          </p>
           <h4>Subject selection by phenotype</h4>
           <p>In order to create a set of subjects a selection must be made by clicking to highlight one or more categories in the available panels
             and then clicking the <span class="bred" style="color:#c34">Apply</span> button that appears at the top of a category panel
@@ -105,12 +107,13 @@
 
             <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
               <img alt="" src="images/apply-after.png" style="display:block;margin: 0 auto;" title="Applied selection">
-           </div>
+            </div>
 
-            <br/><br/>Note that applying a selection in a panel does not change its own displayed counts - such that the user can still see the potential selection
-            counts for the other categories in that panel.
-         </p>
-         <h4>Region & Data type selection</h4>
+          <p>Note that applying a selection in a panel does not change its own displayed counts - such that the user can still see the potential selection
+            counts for the other categories in that panel.</p>
+          </p>
+
+            <h4>Region & Data type selection</h4>
 
           <table><tr>
           <td style="vertical-align:top;">
@@ -129,8 +132,8 @@
          </tr></table>
 
          <h4>Selection by list of brain identifiers</h4>
-         <p>Another way to select subjects and inspect their information is to provide a list of subjects (brains).
-         The <b>Load Br# list</b> button opens a dialog which allows uploading or directly entering a list of "brain numbers"
+         <p>Another way to select subjects and inspect their information is to provide a list of subjects using their brain identifiers.
+         The [<b>Load Br# list</b>] button opens a dialog which allows uploading or directly entering a list of "brain numbers"
          in the usual LIBD brain identifier format (e.g. <b><code>Br5362</code></b>). A text file that has such <i>Br####</i> identifiers can be uploaded by
          the user (including full CSVs with many other data columns, like RNAseq samples metadata exported from the
          <span class="bred">Bulk RNAseq</span> page), or text that can be directly entered/pasted in the text input area of that dialog.<br/><br/>
@@ -142,7 +145,7 @@
          However the selection can then be further refined by applying further selections in any of the panels.
          </p>
 
-        <h4 id="brsel-browse">The Brain Set <span style="color:#c34">Browser</span> tab</h4>
+        <h4 id="brsel-browse">The Brain Set <span style="color:#c34">Browse</span> tab</h4>
         <p>
         The <span style="color:#c34">Browse</span> tab of the <b>Brain Set Builder</b> allows the inspection of the subject data for all the selected subjects,
         and exporting the resulting table as a CSV/TSV file.
@@ -162,10 +165,10 @@
         <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
           <img alt="" src="images/browse-brain-filter.png" style="display:block;margin: 0 auto;" title="Applied selection">
        </div><br/>
+       <p>
        If any entry is checked in this list, a subject shall only be included in the selection when it has experiment data
        available for all data types that are checked in that list.
-
-        <br/><br/><br/>
+          <br/><br/>
           Finally, use the <b>Export Set</b> button to save a CSV/TSV with the current subject selection and their metadata, or use the
           <b>Request Genotypes</b> button to request a VCF.gz file with the imputed genotypes for the selected subjects.<br/><br/>
 
@@ -176,7 +179,8 @@
           <br/>The resulting genotypes file can be up to several gigabytes in size. When the file is ready, a direct download
           link to the custom genotypes file will be e-mailed to the user. Please note that the genotypes download link expires in 3 days after receiving
           the notification email.
-        </p>
+         </p>
+       </p>
 
         <h2 id="rna-sel"><span class="c6 bred">Bulk RNAseq</span> page</h4>
         <p>
@@ -190,21 +194,21 @@
           <ul>
            <li><b>gene</b> and <b>exon</b> read counts were obtained with <a href="https://doi.org/10.1093/bioinformatics/btt656">featureCounts</a>.</li>
            <li><b>junction</b> read counts were obtained with <a href="https://www.biorxiv.org/content/10.1101/436634v5">regtools</a>.</li>
-           <li><b>junction</b> read counts were estimated and normalized as TPM values using <a href="https://www.nature.com/articles/nbt.3519">kallisto</a>
+           <li><b>transcript</b> read counts were estimated and normalized as TPM values using <a href="https://www.nature.com/articles/nbt.3519">kallisto</a>
             or <a href="https://pubmed.ncbi.nlm.nih.gov/28263959/">Salmon</a>.</li>
           </ul>
 
           <br/>
+          <p>
             The <span class="bred">Bulk RNAseq</span> page has two sections (tabs):
             <span class="red">Select</span> and <span class="red">Explore</span>, selectable to the right of the main page navigation button:<br/>
             <span style="overflow: hidden; display: inline-block; margin: 6px 2px;" >
               <img alt="" src="images/bulk_rnaseq-tabs.png" style="margin-left: 0.00px; margin-top: 0.00px;" title="">
             </span>
-          <br/><br/>
-
+          </p>
 
           <h4> Bulk RNAseq <span style="color:#c34">Select</span> tab</h4>
-
+         <p>
           Please note that the numbers (counts) displayed in each selection panel represent the <b>number of RNAseq experiments (samples)</b>,
           not subject counts. Similar to the way selection works in the <span class="bred">Brain Set Builder</span> UI, applying a selection in any panel will
           update the counts in any other panel (but not its own).<br /><br/>
@@ -225,13 +229,14 @@
           RNAseq sample selection <i>across</i> datasets.
         </p>
         <h4>Publication info</h4>
+        <p>
         Some of the bulk RNAseq datasets that have been already published have reference information and other dataset-specific related links (e.g. a link to the
         the LIBD EQTL browser for that dataset). A panel with this reference information is displayed above
         the "Datasets" panel when such a dataset is selected in that list.
         <div style="overflow: hidden; width:100%; display: block; margin: 6px auto;" >
           <img alt="" src="images/reference_publication.png" style="display:block;margin: 0 auto;" title="Applied selection">
         </div><br/>
-
+        </p>
 
         <h4 id="rna-explore">Bulk RNAseq <span style="color:#c34">Explore</span> tab</h4>
         <p>
