@@ -28,28 +28,12 @@
    h5{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;orphans:2;widows:2;text-align:left}
    h6{padding-top:12pt;color:#666666;padding-bottom:4pt;font-family:"Arial";line-height:1.15;page-break-after:avoid;font-style:italic;orphans:2;widows:2;text-align:left}
    </style>
-   <title>LIBData Portal Guide</title>
+   <title>LIBD Data Portal Guide</title>
   </head>
   <body class="cbody">
      <!-- h2 class="title"><span class="bred">L</span>ieber <span class="bred">I</span>nstitute
          <span class="bred">D</span>ata <span class="bred">Portal</span></h2 -->
-    <h2 class="title" style="margin-bottom:0;padding-bottom:0;"><span class="bred">LIBD Data Portal</span> guide</h2>
-    <h3>Logging in</h3>
-    <p>A login dialog is presented at the start of the application, allowing user authentication using the LIBD email (username only, no need for
-      <i>@libd.org</i>) and password.<br/><br/>
-     Authentication is needed in order to export/download data from the application. The login dialog can be dismissed without loggin in,
-     in which case data selection and exploration are still possible, but actual data exports (including genotypes) will not be available
-     unless the user is authenticated. <br/><br/>
-     Logging in can take place at any point during/after the data selection (using the <span class="red">Login</span>
-     link at the top-right side of the header), it does not affect the current selection, and it should immediately enable the data export/request
-     buttons in the application.
-     <br/><br/>
-      <b>Note:</b>&nbsp;in some browsers, when the user is filling the login form, there might be a warning displayed about
-      login security, stating that the connection "is not secure". This is not accurate because even though the main web
-      application is running on an unecrypted connection, the login form itself is using a different  connection which is
-      secure and encrypted (https). Thus the password entered in that dialog is relayed to an authentication server using
-      only encrypted connections and it is never passed to the main web application.
-     </p>
+    <h2 class="title" style="margin-bottom:0;padding-bottom:0;">LIBD Data Portal guide</h2>
 
     <h3 id="brsel-matrix">General navigation</h3>
     <p>   This is a multi-page web application, please do not use the <i>Back</i> button (&#x2190;) of the browser. Instead, in order to
@@ -72,6 +56,21 @@
             is just interested in available datasets for specific data types (e.g. <span class="bred">Bulk RNAseq </span> data),
             the user can navigate directly to the data type of interest by using this top-left navigation button.
     </p>
+
+    <h3>Logging in</h3>
+    <p>In order to download data from the portal, a LIBD researcher has to first request access by sending an email requst to:
+       Geo (geo.pertea@libd.org), Richard (richard.straub@libd.org) and Danny (drweinberger@libd.org). <br/> After the request is granted,
+      you can use the <span style="color:#c34">Login</span> link in the top-right corner of the header and log in using the LIBD email
+      (username only, no need for  <i>@libd.org</i>) and password.<br/>
+     Without logging in, data selection and exploration are still possible, but actual data exports (including genotypes) will not be
+     available unless the user is authenticated and also on the approved list of users. <br/><br/>
+
+      <b>Note:</b>&nbsp;in some browsers, when the user is filling the login form, there might be a warning displayed about
+      login security, stating that the connection "is not secure". This is not accurate because even though the main web
+      application is running on an unecrypted connection, the login form itself is using a different  connection which is
+      secure and encrypted (https). Thus the password entered in that dialog is relayed to an authentication server using
+      only encrypted connections and it is never passed to the main web application.
+     </p>
 
          <h2><span class="c6 bred">Brain Set Builder</span> page</h2>
           <p>The <span class="bred">Brain Set Builder</span>

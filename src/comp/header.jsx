@@ -130,6 +130,7 @@ export function Login({ login }) {
 
 
   function loginoutDlg() {
+    return true; // Change of plans, Login is disabled for now!
     if (!auth[1]) {//no authenticated user
       setLoginModal(true)
     } else { //do you want to logout?
@@ -157,7 +158,7 @@ export function Login({ login }) {
    }
 
   useEffect(() => {
-    setLoginModal(true) //set this to true to ask for login at startup!
+    setLoginModal(false) //set this to true to ask for login at startup!
   }, []) //run only once!
   //<span style="border:1px solid #ccc;background-color:#eee;font-size:12px;padding:1px 3px;"
   //   onClick={ ()=>checkLogin( user, pass ) } > tst </span>
