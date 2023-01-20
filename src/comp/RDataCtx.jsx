@@ -491,7 +491,7 @@ export function loadData(allData) {
   dtaDTypes.length=0;
   allData.dtypes.forEach( (e)=>{ dtaDTypes.push(e)} );
 
-  console.log('[loadData] loading data..', numDataTypes, dtaDTypes);
+  //console.log('[loadData] loading data..', numDataTypes, dtaDTypes);
 
   //plain arrays loaded here:
   ['sex', 'race', 'mod'].forEach( (e) => {
