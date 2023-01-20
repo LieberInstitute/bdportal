@@ -207,6 +207,27 @@ app.post('/mail', (req, res) => {
   sendMail(req.body, res);
 });
 
+
+app.post('/pgdb/useracc', (req, res) => {
+  let uname=req.body.username;
+  if (uname) uname=uname.trim().toLowerCase()
+         else res.status(500).send({ error: ':user error', message: "invalid username" });
+  if (uname.length===0) res.status(500).send(
+      { error: ':user error', message: "empty user name"}
+     )
+  const qry=`select login from useracc where login='${uname}'`;
+  db.query(qry, [],
+      (err, dbrows)=>{
+      if (err) {
+            res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
+          }
+      else {
+            res.json(dbrows);
+      }
+  });
+});
+
+
 app.post('/pgdb/gcheck', (req, res) => {
    let body=req.body
    let dtype=body.dtype
