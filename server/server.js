@@ -250,6 +250,15 @@ app.post('/pgdb/gcheck', (req, res) => {
 });
 
 app.post('/pgdb/adl', (req, res) => {
+   const jwt_token = req.body.tok;
+   let login='';
+   try {
+     // set username with the one in the encoded token
+       login = jwt.verify(jwt_token, jwt_shh);
+   } catch(err) {
+        res.status(403).send("Unauthorized Access /user AUTH");
+        return;
+   }
    let body=req.body
    let feature=body.feature || 'g';
    feature=feature.charAt(0).toLowerCase(); // 'g', 't', 'e', 'j' or 'm'
@@ -273,7 +282,7 @@ app.post('/pgdb/adl', (req, res) => {
    // [fname, sarr, glst, feature, dtype, fxt ]
    db.query(qry, qparms
             , (err, dbrows)=>{
-      
+
       if (err) {
         //console.log( "pdgb/adl error: ", err)
         res.status(500).send({ error: err.severity+': '+err.code, message: err.message })
@@ -287,7 +296,7 @@ app.post('/pgdb/adl', (req, res) => {
 
 
 function logActivity(actdata, res, nowait=false) {
-  // actdata must have { user, action, dtype, dsets, reqtext }  
+  // actdata must have { user, action, dtype, dsets, reqtext }
   const user=`'${actdata.user}'`
   const action=`'${actdata.action}'::user_act`
   //action MUST be one of: 'login', 'export', 'req_unlock', 'req_geno', 'email', 'explore'
@@ -300,10 +309,10 @@ function logActivity(actdata, res, nowait=false) {
   if (actdata.dsets && Array.isArray(actdata.dsets)) { // must be an array of dataset names (strings)
     dsets="'{\""+actdata.dsets.join('","')+"\"}'" ;
   }
-  
+
   const iqry='insert into userlog (login, activity, dtype, dsets, reqtext) '+
               `values (${user}, ${action}, ${dtype}, ${dsets}, ${reqtext})`
-  if (nowait) { // async execution:    
+  if (nowait) { // async execution:
     db.query(iqry, [], (err, dbrows)=>{
       if (err) {
         //console.log( "ulog error: ", err)
@@ -316,7 +325,7 @@ function logActivity(actdata, res, nowait=false) {
     });
     // but if we do async another db query might come in while this one is still running
     // so another db connection will be requested!
-   } else { //default - wait for the query    
+   } else { //default - wait for the query
       db.wquery(iqry,[]); //wait for query to execute
       if (res) res.send('OK');
   }
@@ -342,10 +351,10 @@ app.post('/gtreq', (req, res) => {
       logActivity({user:login, action:'req_geno', dtype:'genotype', reqtext:'error: 0 BrNums'});
       res.status(500).send(
           { error: ':user error', message: " empty BrNum list provided"} );
-      return;    
+      return;
   }
   logActivity({user:login, action:'req_geno', dtype:'genotype', reqtext:brarr.join(',')});
-  console.log(`>>>>>> starting genotypes prep job for ${login} (${brarr.length})`)
+  //console.log(`>>>>>> starting genotypes prep job for ${login} (${brarr.length})`)
   fs.mkdtemp(`${ddl_basepath}/gtdl-`, (err, outdir) => {
     if (err) {
         console.log(`Error at mkdtemp ${ddl_basepath}/gtdl-`, err)
@@ -376,13 +385,13 @@ app.post('/gtreq', (req, res) => {
         let dlurl=outf.replace(ddl_basepath, ddl_baseurl);
         //console.log("shell command done - sending url:", dlurl);
         console.log(`<< genotypes done for ${login} (${brarr.length})`)
-        sendMail({ to: `${login}@libd.org`, subject: `genotypes (${brarr.length}) ready for download`, 
+        sendMail({ to: `${login}@libd.org`, subject: `genotypes (${brarr.length}) ready for download`,
              msg: `Requested genotypes (${brarr.length}) are ready for download here:\n${dlurl}\n`+
              "\nThe link will expire in 3 days.\n"})
        }); //exec()
-   
+
     }); //writeFile()
-  
+
   });
 
   res.send('starting gt job');

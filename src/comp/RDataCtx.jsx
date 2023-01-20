@@ -1806,7 +1806,8 @@ export async function buildRSE(f_name, sarr, feat, assayType='counts', fext, gar
 		body: JSON.stringify({ type: 'rna', fname: f_name,  feature:feat, samples:sarr,
                            genes: lstgenes,
                            filetype:fext,
-                           dtype:assayType })
+                           dtype:assayType,
+                           tok:rGlobs.login_jwt })
   };
   //console.log(" -- buildRSE() sending req body:", reqOpts.body)
   return fetch(`${MW_SERVER}/pgdb/adl`, reqOpts)
