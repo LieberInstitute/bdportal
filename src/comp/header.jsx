@@ -130,7 +130,7 @@ export function Login({ login }) {
 
 
   function loginoutDlg() {
-    return true; // Change of plans, Login is disabled for now!
+    //return true; // Change of plans, Login is disabled for now!
     if (!auth[1]) {//no authenticated user
       setLoginModal(true)
     } else { //do you want to logout?
