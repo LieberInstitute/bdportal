@@ -25,7 +25,7 @@ const dbname = config['dbname'] || 'rse';
 let app_port = config['app_port'] || 4095;
 
 //const hostname = process.env.HOSTNAME; //WHY is this undefined?!
-const hostname = os.hostname()
+const hostname = os.hostname().toLowerCase();
 require('dotenv').config(); // .env should have DB_SRV, DB_USER, DB_PASS
 //console.log("process.env:", process.env)
 if (process.env.DEV_PORT && process.env.DEV_PORT!=app_port) {

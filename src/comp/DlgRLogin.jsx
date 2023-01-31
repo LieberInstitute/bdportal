@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { DlgModal } from './DlgModal';
 import {useState, useEffect, useRef, useReducer} from "preact/hooks";
-
+import { LOGIN_SRV } from '../appcfg';
 import {Row, Col, Input} from 'reactstrap';
 
  // props.onLogin is a function with (user, jwtoken) params
@@ -85,7 +85,7 @@ export function DlgRLogin( props ) {
     return (
         <DlgModal title={props.title} isOpen={dlgOpen} toggle={toggleDialog} buttonClose="Cancel"
                   onShow={onShow} onClose={onClose}>
-            <iframe src="https://dev.libd.org/if_rlogin/" width="460" height="220"
+            <iframe src={LOGIN_SRV} width="460" height="220"
                     frameBorder="0" style="border:0;padding:0;margin-right:22px;" allowtransparency="true" >
             </iframe>
        </DlgModal>

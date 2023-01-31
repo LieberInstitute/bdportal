@@ -131,9 +131,9 @@ export function DlgModal ( props ) {
   return (<Modal id="dlgModal" ref={dlgRef} focus={true} fade={false} backdrop="static"
            isOpen={props.isOpen} toggle={handleClose} onOpened={afterOpen} onClosed={afterClose}
            width={props.width} style={ props.width ? { minWidth: props.width } : null }>
-     <div className="modal-header pt-1 mt-0 mdlg-header noselect" ref={hRef} style="height:32px;">
+     <div className="mdlg-header pt-1 mt-0 noselect" ref={hRef} style="height:32px;">
         <div className="modal-title mdlg-title">{title}</div>
-        <div type="button" tabindex="-1" className="close" data-dismiss="modal"
+        <div tabindex="-1" className="close" data-dismiss="modal"
           aria-label="Close" onClick={handleClose}>
           <span aria-hidden="true">&times;</span>
         </div>

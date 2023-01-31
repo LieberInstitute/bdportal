@@ -2,9 +2,9 @@ import './header.css';
 import { DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown, Nav, NavItem } from 'reactstrap'
 import { useEffect, useState, useCallback } from "preact/hooks"
 //import {useLocation, Link, useRoute } from 'wouter-preact'
-import { APP_BASE_URL, MW_SERVER, AUTH_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
+import { APP_BASE_URL, MW_SERVER, COMMIT_HASH, COMMIT_DATE } from '../appcfg'
 
-import { rGlobs, useLoginCtxUpdate, logAction } from './RDataCtx';
+import { useLoginCtxUpdate } from './RDataCtx';
 
 import imgLogo from '/assets/logo.svg'
 import imgBands from '/assets/bands.png'
@@ -149,7 +149,9 @@ export function Login({ login }) {
   }
 
   function onLogin(user, token) {
-    //const headers = { "Access-Control-Allow-Origin": "*"}
+    //on login, token could the timestamp userlog.date,
+    // to be replaced with the actual jwt from userlog.reqtext
+
     setAuth([user, token])
     //rGlobs.login=user
     //rGlobs.login_jwt=token
