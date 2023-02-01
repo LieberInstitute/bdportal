@@ -153,7 +153,7 @@ export function Login({ login }) {
     // to be replaced with the actual jwt from userlog.reqtext
     // while checking for only a small time difference (e.g. 10 seconds)
 
-    // token retrieved after login timestamp validation
+    // token retrieved from userlog.reqtext after login+timestamp validation
     setAuth([user, token])
 
     loginStateUpdate(user, token) // this calls logAction()
