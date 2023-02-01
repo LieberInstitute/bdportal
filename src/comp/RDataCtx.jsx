@@ -1761,6 +1761,7 @@ export function LoginCtxProvider (props) {
     }
     rGlobs.login=username
     rGlobs.login_jwt=jwt
+    //TODO: this could be pre-empted in mw server
     if (username) await logAction('login');
   }
 

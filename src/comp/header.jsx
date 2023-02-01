@@ -149,13 +149,14 @@ export function Login({ login }) {
   }
 
   function onLogin(user, token) {
-    //on login, token could the timestamp userlog.date,
+    //TODO: on login, token could initially the timestamp userlog.date,
     // to be replaced with the actual jwt from userlog.reqtext
+    // while checking for only a small time difference (e.g. 10 seconds)
 
+    // token retrieved after login timestamp validation
     setAuth([user, token])
-    //rGlobs.login=user
-    //rGlobs.login_jwt=token
-    loginStateUpdate(user, token)
+
+    loginStateUpdate(user, token) // this calls logAction()
     return true;
    }
 

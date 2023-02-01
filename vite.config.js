@@ -10,7 +10,7 @@ let pgdb_proxy='http://localhost:4095'
 let login_srv='https://dev.libd.org'
 
 let local_login_srv=0; //set this to 1 for local login dialog development
-let melokalia_login=0;
+let melokalia_login=1;
 let remote_h2gw=0; //remote middleware develpment at home through wireguard
 
 export default defineConfig(({ command, mode }) => {
