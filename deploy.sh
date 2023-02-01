@@ -26,13 +26,17 @@ sed -i -E "s|_MWSERVER=.*|_MWSERVER=http://${mwsrv}:4095|" .env
 /bin/rm -rf dist/*
 brun='-dev'
 bdir='dev/bdportal'
-if [[ $dest == 'devel' ]]; then
-  brun='-devel'
-  bdir='devel/bdportal'
-else 
-  if [[ $dest == 'root' || $dest == 'bdportal' || $dest == '/' ]]; then
+if [[ -n $dest && $dest != 'dev' ]]; then
+  if [[ $dest == 'devel' ]]; then
+    brun='-devel'
+    bdir='devel/bdportal'
+  elif [[ $dest == 'root' || $dest == 'bdportal' || $dest == '/' ]]; then
     brun=''
     bdir='bdportal'
+  else
+    echo "Unrecognized target, use one of: dev, devel, root"
+    echo "   (root synonyms: bdportal, /)"
+  exit 1
   fi
 fi
 echo -e "running:\n npm run build$brun-based"

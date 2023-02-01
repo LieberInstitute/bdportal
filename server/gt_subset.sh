@@ -12,9 +12,10 @@ if [[ -z $opath ]]; then
  echo "Error: 3 parameters needed!"
  exit 1
 fi
-
+PATH=/usr/bin:/usr/local/bin:/home/gpertea/sw/bin
 #chmod 775 .
 umask 002
+
 odir=${opath%/*}
 if [[ ! -d $odir ]]; then
   mkdir -p $odir
