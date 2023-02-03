@@ -10,19 +10,21 @@ let pgdb_proxy='http://localhost:4095'
 let login_srv='https://dev.libd.org'
 
 let local_login_srv=0; //set this to 1 for local login dialog development
-let melokalia_login=1;
+let melokalia_login=0;
 let remote_h2gw=0; //remote middleware develpment at home through wireguard
 
 export default defineConfig(({ command, mode }) => {
   const devmode=(mode=='development')
   let nodemw_srv= devmode ? 'http://localhost:4095' : 'http://gdebsrv:4095';
-  if (melokalia_login) {
-     login_srv='https://dev.melokalia.us'
-  } else if (devmode && local_login_srv) {
-      if (host=='gryzen') login_srv='http://192.168.2.7:4080'
-      else if (host=='glin') login_srv='http://192.168.2.2:4080'
-      else if (host=='linwks34') login_srv='http://10.17.10.199:4080'
-   }
+  if (devmode) {
+     if (melokalia_login) {
+        login_srv='https://dev.melokalia.us'
+     } else if (local_login_srv) {
+        if (host=='gryzen') login_srv='http://192.168.2.7:4080'
+        else if (host=='glin') login_srv='http://192.168.2.2:4080'
+        else if (host=='linwks34') login_srv='http://10.17.10.199:4080'
+     }
+  }
   if (host.match(/^linwks/) || host.match(/^srv/) || remote_h2gw ) {
     //--- dev at LIBD:
      auth_proxy='http://192.168.77.16:16600'
