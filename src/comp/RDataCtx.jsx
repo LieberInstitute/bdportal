@@ -2043,22 +2043,25 @@ export function subjXTable(numbr) {
   const dxr=dtBrCounts.cxDxRace
   const c2dx=dtBrCounts.cx2dx
   const dxs=dtBrCounts.cxDxSex
-  //FIXME: order of sex columns is unstable (should be always F,M)
+  
   const c2s=dtBrCounts.cx2s
-  //console.log("cxDxSex:", dxs, " cx2s:", c2s)
+  //console.log("----->> cxDxSex:", dxs, " c2s:", c2s)
   const c2r=dtBrCounts.cx2r
-  let csums=[], rsums=[], scsums=[] //, csum=[]
+  //console.log("----->> cxDxRace:", dxr, " c2r:", c2r)
+    let csums=[], rsums=[], scsums=[] //, csum=[]
   //-- sorting this table to match the regular Dx, Race order in the data
   let ris=dxr.map((e,i)=>i) // for race
   let sris=dxs.map((e,i)=>i) // for sex
-  if (!arrayEq(ris, sris)) {
+  //console.log("----->> ris:", ris, "  sris:", sris)
+  /*if (!arrayEq(ris, sris)) {
     console.log(" !!!!!!!!!! Error: subjXTable Dx rows should be the same!")
     return subjTable();
-  }
+  }*/
   let cis=dxr[0].map((e,i)=>i) // for race
   let scis=dxs[0].map((e,i)=>i) // for sex
-  ris.sort( (a,b)=> c2dx[a]-c2dx[b])
-  cis.sort( (a,b)=> c2r[a]- c2r[b])
+  ris.sort( (a,b)=> c2dx[a]-c2dx[b])  // row sorting 
+  sris.sort( (a,b)=> c2dx[a]-c2dx[b]) 
+  cis.sort( (a,b)=> c2r[a]- c2r[b]) // column sorting
   scis.sort( (a,b)=> c2s[a]- c2s[b])
 
   let dxrSrt=ris.map( (e,i)=>dxr[e] )
