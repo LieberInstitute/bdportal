@@ -43,7 +43,8 @@ let ddl_basepath="/dbdata/cdb/www_fstore/cdbFileStore";
 let ddl_baseurl="http://srv16.lieber.local/cdbFileStore";
 
 if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
-    if (!dbserver) dbserver='gdebsrv';
+    //if (!dbserver) dbserver='gdebsrv';
+    if (!dbserver) dbserver='srv16';
     if (hostname=="gryzen") {
              r_filedir="\\\\gdebsrv\\ssdata\\postgresql\\r_staging\\";
              d_filedir="\\\\gdebsrv\\data1\\postgresql\\h5base\\"
@@ -530,10 +531,21 @@ app.get('/rstaging/:fpath', (req, res)=> {
        //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
        //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
        //console.log("Sending file: ", fpath)
-       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png'))
-          res.sendFile(fpath)
-       else
+       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png')) {
+          if (relpath.endsWith('.json.gz')) {
+            res.set({ 'content-encoding':'gzip', 'content-type': 'application/json' })
+          }
+          db.clog('~~ sending rstaging file:', fpath)
+          res.sendFile(fpath, (err)=>{
+            if (err) {
+              db.clog('ERROR: rstaging sendFile failed:', fpath, err)
+              if (!res.headersSent) res.status(err.statusCode || 500).send(`ERROR: failed to send file: ${fpath}`)
+            }
+          })
+       } else {
+          db.clog('~~ downloading rstaging file:', fpath)
           res.download(fpath)
+       }
        //res.sendFile(fpath, { headers: cfghdr })
     }
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
@@ -550,10 +562,21 @@ app.get('/stdata/:fpath', (req, res)=> { // static data file under H5BASE file d
        //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
        //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
        //console.log("Sending file: ", fpath)
-       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png'))
-          res.sendFile(fpath)
-       else
+       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png')) {
+          if (relpath.endsWith('.json.gz')) {
+            res.set({ 'content-encoding':'gzip', 'content-type': 'application/json' })
+          }
+          db.clog('>>> sending stdata file:', fpath)
+          res.sendFile(fpath, (err)=>{
+            if (err) {
+              db.clog('ERROR: stdata sendFile failed:', fpath, err)
+              if (!res.headersSent) res.status(err.statusCode || 500).send(`ERROR: failed to send file: ${fpath}`)
+            }
+          })
+       } else {
+          db.clog('>>> downloading stdata file:', fpath)
           res.download(fpath)
+       }
        //res.sendFile(fpath, { headers: cfghdr })
     }
     else res.status(400).send(`ERROR: file does not exist: ${fpath}`);

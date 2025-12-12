@@ -10,10 +10,10 @@ my $usage = q/Usage:
   dnam-pull4webapp.pl [server]
 
    Fetches: regions, datasets[], dx, brains, samples[]
-   and prepares a json file with all the parsed data, 
+   and prepares a json file with all the parsed data,
    with dx, region, brain and datasets ids reindexed
 
-   This is the mod that split DNAm datasets by WGBS and 450K
+   This is the version that splits DNAm datasets into WGBS and 450K
 /;
 
 
@@ -50,8 +50,8 @@ my @sexes     = ('F', 'M');
 @hsex{@sexes} = ( 1  , 2 );
 # -- builds dx, region, arrays with only the existing indexes populated
 #### ord# is the new (local) order index to be used for array indexing in UI/webapp
-my (@ds, @dx, @reg); 
-#store ord# data at index found in the database id column from database: 
+my (@ds, @dx, @reg);
+#store ord# data at index found in the database id column from database:
 #  for @ds: $ds[dbid] = [ord#, name, public(0,1), count]
 #  for @dx: $dx[dbid] = [ord#, name, fullnam, count]
 
@@ -59,7 +59,7 @@ my %br; # brint => [ ord#, dx, race, sex, age, pmi, mod ]
 
 #-----------------
 # Then the samples data is written with the new indexes (ord#) for each categorical data
-# instead of the original database ids 
+# instead of the original database ids
 ##
 
 #my @flst = my ($fdatasets, $fregions, $fdx, $fbrains, @fsamples) =
@@ -92,7 +92,7 @@ print " \"mod\": [",' "'.join('", "', @mods).'" ],'."\n";
 print " \"sex\": [",' "'.join('", "', @sexes).'" ],'."\n";
 print " \"race\": [", ' "'.join('", "', @races).'" ],'."\n";
 ##     "datasets" : [  // array of dataset info arrays
-#           [ // array of rnaseq dataset array entries 
+#           [ // array of rnaseq dataset array entries
 #              [ 1, "rnaseq_ds_name", public_flag(0/1), dbid, smp_count, refs ],
 #              ...
 #             ],
@@ -194,8 +194,8 @@ foreach my $dt (@xdts) {
     #my $dt=$dsdt;
     #$dt='dnam' if $dt=~m/^dnam/i;
     my $q=qq/with bd as (select distinct brint, dx_id
-    from exp_$dt x, samples s, subjects p, dx d 
-      where x.dropped is not true and p.dropped is not true 
+    from exp_$dt x, samples s, subjects p, dx d
+      where x.dropped is not true and p.dropped is not true
        and x.s_id = s.id and p.id=s.subj_id and d.id=p.dx_id)
    SELECT dx, coalesce(name, dx), dx.id, count(dx_id) from bd b
     right outer join dx on dx.id=b.dx_id
@@ -246,17 +246,19 @@ my ($sth, $r)=dbExec(q{with rbrs as (SELECT distinct brint from exp_rnaseq x, sa
     from rbrs r
       full join dbrs d on d.brint=r.brint
       full join wbrs w on w.brint=r.brint)
- select brint,  dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age, coalesce(pmi,0) as pmi,
+ select brint, nda_guid, dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age, coalesce(pmi,0) as pmi,
   case when mod SIMILAR TO '(n|N)ot? %' or mod is NULL  then 'n/a' else mod end as mod,
   case when exists(select from xs where s.brint=xs.brint) then 1 else 0 end as has_seq,
-  case when genotyped is true then 1 else 0 end as genotyped,  
+  case when genotyped is true then 1 else 0 end as genotyped,
   case when dropped is true then 1 else 0 end as dropped from subjects s });
 
-## JSON out: array of [ord#, brint, dx#, race#, sex#, age, pmi, mod, has_seq, genotyped, dropped]
+## JSON out: array of [ord#, brint, guid, dx#, race#, sex#, age, pmi, mod, has_seq, genotyped, dropped]
+##            spec is   0     0       1    0     0     0     0    0    0     0          0          0
+##                      001000000000
 print '"brains": [';
 $i=0;
 while (my $rd=dbFetch($sth)) {
- my ($brint, $dx_id, $race, $sex, $age, $pmi, $mod, $has_seq, $has_geno, $drop)=@$rd;
+ my ($brint, $guid, $dx_id, $race, $sex, $age, $pmi, $mod, $has_seq, $has_geno, $drop)=@$rd;
  print ($i ? ",\n" : "\n");
  $i++;
  my $dxd=$dx[$dx_id] || die("Error getting \$dx[$dx_id] for brint $brint loading!\n");
@@ -266,20 +268,20 @@ while (my $rd=dbFetch($sth)) {
  my $imod=$hmod{$mod} ||
     die("Error: MoD $mod has no index translation in \@mods!\n");
  my $sidx=$hsex{$sex} ||
-    die("Error: sex $sex has no index translation in \%sexes!\n");
- print ' '.jsonarr([$i, $brint, $$dxd[0], $ridx, $sidx, $age, $pmi, $imod, $has_seq, $has_geno, $drop], '00000000000');
+    die("Error: sex $sex has no index translation in \%sexes!\n");                                             #001000000000
+ print ' '.jsonarr([$i, $brint, $guid, $$dxd[0], $ridx, $sidx, $age, $pmi, $imod, $has_seq, $has_geno, $drop], '001000000000');
 }
 print "\n],\n";
 
-## -- finally, get the sample lists, 
-##      replacing region_id, brint, dataset_id with their ord#s 
+## -- finally, get the sample lists,
+##      replacing region_id, brint, dataset_id with their ord#s
 print "\"sdata\":  [\n";
 ## WARNING: hard coded qry parts for: rnaseq, dnam
 ##
 my %qf=( # hard coding queries for the first 4 data types - rnaseq, dnam-450K, dnam-WGBS, wgs
  $xdts[0] => q/case when protocol='RiboZeroGold' then 3
   when protocol='RiboZeroHMR' then 2
-  when protocol='PolyA' then 1 
+  when protocol='PolyA' then 1
   else 0 end as proto/, ## rnaseq
  #$xdts[1] => q/case when atype='450k' then 1
  # when atype='WGBS' then 2
@@ -298,7 +300,7 @@ $idt=0;
 foreach my $dt (@xdts) {
    #my $dt=$dsdt;
    #$dt='dnam' if $dt=~m/^dnam/i;
-   my $q=qq/SELECT brint, sample_id as id, dataset_id as dset, s.r_id as reg, 
+   my $q=qq/SELECT brint, sample_id as id, dataset_id as dset, s.r_id as reg,
    $qf{$dt}
    FROM  exp_$dt x, samples s, subjects p  WHERE s_id=s.id
    AND s.subj_id=p.id AND x.dropped is not true AND p.dropped is not true/;
@@ -342,7 +344,7 @@ sub jsonarr {
   for (0 .. $#d) {
      $r.= $s[$_] ? '"'.$d[$_].'"' : $d[$_];
      $r.=',' unless $_==$#d;
-  }  
+  }
   return $r.']';
 }
 
@@ -377,7 +379,7 @@ sub dbLogin {
   }
   close(PGPASS);
   die("Error: could not retrieve pass for user $user, db $db on $server\n") unless $pass;
-  $dbh = DBI -> connect("dbi:Pg:dbname=$db;host=$server",  
+  $dbh = DBI -> connect("dbi:Pg:dbname=$db;host=$server",
                             $user, $pass,
                             {AutoCommit => 0, RaiseError => 1,
                              pg_server_prepare => 1 }
@@ -386,18 +388,18 @@ sub dbLogin {
 }
 
 sub dbQuery {
- #Execute a query and returns ALL the results as reference to an array 
+ #Execute a query and returns ALL the results as reference to an array
  # of references to field value lists
  my ($query)=@_;
- my $aref=$dbh->selectall_arrayref($query) 
-      || dbErr("Select all failed for:\n$query"); 
- 
+ my $aref=$dbh->selectall_arrayref($query)
+      || dbErr("Select all failed for:\n$query");
+
  return $aref;
 }
 
 sub dbPrep {
  my $sth = $dbh->prepare($_[0]);
- return $sth; 
+ return $sth;
 }
 
 sub dbExec { # execute non-query statement (update, insert)
@@ -440,7 +442,7 @@ sub dbFetchAll {
 
 sub dbRun {
   my $qry=$_[0];
-  if ($qry=~m/\b(insert|update|delete|alter|create|drop)\b/i && 
+  if ($qry=~m/\b(insert|update|delete|alter|create|drop)\b/i &&
       $qry!~m/\breturning\b/i) {
     return $dbh->do($qry); #do($q, \%attr, [@bind_values]);
   }

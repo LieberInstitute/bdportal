@@ -10,7 +10,12 @@ const BrPages = ({ params }) => {
 	if (tab!=='browse') tab='matrix'
 	const [, , , dataLoaded] = useRData()
 	//console.log("rendering BrSelPages with tab=",tab)
-	if (!dataLoaded) return <h3>Loading..</h3>
+	if (!dataLoaded) {
+		if (rGlobs.dataError) {
+			return <div class="col-12"><h4>Data load failed</h4><pre style="white-space:pre-wrap">{rGlobs.dataError}</pre></div>
+		}
+		return <h3>Loading..</h3>
+	}
 	// data loaded, we are safe to show the pages for this data type
 	changeXType(0);
 
