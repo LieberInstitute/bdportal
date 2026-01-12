@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
+import os from "node:os";
 //const host = process.env.HOME;
-const host = require('os').hostname().toLowerCase();
+const host = os.hostname().toLowerCase();
 process.env.VITE_HOST=host;
 
 let auth_proxy='http://gdebsrv.lan:16600'
