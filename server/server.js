@@ -517,69 +517,51 @@ app.get(['/pgdb/:qry/:dtype','/pgdb/:qry'] , (req, res)=> {
       case 'dx': notImplemented(req, res);//queryDx(res);
                  break;
       default: res.status(400).send('Invalid Request');
-    }
-})
+	    }
+	})
 
-app.get('/rstaging/:fpath', (req, res)=> {
+function sendDataFile(req, res, baseDir, qprefix) {
   let relpath=req.params.fpath
   //convert relpath
   relpath=relpath.replace(/\|/g, '/')
-  db.clog('~~ got rstaging query:', relpath);
-  let fpath=path.join(r_filedir, relpath);
-  if (fs.existsSync(fpath)) {
-       //res.download(fpath)
-       //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
-       //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
-       //console.log("Sending file: ", fpath)
-       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png')) {
-          if (relpath.endsWith('.json.gz')) {
-            res.set({ 'content-encoding':'gzip', 'content-type': 'application/json' })
-          }
-          db.clog('~~ sending rstaging file:', fpath)
-          res.sendFile(fpath, (err)=>{
-            if (err) {
-              db.clog('ERROR: rstaging sendFile failed:', fpath, err)
-              if (!res.headersSent) res.status(err.statusCode || 500).send(`ERROR: failed to send file: ${fpath}`)
-            }
-          })
-       } else {
-          db.clog('~~ downloading rstaging file:', fpath)
-          res.download(fpath)
-       }
-       //res.sendFile(fpath, { headers: cfghdr })
-    }
-    else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
+  db.clog(`${qprefix} got file query:`, relpath);
+  const fpath=path.join(baseDir, relpath);
+  fs.access(fpath, fs.constants.R_OK, (err)=>{
+     if (err) {
+       const ecode=err.code || 'ERR'
+       db.clog(`${qprefix} fs access error [${ecode}] for:`, fpath)
+       if (ecode==='ENOENT')
+           return res.status(404).send(`ERROR: file does not exist: ${fpath}`);
+       if (ecode==='EACCES')
+           return res.status(403).send(`ERROR: no read access to file: ${fpath}`);
+       return res.status(500).send(`ERROR: cannot access file (${ecode}): ${fpath}`);
+     }
+
+     const sendDone=(sendErr)=>{
+       if (!sendErr) return;
+       const scode=sendErr.statusCode ||
+              ((sendErr.code==='ENOENT') ? 404 : (sendErr.code==='EACCES') ? 403 : 500);
+       db.clog(`${qprefix} send error [${sendErr.code || sendErr.statusCode || 'ERR'}] for:`, fpath)
+       if (res.headersSent) return;
+       if (scode===404) return res.status(404).send(`ERROR: file does not exist: ${fpath}`);
+       if (scode===403) return res.status(403).send(`ERROR: no read access to file: ${fpath}`);
+       return res.status(500).send(`ERROR: failed sending file: ${fpath}`);
+     }
+
+     // plain resources can be in-browser displayed; everything else as download
+     if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png'))
+          res.sendFile(fpath, sendDone)
+     else
+          res.download(fpath, sendDone)
+  })
+}
+
+app.get('/rstaging/:fpath', (req, res)=> {
+  sendDataFile(req, res, r_filedir, '~~');
 })
 
 app.get('/stdata/:fpath', (req, res)=> { // static data file under H5BASE file directory
-  let relpath=req.params.fpath
-  //convert relpath under d_filedir
-  relpath=relpath.replace(/\|/g, '/')
-  db.clog('>>> got stdata query:', relpath);
-  let fpath=path.join(d_filedir, relpath);
-  if (fs.existsSync(fpath)) {
-       //res.download(fpath)
-       //const cfghdr={ 'content-encoding':'gzip', 'content-type': 'application/json' }
-       //if (relpath.endsWith('.json.gz') ) res.set(cfghdr);
-       //console.log("Sending file: ", fpath)
-       if (relpath.endsWith('.json.gz') || relpath.endsWith('.json') || relpath.endsWith('.png')) {
-          if (relpath.endsWith('.json.gz')) {
-            res.set({ 'content-encoding':'gzip', 'content-type': 'application/json' })
-          }
-          db.clog('>>> sending stdata file:', fpath)
-          res.sendFile(fpath, (err)=>{
-            if (err) {
-              db.clog('ERROR: stdata sendFile failed:', fpath, err)
-              if (!res.headersSent) res.status(err.statusCode || 500).send(`ERROR: failed to send file: ${fpath}`)
-            }
-          })
-       } else {
-          db.clog('>>> downloading stdata file:', fpath)
-          res.download(fpath)
-       }
-       //res.sendFile(fpath, { headers: cfghdr })
-    }
-    else res.status(400).send(`ERROR: file does not exist: ${fpath}`);
+  sendDataFile(req, res, d_filedir, '>>>');
 })
 
 
@@ -610,4 +592,3 @@ for (let i=0;i<5;i++) {
 }
 //adding some fake dummy sub-tabs for the RNASeq entry
 app.listen(app_port, () => console.log('listening on port', app_port))
-
