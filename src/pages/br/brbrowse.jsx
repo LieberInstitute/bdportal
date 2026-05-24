@@ -66,11 +66,29 @@ function eqSets(s1, s2) {
   for (let e of s1) if (!s2.has(e)) return false;
 	return true;
 }
+
+function setSignature(s) {
+	const sig=[s.size]
+	s.forEach(e => sig.push(e))
+	return sig.join(',')
+}
+
+function getVisibleXTypes(showXTs) {
+	const visible=[]
+	xtcols.forEach( (e, i)=> {
+		if (!showXTs || !showXTs.length || showXTs[i]) {
+			visible.push({ ix:i, color:xtcolors[i] })
+		}
+	})
+	return visible
+}
+
 // update brSet to have only the entries in dtBrXsel with
 // having samples in all the exp. types in reqXtSet
 // returns [ countCols, tableRows, fromCached ]
 function prepTable(byRegion, mcache) {
-  if (mcache && mcache.brnum==dtBrXsel.size && mcache.byRegion==byRegion)
+	const brSig=setSignature(dtBrXsel)
+  if (mcache && mcache.brSig==brSig && mcache.byRegion==byRegion)
       return [ ... mcache.r_data, true ] // [ rcols, rds ] did not change since last render
 	const brseldata=[]
 	const rds=[]
@@ -96,6 +114,7 @@ function prepTable(byRegion, mcache) {
 		})
     if (mcache) { //memoize this
        mcache.brnum=dtBrXsel.size;
+       mcache.brSig=brSig;
        mcache.byRegion=byRegion;
        mcache.r_data=[rcols, rds]
     }
@@ -117,6 +136,7 @@ function prepTable(byRegion, mcache) {
 
    if (mcache) { //memoize this
     mcache.brnum=dtBrXsel.size;
+    mcache.brSig=brSig;
     mcache.byRegion=byRegion;
     mcache.r_data=[xtcols, rds]
   }
@@ -164,11 +184,16 @@ const BrTable = ( props ) => {
     brd: [],
 		sortcol: 0,
 		sortup: false, //sorting direction
+		filteredRows: [],
+		filteredTblRows: null,
+		filteredBrSet: null,
+		filteredBrSetVersion: -1,
   })
 	const m=refData.current
 
 	const baseColCount=getBaseCols(props.showGuids).length
 	const stickyCols=getStickyCols(props.showGuids)
+	const visibleXTypes=getVisibleXTypes(props.showXType)
 	const stickyOrder = Array.isArray(stickyCols)
 		? stickyCols.filter((c, idx) => stickyCols.indexOf(c) === idx)
 		: Array.from({ length: stickyCols }, (_, i) => i)
@@ -185,17 +210,7 @@ const BrTable = ( props ) => {
 	})
 	const lastStickyCol = stickyOrder.length ? stickyOrder[stickyOrder.length - 1] : -1
 
-	function renderRow(r, rd, byRegion, showXTs) { //
-		if (!showXTs || showXTs.length==0) {
-			showXTs=new Array(xtcols.length).fill(true)
-		 }
-		const shcolors=[]
-		xtcols.forEach( (e,i)=> {
-			if (showXTs[i]) {
-				shcolors.push(xtcolors[i])
-			}
-	  })
-
+	function renderRow(r, rd, byRegion) { //
 		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, mod, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
 			const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
@@ -214,15 +229,11 @@ const BrTable = ( props ) => {
 				})}
 				{ //now output the region counts, by xtype in each region
 					rxtcounts.map( (rc,i)=>{
-							const shrc=[]
-							rc.forEach( (c,j) => {
-								if (showXTs[j]) shrc.push(c)
-							})
 				      return(<td key={`r${r}tc${i}`}> {
-							  shrc.map( (c, j) => {
-								   const cl=shcolors[j] //FIXME: j => xt mapping needed here if there is an exp type filter
-								   return (<span key={`r${r}c${i}x${j}`} class={ c ? "rxtc" : "rxtc0"}
-									         style={ c ? {backgroundColor: cl } : null } >{c}</span>) } )
+							  visibleXTypes.map( ({ix, color}) => {
+								   const c=rc[ix]
+								   return (<span key={`r${r}c${i}x${ix}`} class={ c ? "rxtc" : "rxtc0"}
+									         style={ c ? {backgroundColor: color } : null } >{c}</span>) } )
 					        }	 </td>) })
 			 }
 		</tr>)
@@ -230,14 +241,6 @@ const BrTable = ( props ) => {
 		// --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
 	 const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
 	 const outrd=getDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, props.showGuids)
-   const shcounts=[]
-
-	 counts.forEach( (e,i)=> {
-			  if (showXTs[i]) {
-					shcounts.push(e)
-					shcolors.push(xtcolors[i])
-				}
-		 })
 		 return(<tr key={`tr${r}`}>{
 				outrd.map(  (e, i)=> {
 				 let cl=null, st=null;
@@ -252,11 +255,11 @@ const BrTable = ( props ) => {
 				 //return (<td key={i}> {e} </td>)
 			 })}
 			 { //now output the total sample counts by exp. type
-			 shcounts.map( (c, j)=>{
-				 let spcl=null, color=null;
-				 spcl= c>0 ? "xtc" : "xtc0";
-				 color=shcolors[j]
-				 return (<td key={`r${r}td${j+baseColCount}`}>
+				 visibleXTypes.map( ({ix, color})=>{
+					 const c=counts[ix]
+					 let spcl=null
+					 spcl= c>0 ? "xtc" : "xtc0";
+				 return (<td key={`r${r}td${ix+baseColCount}`}>
 						 <span class={spcl} style={ c>0 ? {backgroundColor: color } : null }>{c}</span>
 						 </td>)
 				 })
@@ -287,17 +290,24 @@ const BrTable = ( props ) => {
 			cntcols.push(e)
 		})
 	} else {
-		props.tblCols.forEach( (e,i)=> {
-			if (props.showXType[i]) cntcols.push(e)
+		visibleXTypes.forEach( ({ix})=> {
+			cntcols.push(props.tblCols[ix])
 		})
 	}
 
-  const tblrows = tableFilter( props.tblRows, props.brSet ) //filter rows to render
+	let tblrows=m.filteredRows
+	if (m.filteredTblRows!==props.tblRows || m.filteredBrSet!==props.brSet ||
+			m.filteredBrSetVersion!==props.brSetVersion) {
+		tblrows=tableFilter( props.tblRows, props.brSet ) //filter rows to render
+		m.filteredRows=tblrows
+		m.filteredTblRows=props.tblRows
+		m.filteredBrSet=props.brSet
+		m.filteredBrSetVersion=props.brSetVersion
+	}
   const tblhdr=[...getBaseCols(props.showGuids), ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
 	const byRegion=props.byRegion
-	const showXTs= props.showXType
 	if (byRegion && props.calcMaxWidth) {
 		const maxw=props.calcMaxWidth();
 		 //console.log("   setting max-width to: ", maxw)
@@ -314,7 +324,7 @@ const BrTable = ( props ) => {
       { renderHeader(tblhdr) }
 		</tr>
 		</thead><tbody>
-	  { tblrows.map( (rd, i)=> renderRow(i, rd, byRegion, showXTs))  }
+		  { tblrows.map( (rd, i)=> renderRow(i, rd, byRegion))  }
     </tbody></table>
 		</Col>);
 }
@@ -325,6 +335,8 @@ const BrBrowse = ( ) => {
 				 showXType: new Array(xtcols.length).fill(true),
 				 reqXType: new Set(),
 				 brSet:null,
+				 brSetSig:'',
+				 brSetVersion:0,
 				 tblCols:[], //as built by prepTable()
 				 tblRows:[], //as built by prepTable()
 				 // --- cache
@@ -369,16 +381,20 @@ const BrBrowse = ( ) => {
      if (m.brSet && cached && m.cache.fltByRegion==byRegion && eqSets(m.reqXType, m.cache.fltXT)) {
        return
      }
-		 if (m.brSet) m.brSet.clear()
-        else m.brSet=new Set()
-     const brSet=m.brSet
+     const brSet=new Set()
      if (m.reqXType.size==0) { // no restrictions
   			dtBrXsel.forEach( brix=> {
   				brSet.add(brix)
   			})
         m.cache.fltXT=new Set(m.reqXType)
         m.cache.fltByRegion=byRegion
-        updateBrCountsFromBrSet(brSet)
+        const newBrSetSig=setSignature(brSet)
+        if (!m.brSet || m.brSetSig!==newBrSetSig) {
+          m.brSet=brSet
+          m.brSetSig=newBrSetSig
+          m.brSetVersion++
+          updateBrCountsFromBrSet(m.brSet)
+        }
         return
 		 }
      //m.brSet rebuild from m.tblRows according to m.reqXType
@@ -401,7 +417,13 @@ const BrBrowse = ( ) => {
             if (reqmet) brSet.add(brix)
          })
      }
-     updateBrCountsFromBrSet(brSet) // rebuild brCounts.*2* ; brSet should be passed to RSelSummary
+     const newBrSetSig=setSignature(brSet)
+     if (!m.brSet || m.brSetSig!==newBrSetSig) {
+       m.brSet=brSet
+       m.brSetSig=newBrSetSig
+       m.brSetVersion++
+       updateBrCountsFromBrSet(m.brSet) // rebuild brCounts.*2* ; brSet should be passed to RSelSummary
+     }
 	 }
 
 	 function toggleXType(xt) {
@@ -550,9 +572,9 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-						<BrTable key={`${m.tblkey}-${byRegion ? 'region' : 'total'}-${showGuids ? 'guid' : 'noguid'}`}
+						<BrTable key={`${m.tblkey}-${byRegion ? 'region' : 'total'}`}
 						       tnum={tbl} byRegion={byRegion} tblCols={m.tblCols} tblRows={m.tblRows} brSet={m.brSet}
-						       showXType={m.showXType} showGuids={showGuids} calcMaxWidth={calcMaxXRwidth} />
+						       brSetVersion={m.brSetVersion} showXType={m.showXType} showGuids={showGuids} calcMaxWidth={calcMaxXRwidth} />
 			</Col>
 			<Col className="d-flex flex-column align-items-start">
 			  <Row id="rowFltCtl" className="pl-2 pr-0 pt-1 mt-2 mb-0 d-flex justify-content-start align-items-start"
