@@ -9,6 +9,7 @@ Stack:
 - Middleware: Node/Express in `server/`, listening on port `4095` by default.
 - Data: PostgreSQL via `pg`, plus generated static metadata in `public/data/multi_dta.json.gz`.
 - Deployment: internal nginx path `https://db.libd.net/bdportal`.
+- Metadata generator: `dnam-pull4webapp.pl` is the current source for `public/data/multi_dta.json.gz`; it splits DNAm datasets into 450k/WGBS entries and emits the Brain Set Builder GUID field.
 
 Use Node 22+ for local development. The root and middleware packages both declare `engines.node >=22.12`, and the root includes `.nvmrc`.
 
@@ -76,6 +77,7 @@ curl http://localhost:8080/api/pgplrinit
 - Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.mjs`.
 - `GET /pgplrinit` should return `pl/r` when the DB permissions and R libraries on `glin` are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
 - Avoid broad refactors in `src/comp/RDataCtx.jsx`; it owns most global data structures, filters, counts, login state, and backend request helpers.
+- Regenerate bundled metadata with `./dnam-pull4webapp.pl -o public/data/multi_dta.json glin`, validate the JSON, then gzip it to `public/data/multi_dta.json.gz`. The `brains` rows should be `[ord, brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]`.
 - Keep generated build output in `dist/` out of normal edits unless explicitly working on deployment output.
 
 ## Browser Testing Notes

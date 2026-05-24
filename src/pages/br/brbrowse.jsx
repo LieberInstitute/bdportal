@@ -6,7 +6,7 @@ import {DropdownMenu, DropdownToggle, DropdownItem, UncontrolledDropdown,
 	Row, Col, Input, Button, Label, CustomInput} from 'reactstrap';
 import axios from 'axios'
 import {rGlobs, changeXType, RDataProvider, dtaNames, dtFilters,
-	dtaBrains, dtBrXsel, updateBrCountsFromBrSet, dtBrCounts, dtaBrIdx, br2Smp, 
+	dtaBrains, dtBrXsel, updateBrCountsFromBrSet, dtBrCounts, dtaBrIdx, br2Smp,
 	useRData, clearFilters, anyActiveFilters} from '../../comp/RDataCtx';
 import { navRoutes } from '../../comp/header';
 import RSelSummary from '../../comp/RSelSummary'
@@ -23,15 +23,14 @@ function arrShow(c) {
 		   : c
 }
 
-//const columns=['#','Bint', 'Dx', 'Anc.', 'Sex', 'Age','RnaSeq', 'DNAm', 'WGS', ' dropped ' ];
 
 const xtcols=['RNAseq', 'DNAm/450k', 'DNAm/WGBS', 'WGS'] // adjust this in the future as other exp data types are added
 const xtcolors=['#c9e9d1', '#bfdeff', '#f6cdd1' , '#fff0c1',  '#dbd0f0']
 //                 green,    blue,     red    ,   yellow,       purple
 const xtgrey='#cdcdcd'
-const numsortCols=[   1,                                5,     6,     7,      8,      9]
-const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
-const stickyCols=3; //stick #, BrNum, Dx
+//const numsortCols=[   1,                                5,    6,       7,       8,       9,]
+const basecols=['#','BrNum', "GUID", 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
+const stickyCols=[0,1,3]; //stick #, BrNum, Dx
 const stickyWs=[ 54, 64, 78 ]; //pixels
 
 function eqSets(s1, s2) {
@@ -54,7 +53,7 @@ function prepTable(byRegion, mcache) {
 		//TODO : build rds rows
 		rcols=dtaNames.reg.slice(1) //just region names
 		dtBrXsel.forEach( brix=> {
-		  const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
+		  const [brint, guid, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  guid, dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
 			// array of [ xt0-smpcount, xt1smpcount, ... ] for each region
 			const rxtcounts=rcols.map( () =>new Array(xtcols.length).fill(0) ) // zero init
 			xtcols.forEach( (v,xt)=> {
@@ -65,7 +64,7 @@ function prepTable(byRegion, mcache) {
 					 } )
 				}
 			})
-       rds.push([brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts])
+       rds.push([brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts])
 		})
     if (mcache) { //memoize this
        mcache.brnum=dtBrXsel.size;
@@ -75,9 +74,9 @@ function prepTable(byRegion, mcache) {
 		return [rcols, rds, false]
 	}
   // simplified table, only total sample counts per experiment data type
-  // rds should be array of [brint, dxix, raix, six, age, pmi, counts...]
+  // rds should be array of [brint, guid, dxix, raix, six, age, pmi, counts...]
 	dtBrXsel.forEach( brix=> {
-		const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
+		const [brint, guid, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix] //  [ brint,  guid, dx-idx, race-idx, sex-idx, age, pmi, has_seq, has_geno, dropped ]
 		const counts=[]
 		xtcols.forEach( (v,xt)=> {
 			let sd = br2Smp[xt];
@@ -85,7 +84,7 @@ function prepTable(byRegion, mcache) {
 			if (sd && sd[brix]) snum=sd[brix].length;
 			counts.push(snum)
 		})
-		rds.push([brix, brint, dxix, raix, six, age, pmi, mi, ...counts])
+		rds.push([brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts])
    })
 
    if (mcache) { //memoize this
@@ -106,7 +105,7 @@ function tableFilter(tblrows, brset) {
 }
 
 function getBrTblRow(rd, brix, i) {
-	const [brint, dxix, raix, six, age, pmi, mi, hasSeq, hasGeno, dropped]=rd;
+	const [brint, guid, dxix, raix, six, age, pmi, mi, hasSeq, hasGeno, dropped]=rd;
 	let rs = br2Smp[0];
 	let numrs = 0
 	if (rs && rs[brix]) {
@@ -123,7 +122,7 @@ function getBrTblRow(rd, brix, i) {
 	  numws=ws[brix].length;
 	}
 	return(<tr key={i}>
-		<td>{i}.</td>	<td>Br{brint}</td><td>{dtaNames.dx[dxix]}</td>
+		<td>{i}.</td>	<td>Br{brint}</td><td>{guid}</td><td>{dtaNames.dx[dxix]}</td>
 		<td>{dtaNames.race[raix]}</td> <td>{dtaNames.sex[six]}</td>	<td>{age}</td>
 		<td>{pmi}</td> <td>{dtaNames.mod[mi]}</td>
 		<td>{numrs}</td>	<td>{numds}</td>		<td>{numws}</td>
@@ -140,6 +139,22 @@ const BrTable = ( props ) => {
   })
 	const m=refData.current
 
+	const stickyOrder = Array.isArray(stickyCols)
+		? stickyCols.filter((c, idx) => stickyCols.indexOf(c) === idx)
+		: Array.from({ length: stickyCols }, (_, i) => i)
+	const stickySet = new Set(stickyOrder)
+	const stickyWByCol = {}
+	stickyOrder.forEach((col, i) => {
+		stickyWByCol[col] = stickyWs[i]
+	})
+	const stickyLeftByCol = {}
+	let stickyAcc = 0
+	stickyOrder.forEach((col) => {
+		stickyLeftByCol[col] = stickyAcc
+		stickyAcc += stickyWByCol[col] || 0
+	})
+	const lastStickyCol = stickyOrder.length ? stickyOrder[stickyOrder.length - 1] : -1
+
 	function renderRow(r, rd, byRegion, showXTs) { //
 		if (!showXTs || showXTs.length==0) {
 			showXTs=new Array(xtcols.length).fill(true)
@@ -153,21 +168,19 @@ const BrTable = ( props ) => {
 
 		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, mod, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
-			const [brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
-			const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-							`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
-			let lacc=0;
+			const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
+			const outrd=[`${r+1}.`, `Br${brint}`, `${guid}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
 			return(<tr key={`tr${r}`}>{
 			outrd.map(  (e,i)=> {
-					if (i && i<=stickyCols) lacc+=stickyWs[i-1]
 					let cl=null, st=null;
-					if (i<stickyCols) {
-						 cl="app-sticky";
-						 let w=stickyWs[i];
-						 if (i==stickyCols-1) w-=1;
-						 st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+					if (stickySet.has(i)) {
+						cl="app-sticky";
+						let w=(stickyWByCol[i] || 0)
+						if (i===lastStickyCol && w>0) w-=1
+						st=`min-width:${w}px;max-width:${w}px;left:${stickyLeftByCol[i]}px;`
 					}
-					return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+					return ((i===lastStickyCol) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
 							: <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td>)
 				})}
 				{ //now output the region counts, by xtype in each region
@@ -186,10 +199,9 @@ const BrTable = ( props ) => {
 		</tr>)
 	 }
 		// --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
-	 const [brix, brint, dxix, raix, six, age, pmi, mi, ...counts] =rd;
-	 const outrd=[`${r+1}.`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-							`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
-	 let lacc=0
+	 const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
+	 const outrd=[`${r+1}.`, `Br${brint}`, `${guid}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
    const shcounts=[]
 
 	 counts.forEach( (e,i)=> {
@@ -200,15 +212,14 @@ const BrTable = ( props ) => {
 		 })
 		 return(<tr key={`tr${r}`}>{
 				outrd.map(  (e, i)=> {
-				 if (i && i<=stickyCols) lacc+=stickyWs[i-1]
 				 let cl=null, st=null;
-				 if (i<stickyCols) {
+				 if (stickySet.has(i)) {
 						cl="app-sticky";
-						let w=stickyWs[i];
-						if (i==stickyCols-1) w-=1;
-						st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+						let w=(stickyWByCol[i] || 0);
+						if (i===lastStickyCol && w>0) w-=1;
+						st=`min-width:${w}px;max-width:${w}px;left:${stickyLeftByCol[i]}px;`
 				 }
-				 return ((i==stickyCols-1) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
+				 return ((i===lastStickyCol) ?  <td key={`r${r}td${i}`} class={cl} style={st}><span>{e}</span></td>
 							 : <td key={`r${r}td${i}`} class={cl} style={st}> {e} </td> )
 				 //return (<td key={i}> {e} </td>)
 			 })}
@@ -225,19 +236,17 @@ const BrTable = ( props ) => {
 		 </tr>)
 	 }
 	 function renderHeader(tblhdr) {
-		 let lacc=0
 		 return ( tblhdr.map(  (e,i)=> {
-				 if (i && i<=stickyCols) lacc+=stickyWs[i-1]
 				 let cl="app-sticky-top", st=null;
-				 if (i<stickyCols) {
+				 if (stickySet.has(i)) {
 						cl="app-sticky-top-l";
-						let w=stickyWs[i];
-						if (i==stickyCols-1) w-=1;
-						st=`min-width:${w}px;max-width:${w}px;left:${lacc}px;`
+						let w=(stickyWByCol[i] || 0);
+						if (i===lastStickyCol && w>0) w-=1;
+						st=`min-width:${w}px;max-width:${w}px;left:${stickyLeftByCol[i]}px;`
 				 }
-				 return ((i==stickyCols-1) ? <td key={`h${i}`} class={cl} style={st}> <span>{e}</span></td>
+				 return ((i===lastStickyCol) ? <td key={`h${i}`} class={cl} style={st}> <span>{e}</span></td>
 						: <td key={`h${i}`} class={cl} style={st}> {e} </td>)
-			 } ) )
+		 } ) )
 	 }
 
   function sortByCol(e) {
@@ -347,7 +356,7 @@ const BrBrowse = ( ) => {
      m.cache.fltXT=new Set(m.reqXType)
      if (byRegion) { //let pass only brains that have at least 1 region with all m.reqXType sequenced
        m.tblRows.forEach( (rd,i)=>{
-          const [brix, brint, dxix, raix, six, age, pmi, ...rxtcounts] =rd;
+          const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts] =rd;
           for(let ri=0;ri<rxtcounts.length;ri++) {
             let reqmet=true
             m.reqXType.forEach( v=> { reqmet &= (rxtcounts[ri][v]>0) })
@@ -356,9 +365,9 @@ const BrBrowse = ( ) => {
        })
      } else { // let pass only brains that have samples of all m.reqXType types
          m.tblRows.forEach( (rd,i)=>{
-            const [brix, brint, dxix, raix, six, age, pmi, ...counts] =rd;
+            const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
             let reqmet=true
-            m.reqXType.forEach( v=> { reqmet &= (counts[v+1]>0) })
+            m.reqXType.forEach( v=> { reqmet &= (counts[v]>0) })
             if (reqmet) brSet.add(brix)
          })
      }
@@ -407,8 +416,8 @@ const BrBrowse = ( ) => {
           if (byRegion) {
             tblrows.forEach( (rd, r)=>{
               const shcounts=[]
-              const [brix, brint, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
-              const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+              const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
+              const outrd=[`${r+1}`, `Br${brint}`, `${guid}`,`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
                       `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
               rxtcounts.forEach( (rc,i)=>{
                  rc.forEach( (c,j)=> {
@@ -421,8 +430,8 @@ const BrBrowse = ( ) => {
           }
           // simplified table:
           tblrows.forEach( (rd, r)=>{
-            const [brix, brint, dxix, raix, six, age, pmi, mi, ...counts] =rd;
-            const outrd=[`${r+1}`, `Br${brint}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+            const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
+            const outrd=[`${r+1}`, `Br${brint}`, `${guid}`,`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
                        `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
             counts.forEach( (c,i)=> {
                 if (showXTs[i]) outrd.push(c);

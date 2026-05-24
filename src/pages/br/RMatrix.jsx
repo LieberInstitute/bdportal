@@ -1,8 +1,8 @@
 import $ from 'jquery'
 import { h } from 'preact'
 import {useEffect, useRef} from "preact/hooks"
-import { useRData, rGlobs, dtaNames, dtaSelTypes, useFltCtx, useFltCtxUpdate,
-  applyFilterData, useFirstRender, dtXCounts, dtFilters} from '../../comp/RDataCtx';
+import { useRData, rGlobs, dtaNames, useFltCtx, useFltCtxUpdate,
+  applyFilterData, useFirstRender, dtXCounts, dtFilters, dtaDTypes} from '../../comp/RDataCtx';
 //         applyFilterData, useFirstRender, dtXCounts, dtFilters} from '../../comp/RDataCtx';
 import { useMxSelUpdate } from './mxSelCtx';
 import './RMatrix.css';
@@ -16,7 +16,28 @@ let xData=null; // will be set with dtXs, array of [sid, d, dx, r, s, a, rg, br]
 // if any of these changes, we'll rebuild/refill the matrix
 // otherwise we should just update the numbers
 const mxMaxVal=700;
-const dtaXTypes=dtaSelTypes.slice(1,7);
+
+function dtypeLabel(dt) {
+  if (!dt) return ''
+  const s=String(dt).toLowerCase()
+  if (s.includes('scrna')) return 'scRNAseq'
+  if (s.includes('small')) return 'small RNAseq'
+  if (s.includes('rnaseq')) return 'RNAseq'
+  if (s.includes('450')) return 'DNAm-450k'
+  if (s.includes('wgbs') || s.includes('wgb')) return 'DNAm-WGBS'
+  if (s.includes('wgs')) return 'WGS'
+  return String(dt)
+}
+
+function getMatrixXTypes(rdata) {
+  // Column order must match `dtXCounts.reg` rows which are built from JSON `allData.dtypes`.
+  // `dtaSelTypes` is a static UI list and can drift from the JSON order.
+  if (!Array.isArray(dtaDTypes)) return []
+  // dtXCounts.reg has [0] as a dummy row, so the number of columns should be `rdata.length - 1`.
+  const max = (Array.isArray(rdata) && rdata.length>1) ? (rdata.length-1) : dtaDTypes.length
+  return dtaDTypes.slice(0, max).map(dtypeLabel)
+}
+
 const clShadeHover='#FFF0F0';
 const clShadeHoverRGB='rgb(255,240,240)';
 //const clHdrSelFg='#A00';
@@ -90,7 +111,7 @@ function RMatrix( props ) {
               clearOnlyStates();
               appliedStates[0]=onlyStates[0]; //states as last applied
               //console.log("building matrix with ", dtaXTypes, regcounts)
-              const jc=jqRender(dtaXTypes, regcounts);
+              const jc=jqRender(getMatrixXTypes(regcounts), regcounts);
               addHandlers(jc)  // hover and click handlers
               addApplyButton(jc)
               if (dtFilters.reg.size && dtFilters.brXtX.size)

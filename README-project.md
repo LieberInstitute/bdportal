@@ -69,10 +69,21 @@ The middleware assumes LAN services and file mounts exist. On development machin
 
 The app's bundled browser metadata is `public/data/multi_dta.json.gz`. It contains normalized arrays for data types, datasets, regions, diagnoses, subjects/brains, and sample metadata. The UI reindexes database IDs into compact client-side indexes while keeping database ID maps for backend requests.
 
+`dnam-pull4webapp.pl` is the current generator for this file. It splits DNAm datasets into separate 450k/WGBS data types and includes the NDA GUID used by the Brain Set Builder Browse table. Run it from the repo root against the LAN database host, then validate and compress the JSON:
+
+```bash
+./dnam-pull4webapp.pl -o public/data/multi_dta.json glin
+node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("public/data/multi_dta.json","utf8")); if(!Array.isArray(j.brains)||!j.brains.every(r=>Array.isArray(r)&&r.length===12&&typeof r[2]==="string")) throw new Error("invalid brains GUID shape"); console.log(j.dtypes.join(", "), j.brains.length)'
+gzip -c public/data/multi_dta.json > public/data/multi_dta.json.gz
+rm public/data/multi_dta.json
+```
+
+The `brains` rows are `[ord, brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]`. Older generated files without GUID had 11 fields; the frontend loader remains backward-compatible, but current committed data should use the 12-field shape.
+
 Generation and database-adjacent files:
 
-- `pull4webapp.pl`: pulls metadata from Postgres and writes the compressed JSON source used by the frontend.
-- `dnam-pull4webapp.pl`: DNAm-related metadata extraction helper.
+- `dnam-pull4webapp.pl`: canonical metadata generator for the frontend bundle.
+- `pull4webapp.pl`: older metadata generator retained for reference unless a legacy workflow specifically needs it.
 - `_db_.stored_procs_funcs.sql`: database-side stored procedures/functions used by data export and plotting flows.
 - `plr_modules.7.R`: R/PLR support code related to database-side analysis.
 - `server/gt_subset.sh`: helper for genotype subset generation.

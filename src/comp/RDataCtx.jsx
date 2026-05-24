@@ -22,6 +22,7 @@ export const rGlobs={
      selXType : 0, //currently targeted experiment/assay type + 1; 0 is the 'brain matrix', i.e. no selected data type
      prevSelXType : -1,
      dataLoaded : false,
+     dataError : '',
      validSelection: false,  // is a current valid selection exists for the current xp type
      rebuildRMatrix: true
 }
@@ -134,7 +135,7 @@ export const allDset2db= [ ] //array of arrays of datasets.id per experiment typ
 // global data (unaffected by filters): -- ATTN: must be populated by loadData()
 // all the demo data for each brain (with dtaNames indexes):
 export const dtaBrains = [ ];
-// array of [ brint,  dx-idx, race-idx, sex-idx, age, pmi, mod, has_seq, has_geno, dropped ]
+// array of [ brint, guid, dx-idx, race-idx, sex-idx, age, pmi, mod, has_seq, has_geno, dropped ]
 // bridx used anywhere else should match the index in this array, so dtaBrains[0] is always []
 //    so actual data starts at dtaBrains[1] for bridx 1
 
@@ -484,8 +485,99 @@ const ageWarn = (a,ctx) => {
   console.log(`${ctx} WARNING: could not get an Age range index from age ${a}"`)
 }
 
+function normDtype(dt) {
+  return String(dt || '').toLowerCase()
+}
+
+function reorderAllDataDtypes(allData) {
+  if (!allData || !Array.isArray(allData.dtypes)) return
+  const dts=allData.dtypes
+  if (dts.length<2) return
+  const used=new Set()
+  const ndts=dts.map(normDtype)
+  const desired=[
+    (s)=>s.includes('rnaseq'),
+    (s)=>s.includes('dnam') && s.includes('450'),
+    (s)=>s.includes('dnam') && (s.includes('wgbs') || s.includes('wgb')),
+    (s)=>s.includes('wgs'),
+    (s)=>s.includes('scrna'),
+    (s)=>s.includes('small')
+  ]
+  const order=[]
+  desired.forEach(match => {
+    for (let i=0;i<ndts.length;i++) {
+      if (!used.has(i) && match(ndts[i])) { order.push(i); used.add(i); break }
+    }
+  })
+  for (let i=0;i<ndts.length;i++) if (!used.has(i)) order.push(i)
+
+  let same=true
+  for (let i=0;i<order.length;i++) { if (order[i]!==i) { same=false; break } }
+  if (same) return
+
+  const reorderArr = (arr) => {
+    if (!Array.isArray(arr) || arr.length!==order.length) return arr
+    return order.map(i => arr[i])
+  }
+
+  allData.dtypes = reorderArr(allData.dtypes)
+  if (Array.isArray(allData.sdata)) allData.sdata = reorderArr(allData.sdata)
+  if (Array.isArray(allData.datasets)) allData.datasets = reorderArr(allData.datasets)
+
+  const reorderCountRows = (rows) => {
+    if (!Array.isArray(rows)) return
+    rows.forEach(r => {
+      if (!Array.isArray(r) || r.length < 4 + order.length) return
+      const head=r.slice(0,4)
+      const counts=r.slice(4, 4+order.length)
+      const rest=r.slice(4+order.length)
+      const ncounts=order.map(i => counts[i])
+      r.length=0
+      Array.prototype.push.apply(r, head)
+      Array.prototype.push.apply(r, ncounts)
+      if (rest.length) Array.prototype.push.apply(r, rest)
+    })
+  }
+
+  reorderCountRows(allData.reg)
+  reorderCountRows(allData.dx)
+}
+
+function ensurePlaceholderDtypes(allData) {
+  if (!allData || !Array.isArray(allData.dtypes)) return
+  const ndts=allData.dtypes.map(normDtype)
+  const hasScrna = ndts.some(s => s.includes('scrna'))
+  const hasSmall = ndts.some(s => s.includes('small'))
+
+  const addDtype = (dtypeName) => {
+    allData.dtypes.push(dtypeName)
+    if (Array.isArray(allData.sdata)) allData.sdata.push([])
+    if (Array.isArray(allData.datasets)) allData.datasets.push([])
+    const bumpCounts = (rows) => {
+      if (!Array.isArray(rows)) return
+      rows.forEach(r => {
+        if (Array.isArray(r)) r.push(0)
+      })
+    }
+    bumpCounts(allData.reg)
+    bumpCounts(allData.dx)
+  }
+
+  // Keep UI placeholder columns even if the JSON has no data for them.
+  if (!hasScrna) addDtype('scrnaseq')
+  if (!hasSmall) addDtype('smallrnaseq')
+}
+
 export function loadData(allData) {
   //const selXType=rGlobs.selXType; //loading data should NOT depened on selXType (only counts do)
+  if (!allData || typeof allData !== 'object')
+      throw new Error('[loadData] Error: no data object provided')
+  if (!Array.isArray(allData.dtypes) || allData.dtypes.length===0)
+      throw new Error('[loadData] Error: missing or empty allData.dtypes')
+
+  reorderAllDataDtypes(allData)
+  ensurePlaceholderDtypes(allData)
+
   const numDataTypes=allData.dtypes.length;
   if (!numDataTypes) { console.log("FATAL ERROR: numDataTypes is zero!!!"); return }
   dtaDTypes.length=0;
@@ -495,6 +587,8 @@ export function loadData(allData) {
 
   //plain arrays loaded here:
   ['sex', 'race', 'mod'].forEach( (e) => {
+      if (!Array.isArray(allData[e]))
+          throw new Error(`[loadData] Error: missing allData.${e} array`)
       let dtn=dtaNames[e];
       dtn.length=0; dtn.push(e);
       Array.prototype.push.apply(dtn, allData[e]);
@@ -560,6 +654,10 @@ export function loadData(allData) {
   const dsoc=dtOriCounts.dset; dsoc.length=0;
   dsoc.push([0]);
   const dproto=dtaNames.proto //FIXME: already populated (hard-coded) for now
+  while (dproto.length < numDataTypes) {
+    const i=dproto.length + 1
+    dproto.push([i])
+  }
   const poc=dtOriCounts.proto; poc.length=0;
   poc.push([0]) //placeholder poc[0]=[0]
 
@@ -583,7 +681,7 @@ export function loadData(allData) {
       while (--z) poc[i].push(0)
    }
   //-- load brains
-  dtaBrains.length=0; // array of [ brint,  dx#, race#, sex#, age, pmi, mod, has_seq, has_geno, dropped ]
+  dtaBrains.length=0; // array of [ brint,  guid, dx#, race#, sex#, age, pmi, mod, has_seq, has_geno, dropped ]
   dtaBrains.push([]); //to make brain indexes start at 1 and match dtaBrains array idx
   dtaBrIdx.length=0;  //cleared, array which has just 1 hash mapping a brint to a dtaBrains index
 
@@ -631,19 +729,45 @@ export function loadData(allData) {
   const br2idx={};
   dtaBrIdx.push(br2idx);
   noXBrs.clear();
+  if (!Array.isArray(allData.brains))
+      throw new Error('[loadData] Error: missing allData.brains array')
+
+  const maxDx = () => dtaNames.dx.length - 1
+  const maxRace = () => dtaNames.race.length - 1
+  const maxSex = () => dtaNames.sex.length - 1
+  const assertIdx = (fid, v, vmax, bd, ctx) => {
+    if (!Number.isInteger(v) || v<0 || v>vmax)
+      throw new Error(`${ctx} Error: invalid ${fid} index ${v} (max ${vmax}); brains row: ${JSON.stringify(bd)}`)
+  }
+
   allData.brains.forEach( (bd)=>{
-    const [idx, brint, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop]=bd;
+    if (!Array.isArray(bd) || bd.length<11)
+        throw new Error(`[loadData] Error: invalid brains row (expected array len>=11): ${JSON.stringify(bd)}`)
+    const idx = bd[0]
+    const brint = bd[1]
+    let guid = ''
+    let dxi = null, ri = null, si = null, age = null, pmi = null, mod = null, hasSeq = null, hasGt = null, drop = null
+    if (typeof bd[2] === 'string') {
+      // [idx, brint, guid, dx#, race#, sex#, age, pmi, mod, has_seq, has_geno, dropped]
+      ;[ , , guid, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop ] = bd
+    } else {
+      // [idx, brint, dx#, race#, sex#, age, pmi, mod, has_seq, has_geno, dropped]
+      ;[ , , dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop ] = bd
+    }
     if (dtaBrains.length!==idx) {
        //console.log();
        throw new Error(`[loadData] Error: brain index ${idx} mismatch (${dtaBrains.length})`);
     }
     noXBrs.add(idx); //will remove later after seen in JSON sdata
-    dtaBrains.push([brint, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop]);
+    dtaBrains.push([brint, guid, dxi, ri, si, age, pmi, mod, hasSeq, hasGt, drop]);
     br2idx[brint] = idx;
     if (!drop) {
       //update dtBrOriCounts:
       let ax=age2RangeIdx(age);
       if (ax===0) ageWarn(age); else stAge[ax]++;
+      assertIdx('dx', dxi, maxDx(), bd, '[loadData]')
+      assertIdx('race', ri, maxRace(), bd, '[loadData]')
+      assertIdx('sex', si, maxSex(), bd, '[loadData]')
       stDx[dxi]++;
       //if (!stDx[0]) {
       //  console.log("Error: invalidated sdDx[0] for brain entry: ", bd);
@@ -721,7 +845,7 @@ export function loadData(allData) {
       //if (xtix===0)
       protooc[p]++;
       // -- update dtOriCounts.dx sample counts:
-      const [ , dxi, raidx, sidx, age, pmi, mod, hasSeq, hasGt, drop ] = dtaBrains[bridx];
+      const [ , guid, dxi, raidx, sidx, age, pmi, mod, hasSeq, hasGt, drop ] = dtaBrains[bridx];
       // never count dropped brains!
       if (!drop) {
         let ax=age2RangeIdx(age);
@@ -1129,7 +1253,7 @@ function initBrCounts(brSet) { //before counting (updateCounts), or anytime we n
     brSet.clear()
     initBrCounts(brSet)
     br_set.forEach( brix=> {
-      const [ brint,  dxi, r, s, age, ...rest ] = dtaBrains[brix];
+      const [ brint, guid, dxi, r, s, age, ...rest ] = dtaBrains[brix];
       let ax=age2RangeIdx(age);
       updateBrCounts(brix, dxi, s, r, ax, brSet)
     } )
@@ -1309,10 +1433,11 @@ export function updateCounts() {
   for (let xjj=0; xjj<xtiList.length; xjj++) {
     const xt=xtiList[xjj]; //current experiment type processed (0-based value)
     const sdta=dtXall[xt];
-    if (!sdta || sdta.length==0) {
+    if (!sdta) {
       console.log(`[updateCounts] Error: no sample data found for data ${dtaDTypes[xt]}`);
       continue;
     }
+    if (sdta.length==0) continue;
     // for region counts:
     const xtBrRegs=[] //distinct brix.'_'.regix for this xtype
     const dtCountsReg=dtCounts.reg[xt+1];
@@ -1350,7 +1475,7 @@ export function updateCounts() {
         // i.e. no new brains are allowed to pass the filters, hence no new samples from those brains are counted
         if (selType0 && XtX>=0 && XtX!=xt && !dtBrXsel.has(brix))
                continue;
-        const [ , dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
+        const [ , guid, dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
         if (drop) continue // NEVER count dropped brains!
 
         //another hard skip is if with_seq or with_gt are set and this entry doesn't have it
@@ -1493,7 +1618,7 @@ export function updateCounts() {
    //now update dtBrXCounts with all the noXBrs that pass the filters (add them to all arrays)
    if (selType0 && XtX<0)
      noXBrs.forEach( (brix)=>{
-       const [ , dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
+       const [ , guid, dx, r, s, a, pmi, mod, seq, gt, drop ] = dtaBrains[brix];
         if (drop) return //NEVER count dropped brains
         //another hard skip is if with_seq or with_gt are set and this entry doesn't have it
        if (dtFilters.with_seq && !seq) return;
@@ -1590,7 +1715,7 @@ export function getBrSelData(showSmpCounts, brSet) {
   // array of [brnum, dx, race, sex, age, pmi, mod, numsmpxt1, ... ]
   rows.push(hdr)
   brSet.forEach( brix => {
-     const [brint, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix]
+     const [brint, guid, dxix, raix, six, age, pmi, mi, ...rest]=dtaBrains[brix]
      const row=[`Br${brint}`, dtaNames.dx[dxix],  dtaNames.race[raix],
                               dtaNames.sex[six], age, pmi, dtaNames.mod[mi]]
 
@@ -1636,9 +1761,13 @@ export function RDataProvider( {children} ) {
 
   const fetchZjson = async (url) => {
     const jres =  await fetch(url, { mode: 'cors'})
+    if (!jres.ok) {
+      const body = await jres.text().catch(()=> '')
+      throw new Error(`[fetchZjson] HTTP ${jres.status} ${jres.statusText} for ${url}${body ? `\n${body.substring(0,500)}` : ''}`)
+    }
     const ctype=jres.headers.get('Content-Type')
     // console.log("[",APP_BASE_URL,"] url=",url," content type : ", ctype)
-    if (ctype=="application/json") {
+    if (ctype && ctype.indexOf('application/json')===0) {
         return JSON.parse(await jres.text());
     }
     let compr = new Uint8Array(await jres.arrayBuffer())
@@ -1654,12 +1783,19 @@ export function RDataProvider( {children} ) {
     //no need to load unless allXData is clear
     //if (dtXall.length>0 && xdType===rGlobs.selXType ) return;
     //if (dtXall.length>0) return; //no need to load everything again unless dtXall was cleared!
+    rGlobs.dataError=''
     fetchZjson(datasrc)
       .then(  res => {
         console.log("fetching all sample data");
         setRData(loadData(res));
      } )
-    .catch(error => console.log(error));
+    .catch(error => {
+        const msg = (error && error.stack) ? error.stack : String(error)
+        rGlobs.dataError = msg
+        rGlobs.dataLoaded = false
+        console.error(msg)
+        setRData([ dtXsel, dtCounts, dtBrCounts, false ])
+    });
   }, [datasrc]);
   //TODO: how is updateXDType() called?
   return (
@@ -2043,7 +2179,7 @@ export function subjXTable(numbr) {
   const dxr=dtBrCounts.cxDxRace
   const c2dx=dtBrCounts.cx2dx
   const dxs=dtBrCounts.cxDxSex
-  
+
   const c2s=dtBrCounts.cx2s
   //console.log("----->> cxDxSex:", dxs, " c2s:", c2s)
   const c2r=dtBrCounts.cx2r
@@ -2059,8 +2195,8 @@ export function subjXTable(numbr) {
   }*/
   let cis=dxr[0].map((e,i)=>i) // for race
   let scis=dxs[0].map((e,i)=>i) // for sex
-  ris.sort( (a,b)=> c2dx[a]-c2dx[b])  // row sorting 
-  sris.sort( (a,b)=> c2dx[a]-c2dx[b]) 
+  ris.sort( (a,b)=> c2dx[a]-c2dx[b])  // row sorting
+  sris.sort( (a,b)=> c2dx[a]-c2dx[b])
   cis.sort( (a,b)=> c2r[a]- c2r[b]) // column sorting
   scis.sort( (a,b)=> c2s[a]- c2s[b])
 
