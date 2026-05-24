@@ -11,8 +11,7 @@ import imgBands from '/assets/bands.png'
 import imgBandsR from '/assets/bands_r.png'
 import imgBrCirc from '/assets/brain_encircled.svg'
 
-//import { DlgLogin } from './DlgLogin';
-import { DlgRLogin } from './DlgRLogin';
+import { DlgLogin } from './DlgLogin';
 import { DlgConfirm } from './DlgConfirm';
 import axios from 'axios'
 
@@ -144,10 +143,6 @@ export function Login({ login }) {
     loginStateUpdate('','')
   }
 
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
   function onLogin(user, token) {
     //TODO: on login, token could initially the timestamp userlog.date,
     // to be replaced with the actual jwt from userlog.reqtext
@@ -160,6 +155,19 @@ export function Login({ login }) {
     return true;
    }
 
+  async function checkLogin(user, password) {
+    const authres = await axios.post(`${MW_SERVER}/auth`, {
+      username: user,
+      password: password
+    }, { timeout: 10000 })
+    const data = authres.data || {}
+    if (!data.token) throw new Error('Login response did not include a token.')
+    return {
+      user: data.signed_user || data.username || user,
+      token: data.token
+    }
+  }
+
   useEffect(() => {
     setLoginModal(false) //set this to true to ask for login at startup!
   }, []) //run only once!
@@ -169,7 +177,8 @@ export function Login({ login }) {
     <span className="navlogin" onClick={() => loginoutDlg()} >
       {auth[1] ? auth[0] : "Login"}
     </span>
-    <DlgRLogin isOpen={loginModal} toggle={toggleLoginDlg} onLogin={onLogin} title="Log In" />
+    <DlgLogin isOpen={loginModal} toggle={toggleLoginDlg} checkLogin={checkLogin}
+      onLogin={onLogin} title="Log In" />
     <DlgConfirm isOpen={logoutAsk} toggle={toggleLogoutAsk} onConfirm={logout} title="Logout" />
   </>)
 }

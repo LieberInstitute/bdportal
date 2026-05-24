@@ -33,7 +33,7 @@ if (process.env.DEV_PORT && process.env.DEV_PORT!=app_port) {
 }
 const dbuser = process.env.DB_USER;
 const dbpasswd = process.env.DB_PASS;
-let auth_srv = 'https://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
+let auth_srv = process.env.AUTH_SRV || 'https://192.168.77.16:6443'; //where to send the auth request, "/auth" will be appended
 let dbserver = process.env.DB_SRV;
 let r_filedir='/dbdata/cdb/r_staging'; //default on srv16
 let d_filedir='/ssd/dbdata/h5base'; //default on srv16
@@ -56,7 +56,7 @@ if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
            d_filedir="/data1/postgresql/h5base";
        }
     mail_url = 'http://gdebsrv:14244/';
-    auth_srv= 'http://192.168.2.2:16600'; //no ssl in my LAN tests
+    if (!process.env.AUTH_SRV) auth_srv= 'http://192.168.2.2:16600'; //no ssl in my LAN tests
 } else { //LIBD devel, or server, or aws
   if (!dbserver) dbserver='192.168.77.16';
   if (hostname=="linwks34") {
@@ -79,6 +79,11 @@ const auth_url = `${auth_srv}/auth`;
 db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
 
 const jwt_shh =  process.env.JWTSHH
+const localAuthEnabled = process.env.DEV_AUTH !== '0' &&
+  process.env.NODE_ENV !== 'production' &&
+  !hostname.match(/^srv/) &&
+  Boolean(process.env.testUser) &&
+  Boolean(process.env.testPass);
 
 const db_creds = {
   user: dbuser,
@@ -101,6 +106,22 @@ function poolTest() {
      return res;
   });
 
+}
+
+function normalizeLogin(username) {
+  let uname = username ? String(username).trim().toLowerCase() : '';
+  if (uname.endsWith('@libd.org')) uname = uname.substring(0, uname.length - 9);
+  return uname;
+}
+
+function userHasAccess(uname) {
+  return new Promise((resolve, reject) => {
+    db.query("select login from useracc where login=$1", [uname],
+      (err, dbrows) => {
+        if (err) reject(err);
+        else resolve(Array.isArray(dbrows) && dbrows.length > 1);
+      });
+  });
 }
 // ----------- middleware setup -----
 // requests FIRST go through these MIDDLEware app.use() handlers which can transform/parse the request
@@ -144,7 +165,7 @@ app.post('/authck', (req, res) => {
   }
 });
 
-app.post('/auth', (req, res) => {
+app.post('/auth', async (req, res) => {
   //Bill's request was also passing ca : fs.readFileSync(cafile) as request param
   /* for axios, certificate can be passed as a httpsAgent parameter
      which can be read in advance, before the routing:
@@ -156,20 +177,71 @@ app.post('/auth', (req, res) => {
       axios.post(url, body,
         { httpsAgent : agent } ).then( ... )
   */
-  axios.post(auth_url, {
-    username: req.body.username,
-    password: req.body.password,
-  }).then(authres=> {
-    //{signed_user:, token:}
-    console.log("auth response data:", authres.data)
-    res.status(200).json(authres.data);
+  const username = normalizeLogin(req.body.username);
+  const password = req.body.password ? String(req.body.password) : '';
+  if (!username || !password) {
+    res.status(400).json({ code: 'BAD_LOGIN_REQUEST', message: 'Username and password are required.' });
+    return;
+  }
+
+  if (localAuthEnabled && username === normalizeLogin(process.env.testUser)) {
+    if (password !== process.env.testPass) {
+      res.status(401).json({ code: 'AUTH_FAILED', message: 'Invalid username or password.' });
+      return;
+    }
+    if (!jwt_shh) {
+      res.status(500).json({ code: 'AUTH_CONFIG_ERROR', message: 'Local login is not configured.' });
+      return;
+    }
+    res.status(200).json({
+      signed_user: username,
+      token: jwt.sign(username, jwt_shh),
+      dev: true
+    });
+    return;
+  }
+
+  try {
+    const hasAccess = await userHasAccess(username);
+    if (!hasAccess) {
+      res.status(403).json({
+        code: 'NO_PORTAL_ACCESS',
+        message: 'This account does not have access to the portal.'
+      });
+      return;
+    }
+  } catch (err) {
+    console.log(`auth user access check failed for ${username}:`, err.message);
+    res.status(500).json({ code: 'ACCESS_CHECK_ERROR', message: 'Could not check portal access.' });
+    return;
+  }
+
+  try {
+    const authres = await axios.post(auth_url, {
+      username: username,
+      password: password,
+    });
+    const authdata = authres.data || {};
+    if (!authdata.token) {
+      res.status(401).json({ code: 'AUTH_FAILED', message: 'Invalid username or password.' });
+      return;
+    }
+    res.status(200).json({
+      signed_user: authdata.signed_user || username,
+      token: authdata.token
+    });
     //log authentication here
-    //updateLog(db, req.body.username, 'AUTH')
-  }).catch((err) => {
-    console.log("auth FAIL in middleware!");
-    res.status(500).json({ message: err });
-    //updateLog(db, req.body.username, 'AUTHFAIL')
-  });
+    //updateLog(db, username, 'AUTH')
+  } catch (err) {
+    const status = err.response && err.response.status ? err.response.status : 500;
+    const outStatus = status === 401 || status === 403 ? status : 502;
+    console.log(`auth FAIL in middleware for ${username}:`, err.message);
+    res.status(outStatus).json({
+      code: outStatus === 401 ? 'AUTH_FAILED' : 'AUTH_SERVICE_ERROR',
+      message: outStatus === 401 ? 'Invalid username or password.' : 'Login service is not available right now.'
+    });
+    //updateLog(db, username, 'AUTHFAIL')
+  }
 });
 
 /* once authentication took place, authres.data.token will be stored
@@ -209,14 +281,12 @@ app.post('/mail', (req, res) => {
 
 
 app.post('/pgdb/useracc', (req, res) => {
-  let uname=req.body.username;
-  if (uname) uname=uname.trim().toLowerCase()
-         else res.status(500).send({ error: ':user error', message: "invalid username" });
-  if (uname.length===0) res.status(500).send(
-      { error: ':user error', message: "empty user name"}
-     )
-  const qry=`select login from useracc where login='${uname}'`;
-  db.query(qry, [],
+  let uname=normalizeLogin(req.body.username);
+  if (uname.length===0) {
+    res.status(500).send({ error: ':user error', message: "empty user name" });
+    return;
+  }
+  db.query("select login from useracc where login=$1", [uname],
       (err, dbrows)=>{
       if (err) {
             res.status(500).send({ error: err.severity+': '+err.code, message: err.message })

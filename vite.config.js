@@ -4,24 +4,11 @@ import preact from "@preact/preset-vite";
 const host = require('os').hostname().toLowerCase();
 process.env.VITE_HOST=host;
 
-let login_srv='https://dev.libd.org'
-
-let local_login_srv=0; //set this to 1 for local login dialog development
-let melokalia_login=0;
 let remote_h2gw=0; //remote middleware develpment at home through wireguard
 
 export default defineConfig(({ command, mode }) => {
   const devmode=(mode=='development')
   let nodemw_srv='http://localhost:4095';
-  if (devmode) {
-     if (melokalia_login) {
-        login_srv='https://dev.melokalia.us'
-     } else if (local_login_srv) {
-        if (host=='gryzen') login_srv='http://192.168.2.7:4080'
-        else if (host=='glin') login_srv='http://192.168.2.2:4080'
-        else if (host=='linwks34') login_srv='http://10.17.10.199:4080'
-     }
-  }
   if (host.match(/^linwks/) || host.match(/^srv/) || remote_h2gw ) {
     //--- dev at LIBD:
      if (devmode && remote_h2gw) {
@@ -31,10 +18,8 @@ export default defineConfig(({ command, mode }) => {
      }
   }
 
-  process.env.VITE_LOGINSRV=`${login_srv}/if_rlogin`;
-
   if (devmode) {
-     console.log(`~~~~~~~ vite.config DEV mode: loginsrv = ${process.env.VITE_LOGINSRV}\n\t\t API proxy target =`, nodemw_srv)
+     console.log(`~~~~~~~ vite.config DEV mode: API proxy target =`, nodemw_srv)
   }
   else
      console.log(`~~~~~~~ ${host} vite.config Build mode: same-origin middleware API`)
