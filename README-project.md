@@ -11,7 +11,7 @@ The repository contains two runtimes:
 
 For local development, run the middleware locally on `4095` and the Vite frontend on `8080`. The frontend calls a same-origin `/api` prefix, and Vite proxies `/api/*` to the middleware during development.
 
-Use Node 22+ for frontend development; the root package declares `engines.node >=22.12`, includes `.nvmrc`, and uses Vite 7. The middleware still uses Node 18 for now. srv16 runs Node `v18.19.1`, and this local setup installed Homebrew `node@18` at `/opt/homebrew/opt/node@18/bin`. The middleware currently fails under Node 25 because transitive JWT dependencies use APIs removed from newer Node versions.
+Use Node 22+ for local development. The root and middleware packages both declare `engines.node >=22.12`, the root includes `.nvmrc`, and the frontend uses Vite 7. The middleware JWT dependency path was refreshed so it no longer requires the old Node 18 runtime.
 
 ## Frontend Architecture
 
@@ -93,7 +93,6 @@ Install dependencies:
 ```bash
 npm ci
 cd server
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm ci
 ```
 
@@ -110,7 +109,6 @@ Run middleware:
 
 ```bash
 cd server
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm start
 ```
 

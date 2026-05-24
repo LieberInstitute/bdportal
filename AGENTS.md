@@ -10,7 +10,7 @@ Stack:
 - Data: PostgreSQL via `pg`, plus generated static metadata in `public/data/multi_dta.json.gz`.
 - Deployment: internal nginx path `https://db.libd.net/bdportal`.
 
-Use Node 22+ for frontend work; the root package declares `engines.node >=22.12` and includes `.nvmrc`. The middleware still needs the older Node 18 runtime because transitive JWT dependencies fail under Node 25+. On this machine, Node 18 is available at `/opt/homebrew/opt/node@18/bin`.
+Use Node 22+ for local development. The root and middleware packages both declare `engines.node >=22.12`, and the root includes `.nvmrc`.
 
 ## Local Development
 
@@ -19,7 +19,6 @@ Install dependencies:
 ```bash
 npm ci
 cd server
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm ci
 ```
 
@@ -27,7 +26,6 @@ Run the local middleware:
 
 ```bash
 cd server
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm start
 ```
 
