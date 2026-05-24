@@ -11,7 +11,7 @@ The repository contains two runtimes:
 
 For local development, run the middleware locally on `4095` and the Vite frontend on `8080`. The frontend calls a same-origin `/api` prefix, and Vite proxies `/api/*` to the middleware during development.
 
-Use Node 18 for local development. srv16 runs Node `v18.19.1`, and this local setup installed Homebrew `node@18` at `/opt/homebrew/opt/node@18/bin`. The middleware currently fails under Node 25 because transitive JWT dependencies use APIs removed from newer Node versions.
+Use Node 22+ for frontend development; the root package declares `engines.node >=22.12`, includes `.nvmrc`, and uses Vite 7. The middleware still uses Node 18 for now. srv16 runs Node `v18.19.1`, and this local setup installed Homebrew `node@18` at `/opt/homebrew/opt/node@18/bin`. The middleware currently fails under Node 25 because transitive JWT dependencies use APIs removed from newer Node versions.
 
 ## Frontend Architecture
 
@@ -26,7 +26,7 @@ Primary route areas:
 
 Important shared modules:
 
-- `src/appcfg.js`: exports `APP_BASE_URL`, `MW_SERVER`, login URL, and commit metadata from Vite environment variables. By default, `MW_SERVER` is the app base path plus `/api`.
+- `src/appcfg.js`: exports `APP_BASE_URL`, `MW_SERVER`, and commit metadata from Vite environment variables. By default, `MW_SERVER` is the app base path plus `/api`.
 - `src/comp/RDataCtx.jsx`: central data/model layer for loaded metadata, filter state, selected samples/brains, login state, backend requests, downloads, and plot helpers.
 - `src/comp/FltMList.jsx`, `AgeDualPanel.jsx`, `RSelSummary.jsx`: reusable filtering and selection UI.
 - `src/pages/br/`: Brain Set Builder matrix and browse views.
@@ -91,9 +91,10 @@ cd /Users/gpertea/Documents/bdportal
 Install dependencies:
 
 ```bash
+npm ci
+cd server
 export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm ci
-cd server && npm ci
 ```
 
 Copy private middleware config from srv16:
@@ -116,7 +117,6 @@ npm start
 Run frontend in another terminal:
 
 ```bash
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm run dev
 ```
 

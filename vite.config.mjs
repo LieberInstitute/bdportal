@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
-//const host = process.env.HOME;
-const host = require('os').hostname().toLowerCase();
+import { hostname } from "node:os";
+
+const host = hostname().toLowerCase();
 process.env.VITE_HOST=host;
 
 let remote_h2gw=0; //remote middleware develpment at home through wireguard
@@ -14,7 +15,7 @@ export default defineConfig(({ command, mode }) => {
      if (devmode && remote_h2gw) {
         nodemw_srv='http://192.168.77.3:4095'
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nWARNING: dev mode points to middleware on", nodemw_srv)
-        console.log("  if you want to run that mw locally, set remote_h2gw=0 in vite.config.js")
+        console.log("  if you want to run that mw locally, set remote_h2gw=0 in vite.config.mjs")
      }
   }
 
@@ -44,6 +45,9 @@ export default defineConfig(({ command, mode }) => {
     build: {
       rollupOptions: {
         output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) return 'vendor'
+          },
           entryFileNames: `assets/[name].js`,
           chunkFileNames: `assets/[name].js`,
           assetFileNames: `assets/[name].[ext]`

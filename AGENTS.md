@@ -10,16 +10,17 @@ Stack:
 - Data: PostgreSQL via `pg`, plus generated static metadata in `public/data/multi_dta.json.gz`.
 - Deployment: internal nginx path `https://db.libd.net/bdportal`.
 
-Use Node 18 for this project. The middleware currently fails under Node 25 because older JWT dependencies rely on APIs removed from newer Node releases. On this machine, Node 18 is available at `/opt/homebrew/opt/node@18/bin`.
+Use Node 22+ for frontend work; the root package declares `engines.node >=22.12` and includes `.nvmrc`. The middleware still needs the older Node 18 runtime because transitive JWT dependencies fail under Node 25+. On this machine, Node 18 is available at `/opt/homebrew/opt/node@18/bin`.
 
 ## Local Development
 
 Install dependencies:
 
 ```bash
+npm ci
+cd server
 export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm ci
-cd server && npm ci
 ```
 
 Run the local middleware:
@@ -33,7 +34,6 @@ npm start
 Run the frontend dev server:
 
 ```bash
-export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
 npm run dev
 ```
 
@@ -75,7 +75,13 @@ curl http://localhost:8080/api/pgplrinit
 - The app uses hash routes such as `#/brsel/matrix`, `#/brsel/browse`, and `#/rna/exp`.
 - The browser talks to middleware through the same-origin `/api` prefix. In local Vite development, `/api/*` is proxied and rewritten to the local middleware on port `4095`; in production, nginx proxies `/bdportal/api/*` to the middleware on `127.0.0.1:4095`.
 - The nginx proxy template for production API routes is in `nginx/bdportal-api-locations.conf`; run `nginx/install-bdportal-api-proxy.sh` on srv16 to install those locations before static app locations.
-- Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.js`.
+- Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.mjs`.
 - `GET /pgplrinit` should return `pl/r` when the DB permissions and R libraries on `glin` are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
 - Avoid broad refactors in `src/comp/RDataCtx.jsx`; it owns most global data structures, filters, counts, login state, and backend request helpers.
 - Keep generated build output in `dist/` out of normal edits unless explicitly working on deployment output.
+
+## Browser Testing Notes
+
+- Use the in-app Browser plugin for page loads, DOM snapshots, screenshots, visible-state checks, and verifying that Vite error overlays are gone.
+- In this app, the Browser plugin's Playwright wrapper can fail on form input with a virtual clipboard/input error. If `locator.fill()` or `locator.type()` hits that path, do not spend time fighting it; verify the dialog opens in-browser and smoke-test the backing endpoint directly.
+- For reliable form-entry regression tests, add a project-local Playwright test runner instead of relying on the in-app Browser wrapper.
