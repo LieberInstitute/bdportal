@@ -40,7 +40,7 @@ let d_filedir='/ssd/dbdata/h5base'; //default on srv16
 let mail_url = 'http://192.168.77.16:1244/';
 // direct download path/url for prepared files
 let ddl_basepath="/dbdata/cdb/www_fstore/cdbFileStore";
-let ddl_baseurl="http://srv16.lieber.local/cdbFileStore";
+let ddl_baseurl=process.env.DDL_BASEURL || "https://db.libd.net/cdbFileStore";
 
 if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
     if (!dbserver) dbserver='gdebsrv';
@@ -587,4 +587,3 @@ for (let i=0;i<5;i++) {
 }
 //adding some fake dummy sub-tabs for the RNASeq entry
 app.listen(app_port, () => console.log('listening on port', app_port))
-

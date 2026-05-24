@@ -2,14 +2,14 @@
 
 ## Purpose and Runtime Shape
 
-bdportal is an internal LIBD data portal for building brain/sample sets, browsing available assays, exploring bulk RNAseq plots, and requesting downloadable data products. The app is deployed behind nginx at `http://srv16.lieber.local/bdportal`; the surveyed srv16 checkout matched org `master` commit `87f1c86`.
+bdportal is an internal LIBD data portal for building brain/sample sets, browsing available assays, exploring bulk RNAseq plots, and requesting downloadable data products. The app is deployed behind nginx at `https://db.libd.net/bdportal`; the surveyed srv16 checkout matched org `master` commit `87f1c86`.
 
 The repository contains two runtimes:
 
 - A Preact/Vite frontend served from the repository root.
 - A Node/Express middleware in `server/` that talks to Postgres, authentication/mail services, and LAN file staging locations.
 
-For local development, run the middleware locally on `4095` and the Vite frontend on `8080`. Vite proxies API routes to the middleware during development.
+For local development, run the middleware locally on `4095` and the Vite frontend on `8080`. The frontend calls a same-origin `/api` prefix, and Vite proxies `/api/*` to the middleware during development.
 
 Use Node 18 for local development. srv16 runs Node `v18.19.1`, and this local setup installed Homebrew `node@18` at `/opt/homebrew/opt/node@18/bin`. The middleware currently fails under Node 25 because transitive JWT dependencies use APIs removed from newer Node versions.
 
@@ -26,7 +26,7 @@ Primary route areas:
 
 Important shared modules:
 
-- `src/appcfg.js`: exports `APP_BASE_URL`, `MW_SERVER`, login URL, and commit metadata from Vite environment variables.
+- `src/appcfg.js`: exports `APP_BASE_URL`, `MW_SERVER`, login URL, and commit metadata from Vite environment variables. By default, `MW_SERVER` is the app base path plus `/api`.
 - `src/comp/RDataCtx.jsx`: central data/model layer for loaded metadata, filter state, selected samples/brains, login state, backend requests, downloads, and plot helpers.
 - `src/comp/FltMList.jsx`, `AgeDualPanel.jsx`, `RSelSummary.jsx`: reusable filtering and selection UI.
 - `src/pages/br/`: Brain Set Builder matrix and browse views.
@@ -76,6 +76,8 @@ Generation and database-adjacent files:
 - `_db_.stored_procs_funcs.sql`: database-side stored procedures/functions used by data export and plotting flows.
 - `plr_modules.7.R`: R/PLR support code related to database-side analysis.
 - `server/gt_subset.sh`: helper for genotype subset generation.
+- `nginx/bdportal-api-locations.conf`: production nginx proxy locations for same-origin middleware API routing.
+- `nginx/install-bdportal-api-proxy.sh`: srv16 installer that backs up the nginx app snippet, installs the proxy locations, tests nginx, and reloads it.
 
 ## Local Setup
 
@@ -135,8 +137,10 @@ Deployment-oriented build scripts choose different Vite base paths:
 
 - Do not commit `server/.env` or paste its values into docs, logs, issues, or chat.
 - The root `.env` is tracked and currently stores Vite build/runtime metadata. Be careful when deployment scripts modify it.
-- Vite development mode sets `MW_SERVER` to an empty string, so same-origin API calls go through the Vite proxy to local middleware.
-- Production/build mode uses `VITE_MWSERVER` or `VITE_NODESRV` to point at middleware.
+- Vite development mode proxies same-origin `/api/*` requests to local middleware.
+- Production/build mode should normally leave `VITE_MWSERVER` empty so the app uses `/bdportal/api`, `/dev/bdportal/api`, or `/devel/bdportal/api`. nginx proxies those paths to middleware on `127.0.0.1:4095`.
+- Set `VITE_MWSERVER` only for an intentional explicit middleware override; do not bake `srv16` hostnames or raw `:4095` URLs into deployable bundles.
+- On srv16, run `nginx/install-bdportal-api-proxy.sh` to install the nginx locations before the static app locations in `/etc/nginx/snippets/app_dirs.conf`, run `nginx -t`, and reload nginx.
 - Several backend SQL strings interpolate values directly. Treat new route/query work carefully and prefer parameterized queries.
 - `RDataCtx.jsx` contains many module-level mutable structures. When changing filters, counts, or selected sample logic, verify both Brain Set Builder and RNA pages.
 - `dist/`, `build/`, and `node_modules/` are generated and ignored.
@@ -150,6 +154,8 @@ npm run lint
 npm run build
 curl http://localhost:4095/ruthere
 curl http://localhost:4095/pgplrinit
+curl http://localhost:8080/api/ruthere
+curl http://localhost:8080/api/pgplrinit
 ```
 
 Against `glin`, `GET /pgplrinit` should return `pl/r` when DB permissions and R libraries are healthy. Use `GET /pgdb/dslist/rnaseq` as an additional practical metadata DB smoke test.

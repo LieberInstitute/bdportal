@@ -4,14 +4,14 @@
 //export const APP_BASE_URL = cfg_APP_BASE_URL
 export const APP_BASE_URL=import.meta.env.BASE_URL
 
-// node middleware server running on port 4095
-//export const NODEMW_URL=process.env.NODE_ENV=='development' ? '' : 'http://localhost:4095';
+// Node middleware is reached through a same-origin /api prefix.
+// Production nginx proxies /bdportal/api/* to the local middleware.
 const devmode=(import.meta.env.DEV===true)
-//export const MW_SERVER= 'http://srv16.lieber.local:4095'
 const env_MWSRV=import.meta.env.VITE_MWSERVER
-export const MW_SERVER = devmode ? '' : (env_MWSRV ? env_MWSRV : import.meta.env.VITE_NODESRV)
+const basePath = APP_BASE_URL.replace(/\/$/, '')
+const defaultMwServer = `${basePath}/api`
+export const MW_SERVER = env_MWSRV ? env_MWSRV.replace(/\/$/, '') : defaultMwServer
 
-//export const AUTH_SERVER='http://srv16.lieber.local:16600'
 //export const LOGIN_SRV=devmode ? import.meta.env.VITE_LOGINSRV : 'https://dev.libd.org/if_rlogin' ;
 export const LOGIN_SRV = import.meta.env.VITE_LOGINSRV
 export const COMMIT_DATE = import.meta.env.VITE_COMMIT_DATE.substring(2)

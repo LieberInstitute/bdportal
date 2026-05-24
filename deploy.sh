@@ -8,21 +8,11 @@ sed -i -E "s/COMMIT_HASH=.*/COMMIT_HASH=${lasthash}/" .env
 host=$(hostname -s)
 rdest="" #remote target (home)
 docroot=/var/www/html
-mwsrv=geowks.lieber.local
 case "$host" in
   "gryzen" | "gi7" | "guvb")
       docroot=/data/nginx/html
-      mwsrv="gdebsrv"
       rdest="gdebsrv" ;;
-   "srv16")
-      mwsrv="srv16.lieber.local"
-      ;;
-   "linwks34")
-      mwsrv="geowks.lieber.local"
-      ;;
 esac
-echo "mwsrv = $mwsrv"
-sed -i -E "s|_MWSERVER=.*|_MWSERVER=http://${mwsrv}:4095|" .env
 /bin/rm -rf dist/*
 brun='-dev'
 bdir='dev/bdportal'
