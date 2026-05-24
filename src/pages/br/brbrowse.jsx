@@ -29,9 +29,37 @@ const xtcolors=['#c9e9d1', '#bfdeff', '#f6cdd1' , '#fff0c1',  '#dbd0f0']
 //                 green,    blue,     red    ,   yellow,       purple
 const xtgrey='#cdcdcd'
 //const numsortCols=[   1,                                5,    6,       7,       8,       9,]
-const basecols=['#','BrNum', "GUID", 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
-const stickyCols=[0,1,3]; //stick #, BrNum, Dx
+const basecols=['#','BrNum', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
+const guidBasecols=['#','BrNum', 'GUID', 'Dx', 'Ancestry', 'Sex', 'Age', 'PMI', 'MoD' ] //region columns to be added
 const stickyWs=[ 54, 64, 78 ]; //pixels
+
+function hasGuid(guid) {
+	return String(guid || '').trim().length>0
+}
+
+function getBaseCols(showGuids) {
+	return showGuids ? guidBasecols : basecols
+}
+
+function getStickyCols(showGuids) {
+	return showGuids ? [0, 1, 3] : [0, 1, 2] //stick #, BrNum, Dx
+}
+
+function getDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, showGuids) {
+	const cells=[`${r+1}.`, `Br${brint}`]
+	if (showGuids) cells.push(`${guid}`)
+	cells.push(`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`)
+	return cells
+}
+
+function getExportDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, showGuids) {
+	const cells=[`${r+1}`, `Br${brint}`]
+	if (showGuids) cells.push(`${guid}`)
+	cells.push(`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
+						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`)
+	return cells
+}
 
 function eqSets(s1, s2) {
 	if (s1.size!==s2.size) return false
@@ -139,6 +167,8 @@ const BrTable = ( props ) => {
   })
 	const m=refData.current
 
+	const baseColCount=getBaseCols(props.showGuids).length
+	const stickyCols=getStickyCols(props.showGuids)
 	const stickyOrder = Array.isArray(stickyCols)
 		? stickyCols.filter((c, idx) => stickyCols.indexOf(c) === idx)
 		: Array.from({ length: stickyCols }, (_, i) => i)
@@ -169,8 +199,7 @@ const BrTable = ( props ) => {
 		if (byRegion) { // rd is rds.push([brint, dxix, raix, six, age, pmi, mod, ...rxtcounts]
 			// rxtcounts are per-region arrays of counts (one for each xtype in every array)
 			const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
-			const outrd=[`${r+1}.`, `Br${brint}`, `${guid}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
+			const outrd=getDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, props.showGuids)
 			return(<tr key={`tr${r}`}>{
 			outrd.map(  (e,i)=> {
 					let cl=null, st=null;
@@ -200,8 +229,7 @@ const BrTable = ( props ) => {
 	 }
 		// --simplified rd: [brint, dxix, raix, six, age, pmi, counts...]
 	 const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
-	 const outrd=[`${r+1}.`, `Br${brint}`, `${guid}`, `${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-						`${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
+	 const outrd=getDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, props.showGuids)
    const shcounts=[]
 
 	 counts.forEach( (e,i)=> {
@@ -228,7 +256,7 @@ const BrTable = ( props ) => {
 				 let spcl=null, color=null;
 				 spcl= c>0 ? "xtc" : "xtc0";
 				 color=shcolors[j]
-				 return (<td key={`r${r}td${j+basecols.length}`}>
+				 return (<td key={`r${r}td${j+baseColCount}`}>
 						 <span class={spcl} style={ c>0 ? {backgroundColor: color } : null }>{c}</span>
 						 </td>)
 				 })
@@ -265,7 +293,7 @@ const BrTable = ( props ) => {
 	}
 
   const tblrows = tableFilter( props.tblRows, props.brSet ) //filter rows to render
-  const tblhdr=[...basecols, ...cntcols]
+  const tblhdr=[...getBaseCols(props.showGuids), ...cntcols]
 	//<Col className="d-flex flex-row-reverse align-items-start justify-content-start m-0 p-0 overflow-auto"
 	let wstyle=null
 	const byRegion=props.byRegion
@@ -300,13 +328,14 @@ const BrBrowse = ( ) => {
 				 tblCols:[], //as built by prepTable()
 				 tblRows:[], //as built by prepTable()
 				 // --- cache
-         cache: { brnum:0, byRegion:false, r_data: [null, null], fltXT: new Set() },
+         cache: { brnum:0, byRegion:false, r_data: [null, null], fltXT: new Set(), fltByRegion:false },
 			   relWidth:0
 		 })
      //const [winWidth, setwinWidth]=useState(0)
 		 const m=refData.current;
      const [tbl, setTable]=useState(0); // 0 = no table being shown or requested
 		 const [byRegion, setByRegion]=useState(false)
+		 const [showGuids, setShowGuids]=useState(false)
 		 const [, forceUpdate] = useReducer((x) => x + 1, 0);
 		 //const [brSet, setBrSet] = useState(null)
 
@@ -316,7 +345,6 @@ const BrBrowse = ( ) => {
 					 //console.log(" relwdith: ", m.relwidth)
 				}
        //m.tblkey++;
-			 m.reqXType.clear()
 			 const newV=!byRegion;
 			 [m.tblCols, m.tblRows]=prepTable(newV, m.cache)
 			 setByRegion( newV )
@@ -338,22 +366,24 @@ const BrBrowse = ( ) => {
 	 function prepBrSet() {
      let cached=false;
 		 [m.tblCols, m.tblRows, cached]=prepTable(byRegion, m.cache);
-     if (m.brSet && cached && eqSets(m.reqXType, m.cache.fltXT)) {
+     if (m.brSet && cached && m.cache.fltByRegion==byRegion && eqSets(m.reqXType, m.cache.fltXT)) {
        return
      }
 		 if (m.brSet) m.brSet.clear()
         else m.brSet=new Set()
      const brSet=m.brSet
-		 if (m.reqXType.size==0) { // no restrictions
+     if (m.reqXType.size==0) { // no restrictions
   			dtBrXsel.forEach( brix=> {
   				brSet.add(brix)
   			})
         m.cache.fltXT=new Set(m.reqXType)
+        m.cache.fltByRegion=byRegion
         updateBrCountsFromBrSet(brSet)
         return
 		 }
      //m.brSet rebuild from m.tblRows according to m.reqXType
      m.cache.fltXT=new Set(m.reqXType)
+     m.cache.fltByRegion=byRegion
      if (byRegion) { //let pass only brains that have at least 1 region with all m.reqXType sequenced
        m.tblRows.forEach( (rd,i)=>{
           const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts] =rd;
@@ -390,6 +420,16 @@ const BrBrowse = ( ) => {
      forceUpdate();
 	 }
 
+	 function countGuidBrains(brSet) {
+		 let count=0
+		 if (!brSet) return count
+		 brSet.forEach( brix=> {
+			 const rd=dtaBrains[brix]
+			 if (rd && hasGuid(rd[1])) count++
+		 })
+		 return count
+	 }
+
    function getBrowseTable() { //for the SaveCSV dialog, get table data according to the current selections options
           //this should act similarly with the render functions as used in BrTable
           // same setup as in BrTable render:
@@ -412,13 +452,12 @@ const BrBrowse = ( ) => {
 
           const tblrows = tableFilter( m.tblRows, m.brSet ) //filter rows to export according to current brSet
           //const tblhdr=[...basecols, ...cntcols]
-          const rdata=[ [...basecols, ...cntcols] ] // add header row
+          const rdata=[ [...getBaseCols(showGuids), ...cntcols] ] // add header row
           if (byRegion) {
             tblrows.forEach( (rd, r)=>{
               const shcounts=[]
               const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...rxtcounts]=rd
-              const outrd=[`${r+1}`, `Br${brint}`, `${guid}`,`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-                      `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
+              const outrd=getExportDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, showGuids)
               rxtcounts.forEach( (rc,i)=>{
                  rc.forEach( (c,j)=> {
                    if (showXTs[j]) outrd.push(c) //do not export unless shown
@@ -431,8 +470,7 @@ const BrBrowse = ( ) => {
           // simplified table:
           tblrows.forEach( (rd, r)=>{
             const [brix, brint, guid, dxix, raix, six, age, pmi, mi, ...counts] =rd;
-            const outrd=[`${r+1}`, `Br${brint}`, `${guid}`,`${dtaNames.dx[dxix]}`, `${dtaNames.race[raix]}`,
-                       `${dtaNames.sex[six]}`, age, pmi, `${dtaNames.mod[mi]}`]
+            const outrd=getExportDemoCells(r, brint, guid, dxix, raix, six, age, pmi, mi, showGuids)
             counts.forEach( (c,i)=> {
                 if (showXTs[i]) outrd.push(c);
             })
@@ -490,6 +528,7 @@ const BrBrowse = ( ) => {
 	 }
 
 	prepBrSet() //this might rebuild m.brSet
+	const guidCount=countGuidBrains(m.brSet)
   //console.log(" ~~~~~~~~~ rendering BrBrowse() m.reqXType =", m.reqXType, " .. and m.brSet: ", m.brSet);
   return (<div class="col-12 d-flex flex-column">
 	   {/*<Row className="pt-1">
@@ -498,8 +537,12 @@ const BrBrowse = ( ) => {
 		 </Row>*/}
 		 <Row id="brTblContainer" className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap">
 		  {/* <Col className="d-flex mr-0 pr-0 flex-grow-1 align-self-stretch" > */}
-			  <Col className="d-flex flex-column align-items-end justify-content-end mb-1">
-					<Row className="d-flex flex-row justify-content-center m-1 pt-1">
+			  <Col className="d-flex flex-column align-items-stretch justify-content-end mb-1">
+					<Row className="d-flex flex-row justify-content-between align-items-start m-1 pt-1">
+					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
+						 <CustomInput type="checkbox" id="ckShowGuids" onClick={() => setShowGuids(!showGuids)} checked={showGuids} />
+								 Show GUIDs ({guidCount})
+					</div>
 					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
       					 <CustomInput type="checkbox" id="ckByRegion" onClick={toggleByRegion} checked={byRegion} />
 								 Show sample counts by brain region
@@ -507,8 +550,9 @@ const BrBrowse = ( ) => {
 
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
-		   	    <BrTable key={m.tblkey} tnum={tbl} byRegion={byRegion} tblCols={m.tblCols} tblRows={m.tblRows} brSet={m.brSet}
-						       showXType={m.showXType} calcMaxWidth={calcMaxXRwidth} />
+						<BrTable key={`${m.tblkey}-${byRegion ? 'region' : 'total'}-${showGuids ? 'guid' : 'noguid'}`}
+						       tnum={tbl} byRegion={byRegion} tblCols={m.tblCols} tblRows={m.tblRows} brSet={m.brSet}
+						       showXType={m.showXType} showGuids={showGuids} calcMaxWidth={calcMaxXRwidth} />
 			</Col>
 			<Col className="d-flex flex-column align-items-start">
 			  <Row id="rowFltCtl" className="pl-2 pr-0 pt-1 mt-2 mb-0 d-flex justify-content-start align-items-start"
