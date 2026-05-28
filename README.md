@@ -2,7 +2,7 @@
 
 Internal LIBD Brain Data Portal web application.
 
-For current setup, architecture, and agent handoff notes, start here:
+For current setup, architecture, and agent orientation notes, start here:
 
 - `AGENTS.md`: quick-start facts for Codex agents.
 - `README-project.md`: detailed frontend, middleware, data-generation, and deployment orientation.

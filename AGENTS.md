@@ -9,7 +9,7 @@ Stack:
 - Middleware: Node/Express in `server/`, listening on port `4095` by default.
 - Data: PostgreSQL via `pg`, plus generated static metadata in `public/data/multi_dta.json.gz`.
 - Deployment: internal nginx path `https://db.libd.net/bdportal`.
-- Metadata generator: `dnam-pull4webapp.pl` is the current source for `public/data/multi_dta.json.gz`; it splits DNAm datasets into 450k/WGBS entries and emits the Brain Set Builder GUID field.
+- Metadata generator: `dnam-pull4webapp.pl` is the current source for `public/data/multi_dta.json.gz`; it emits the normalized browser metadata bundle used across frontend feature areas.
 
 Use Node 22+ for local development. The root and middleware packages both declare `engines.node >=22.12`, and the root includes `.nvmrc`.
 
@@ -69,28 +69,15 @@ curl http://localhost:8080/api/pgplrinit
 - `public/data/`: bundled compressed metadata loaded by the browser.
 - `assets/` and `public/images/`: app images and guide assets.
 
-## Current Frontend Focus
+## Frontend Feature Areas
 
-Brain Set Builder is the active frontend work area:
+- Brain Set Builder routes live under `#/brsel/*`; the matrix and browse tabs are in `src/pages/br/`.
+- Bulk RNAseq routes live under `#/rna/*`; selection and expression views are in `src/pages/rna/`.
+- Placeholder feature areas currently include DNA methylation and long RNAseq pages.
+- Shared selection, filtering, login, data loading, backend request, download, and plot helpers are concentrated in `src/comp/RDataCtx.jsx`.
+- Reusable UI helpers include `src/comp/FltMList.jsx`, `src/comp/AgeDualPanel.jsx`, and `src/comp/RSelSummary.jsx`.
 
-- Main routes: `#/brsel/matrix` and `#/brsel/browse`.
-- Browse UI: `src/pages/br/brbrowse.jsx`.
-- Selection summary/export buttons: `src/comp/RSelSummary.jsx`.
-- Global data, filters, counts, login, and backend helpers: `src/comp/RDataCtx.jsx`.
-- Filter widgets: `src/comp/FltMList.jsx`, `src/comp/AgeDualPanel.jsx`.
-
-Brain Browse implementation notes:
-
-- `dtaBrains` rows currently include GUID as `[brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]` after client loading.
-- `Show GUIDs (x)` is hidden by default and inserts `GUID` after `BrNum` when enabled. The count is donors in the current displayed brain set with non-empty GUIDs.
-- `Show sample counts by brain region` switches from total assay-count columns to per-region count cells.
-- `Keep sample counts for` controls which assay count chips/columns are visible; it does not change the donor set.
-- `Filter to subjects that have` changes the donor set. In by-region mode, selected assays must occur in at least one same region.
-- Export uses `getBrowseTable()` and must mirror the visible table state, including GUID visibility and assay count visibility.
-- Sticky columns are `#`, `BrNum`, and `Dx`; when GUID is visible, `Dx` remains sticky after the inserted GUID column.
-- Recent performance work caches selected-brain signatures and table-filtered rows with `brSetVersion`, but full unfiltered by-region tables are still large. Prefer testing with a narrowing filter such as `WGS samples` when validating UI behavior.
-
-Latest pushed `devel` baseline for this handoff is `f5a150c Optimize brain browse table toggles`.
+Keep task-specific handoff notes in separate dated files instead of turning this guide into a snapshot of the latest active feature. This file should stay useful for any project-level frontend, backend, data, or deployment task.
 
 ## Current Backend Focus
 
@@ -108,7 +95,7 @@ Latest pushed `devel` baseline for this handoff is `f5a150c Optimize brain brows
 - Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.mjs`.
 - `GET /pgplrinit` should return `pl/r` when the DB permissions and R libraries on `glin` are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
 - Avoid broad refactors in `src/comp/RDataCtx.jsx`; it owns most global data structures, filters, counts, login state, and backend request helpers.
-- Regenerate bundled metadata with `./dnam-pull4webapp.pl -o public/data/multi_dta.json glin`, validate the JSON, then gzip it to `public/data/multi_dta.json.gz`. The `brains` rows should be `[ord, brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]`.
+- Regenerate bundled metadata with `./dnam-pull4webapp.pl -o public/data/multi_dta.json glin`, validate the JSON, then gzip it to `public/data/multi_dta.json.gz`.
 - Keep generated build output in `dist/` out of normal edits unless explicitly working on deployment output.
 
 ## Browser Testing Notes
@@ -116,4 +103,3 @@ Latest pushed `devel` baseline for this handoff is `f5a150c Optimize brain brows
 - Use the in-app Browser plugin for page loads, DOM snapshots, screenshots, visible-state checks, and verifying that Vite error overlays are gone.
 - In this app, the Browser plugin's Playwright wrapper can fail on form input with a virtual clipboard/input error. If `locator.fill()` or `locator.type()` hits that path, do not spend time fighting it; verify the dialog opens in-browser and smoke-test the backing endpoint directly.
 - For reliable form-entry regression tests, add a project-local Playwright test runner instead of relying on the in-app Browser wrapper.
-- The full by-region Browse table can be huge, so use `Filter to subjects that have: WGS samples` for most Browser checks unless intentionally testing worst-case rendering.

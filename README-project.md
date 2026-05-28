@@ -34,27 +34,11 @@ Important shared modules:
 
 Data loading starts in `RDataProvider`. The browser fetches `APP_BASE_URL + "data/multi_dta.json.gz"`, decompresses it with `fflate`, parses JSON, and populates global arrays and counts in `loadData()`.
 
-## Brain Set Builder Browse
+## Feature Area Notes
 
-The Brain Set Builder Browse tab is implemented mostly in `src/pages/br/brbrowse.jsx`. It depends on module-level data structures from `RDataCtx.jsx` and passes the active brain set to `RSelSummary` for the subject summary and export/request controls.
+Brain Set Builder and RNA exploration are the most developed frontend areas. Brain Set Builder uses shared metadata, filters, and selection summaries to build subject/sample sets and exports. RNA routes reuse the global selection/data model for expression exploration and plot/download requests.
 
-Core user-facing controls:
-
-- `Show GUIDs (x)`: off by default. When enabled, inserts `GUID` after `BrNum`; `x` is the number of displayed donors with non-empty GUIDs.
-- `Show sample counts by brain region`: switches from total assay-count columns to one count cell per brain region.
-- `Keep sample counts for`: controls which assay counts are visible. This is display-only and should not change the donor set.
-- `Filter to subjects that have`: narrows the donor set. In normal mode, selected assays must exist for the donor; in by-region mode, selected assays must occur in at least one same region.
-
-Important implementation contracts:
-
-- `prepTable(byRegion, cache)` builds the row model for normal or by-region mode. Its cache uses a selected-brain signature, not just selected-brain count, so two different same-size selections do not share stale rows.
-- `prepBrSet()` computes the displayed donor set from `m.reqXType`. It updates `brSetVersion` only when the donor set actually changes, avoiding unnecessary summary-count rebuilds for display-only toggles.
-- `BrTable` caches `tableFilter()` output by `tblRows`, `brSet`, and `brSetVersion`, and precomputes visible assay indexes/colors once per render.
-- `getBaseCols(showGuids)`, `getStickyCols(showGuids)`, `getDemoCells()`, and `getExportDemoCells()` keep normal table, by-region table, sticky columns, and export headers aligned.
-- `getBrowseTable()` is the export source for Browse mode and must mirror visible table state: GUID visibility, by-region mode, and visible assay-count columns.
-- Sticky columns are `#`, `BrNum`, and `Dx`; when GUID is visible, `Dx` remains sticky at index 3.
-
-Known performance limit: full unfiltered by-region tables are still very large. With the current bundled metadata, worst-case rendering can create tens of thousands of cells and many count spans. The latest quick-win cache work avoids wasted recomputation, but row virtualization is the likely next step if this view must feel smooth for full unfiltered sets.
+When changing shared modules such as `RDataCtx.jsx`, verify every feature area that depends on the shared state, not only the screen that motivated the change. Table and export views should keep their rendered columns, filtered row sets, and CSV/download outputs in sync.
 
 ## Backend Architecture
 
@@ -99,16 +83,16 @@ Backend details to keep in mind:
 
 The app's bundled browser metadata is `public/data/multi_dta.json.gz`. It contains normalized arrays for data types, datasets, regions, diagnoses, subjects/brains, and sample metadata. The UI reindexes database IDs into compact client-side indexes while keeping database ID maps for backend requests.
 
-`dnam-pull4webapp.pl` is the current generator for this file. It splits DNAm datasets into separate 450k/WGBS data types and includes the NDA GUID used by the Brain Set Builder Browse table. Run it from the repo root against the LAN database host, then validate and compress the JSON:
+`dnam-pull4webapp.pl` is the current generator for this file. It splits DNAm datasets into separate 450k/WGBS data types and includes current subject-level metadata used by frontend views. Run it from the repo root against the LAN database host, then validate and compress the JSON:
 
 ```bash
 ./dnam-pull4webapp.pl -o public/data/multi_dta.json glin
-node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("public/data/multi_dta.json","utf8")); if(!Array.isArray(j.brains)||!j.brains.every(r=>Array.isArray(r)&&r.length===12&&typeof r[2]==="string")) throw new Error("invalid brains GUID shape"); console.log(j.dtypes.join(", "), j.brains.length)'
+node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("public/data/multi_dta.json","utf8")); if(!Array.isArray(j.brains)||!j.brains.every(r=>Array.isArray(r)&&r.length>=11)) throw new Error("invalid brains shape"); console.log(j.dtypes.join(", "), j.brains.length)'
 gzip -c public/data/multi_dta.json > public/data/multi_dta.json.gz
 rm public/data/multi_dta.json
 ```
 
-The `brains` rows are `[ord, brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]`. Older generated files without GUID had 11 fields; the frontend loader remains backward-compatible, but current committed data should use the 12-field shape.
+The `brains` rows include subject identifiers, demographic fields, sequencing flags, genotype status, and drop status. Check the generator and `loadData()` together when changing the metadata shape so bundled data and frontend parsing stay compatible.
 
 Generation and database-adjacent files:
 
@@ -181,25 +165,16 @@ Deployment-oriented build scripts choose different Vite base paths:
 - Set `VITE_MWSERVER` only for an intentional explicit middleware override; do not bake `srv16` hostnames or raw `:4095` URLs into deployable bundles.
 - On srv16, run `nginx/install-bdportal-api-proxy.sh` to install the nginx locations before the static app locations in `/etc/nginx/snippets/app_dirs.conf`, run `nginx -t`, and reload nginx.
 - Several backend SQL strings interpolate values directly. Treat new route/query work carefully and prefer parameterized queries.
-- `RDataCtx.jsx` contains many module-level mutable structures. When changing filters, counts, or selected sample logic, verify both Brain Set Builder and RNA pages.
-- Brain Browse has coupled display/export behavior. Any table-column change should be checked in normal mode, by-region mode, and CSV export.
+- `RDataCtx.jsx` contains many module-level mutable structures. When changing filters, counts, or selected sample logic, verify all affected feature areas.
+- Views with export/download behavior should keep visible UI state and generated outputs aligned.
 - `dist/`, `build/`, and `node_modules/` are generated and ignored.
 
-## Recent State and Known Limits
+## Current Project Notes
 
-Current `devel` handoff baseline is commit `f5a150c Optimize brain browse table toggles`.
-
-Recent relevant changes:
-
-- Same-origin middleware API routing replaced hard-coded srv16 middleware URLs.
-- Iframe login was replaced with an in-app same-origin login dialog backed by middleware `/auth`.
-- Frontend and middleware dependencies were refreshed for Node 22+.
-- GUID metadata was added to the generated brain rows and Browse table row model.
-- Browse GUID display is optional through `Show GUIDs (x)` and exports only include GUID when the checkbox is enabled.
-- By-region Browse mode preserves assay-presence filters such as `WGS samples`.
-- Browse table toggles now avoid some unnecessary recomputation, but full unfiltered by-region rendering remains heavy.
-
-Likely next performance step: row virtualization for `BrTable`. Quick wins are already in place; if a future agent is asked to make full unfiltered by-region toggles smooth, changing how many rows are mounted is probably more important than more caching.
+- Same-origin middleware API routing should be preserved for local and deployed builds.
+- Login is handled through an in-app same-origin dialog backed by middleware `/auth`.
+- Frontend and middleware dependencies target Node 22+.
+- Keep task-specific handoffs, feature plans, and latest-commit status notes in separate files so this project overview remains stable.
 
 ## Verification Checklist
 
@@ -220,5 +195,5 @@ Then open `http://localhost:8080` with the middleware running and check:
 
 - The page loads `public/data/multi_dta.json.gz`.
 - The header server status reaches middleware.
-- Brain Set Builder matrix and browse tabs render.
+- Brain Set Builder tabs render.
 - Bulk RNAseq select/explore tabs render for a valid loaded selection.
