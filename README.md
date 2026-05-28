@@ -1,23 +1,39 @@
-## preact with vite
+# bdportal
 
-``` bash
-# install dependencies
-npm install
+Internal LIBD Brain Data Portal web application.
 
-#### development: serve with hot reload at localhost:8080
-npm run dev
-#### ---------------------
+For current setup, architecture, and agent handoff notes, start here:
 
-### build for production with minification
-# deploy under /bdportal
-npm run build-based
-# deploy under /dev/bdportal
-npm run build-based
-# deploy under /devel/bdportal
-npm run build-based
+- `AGENTS.md`: quick-start facts for Codex agents.
+- `README-project.md`: detailed frontend, middleware, data-generation, and deployment orientation.
 
-# test the production build locally
-npm run preview
+## Quick Commands
 
+```bash
+npm ci
+cd server && npm ci
 ```
 
+Run middleware and frontend in separate terminals.
+
+Terminal 1:
+
+```bash
+cd server && npm start
+```
+
+Terminal 2, from the repository root:
+
+```bash
+npm run dev
+```
+
+Useful checks:
+
+```bash
+npm run lint
+npm run build
+npm run build-based
+```
+
+The frontend dev server runs on `http://localhost:8080`; the middleware runs on `http://localhost:4095` and is reached by the frontend through `/api`.

@@ -34,6 +34,28 @@ Important shared modules:
 
 Data loading starts in `RDataProvider`. The browser fetches `APP_BASE_URL + "data/multi_dta.json.gz"`, decompresses it with `fflate`, parses JSON, and populates global arrays and counts in `loadData()`.
 
+## Brain Set Builder Browse
+
+The Brain Set Builder Browse tab is implemented mostly in `src/pages/br/brbrowse.jsx`. It depends on module-level data structures from `RDataCtx.jsx` and passes the active brain set to `RSelSummary` for the subject summary and export/request controls.
+
+Core user-facing controls:
+
+- `Show GUIDs (x)`: off by default. When enabled, inserts `GUID` after `BrNum`; `x` is the number of displayed donors with non-empty GUIDs.
+- `Show sample counts by brain region`: switches from total assay-count columns to one count cell per brain region.
+- `Keep sample counts for`: controls which assay counts are visible. This is display-only and should not change the donor set.
+- `Filter to subjects that have`: narrows the donor set. In normal mode, selected assays must exist for the donor; in by-region mode, selected assays must occur in at least one same region.
+
+Important implementation contracts:
+
+- `prepTable(byRegion, cache)` builds the row model for normal or by-region mode. Its cache uses a selected-brain signature, not just selected-brain count, so two different same-size selections do not share stale rows.
+- `prepBrSet()` computes the displayed donor set from `m.reqXType`. It updates `brSetVersion` only when the donor set actually changes, avoiding unnecessary summary-count rebuilds for display-only toggles.
+- `BrTable` caches `tableFilter()` output by `tblRows`, `brSet`, and `brSetVersion`, and precomputes visible assay indexes/colors once per render.
+- `getBaseCols(showGuids)`, `getStickyCols(showGuids)`, `getDemoCells()`, and `getExportDemoCells()` keep normal table, by-region table, sticky columns, and export headers aligned.
+- `getBrowseTable()` is the export source for Browse mode and must mirror visible table state: GUID visibility, by-region mode, and visible assay-count columns.
+- Sticky columns are `#`, `BrNum`, and `Dx`; when GUID is visible, `Dx` remains sticky at index 3.
+
+Known performance limit: full unfiltered by-region tables are still very large. With the current bundled metadata, worst-case rendering can create tens of thousands of cells and many count spans. The latest quick-win cache work avoids wasted recomputation, but row virtualization is the likely next step if this view must feel smooth for full unfiltered sets.
+
 ## Backend Architecture
 
 The middleware lives in `server/server.js` and uses:
@@ -64,6 +86,14 @@ Main middleware responsibilities:
 - Health/status: `/ruthere`, `/pgplrinit`
 
 The middleware assumes LAN services and file mounts exist. On development machines named `glin`, `gryzen`, or `gdebsrv`, it uses alternate local/LAN paths for R staging, H5 data, auth, and mail services. On srv16-like hosts, it defaults to LIBD deployment paths.
+
+Backend details to keep in mind:
+
+- `/auth` normalizes usernames, supports local dummy auth only when development env variables are set, and otherwise checks `useracc` before proxying to WebAuth.
+- `/authck` verifies the JWT returned by `/auth`; the frontend login context depends on the `{ signed_user, token }` shape.
+- `DDL_BASEURL` controls public links to prepared `/cdbFileStore` downloads. Keep it configurable rather than baking srv16 paths into frontend code.
+- `/rstaging/:fpath` and `/stdata/:fpath` share a staged-file sender that verifies readability and reports `404`, `403`, or `500` depending on the failure.
+- Several routes still reflect LAN path assumptions in `server/server.js`; read hostname-specific path setup before changing download, R staging, auth, or mail behavior.
 
 ## Data and Generation Scripts
 
@@ -152,7 +182,24 @@ Deployment-oriented build scripts choose different Vite base paths:
 - On srv16, run `nginx/install-bdportal-api-proxy.sh` to install the nginx locations before the static app locations in `/etc/nginx/snippets/app_dirs.conf`, run `nginx -t`, and reload nginx.
 - Several backend SQL strings interpolate values directly. Treat new route/query work carefully and prefer parameterized queries.
 - `RDataCtx.jsx` contains many module-level mutable structures. When changing filters, counts, or selected sample logic, verify both Brain Set Builder and RNA pages.
+- Brain Browse has coupled display/export behavior. Any table-column change should be checked in normal mode, by-region mode, and CSV export.
 - `dist/`, `build/`, and `node_modules/` are generated and ignored.
+
+## Recent State and Known Limits
+
+Current `devel` handoff baseline is commit `f5a150c Optimize brain browse table toggles`.
+
+Recent relevant changes:
+
+- Same-origin middleware API routing replaced hard-coded srv16 middleware URLs.
+- Iframe login was replaced with an in-app same-origin login dialog backed by middleware `/auth`.
+- Frontend and middleware dependencies were refreshed for Node 22+.
+- GUID metadata was added to the generated brain rows and Browse table row model.
+- Browse GUID display is optional through `Show GUIDs (x)` and exports only include GUID when the checkbox is enabled.
+- By-region Browse mode preserves assay-presence filters such as `WGS samples`.
+- Browse table toggles now avoid some unnecessary recomputation, but full unfiltered by-region rendering remains heavy.
+
+Likely next performance step: row virtualization for `BrTable`. Quick wins are already in place; if a future agent is asked to make full unfiltered by-region toggles smooth, changing how many rows are mounted is probably more important than more caching.
 
 ## Verification Checklist
 

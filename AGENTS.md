@@ -69,6 +69,37 @@ curl http://localhost:8080/api/pgplrinit
 - `public/data/`: bundled compressed metadata loaded by the browser.
 - `assets/` and `public/images/`: app images and guide assets.
 
+## Current Frontend Focus
+
+Brain Set Builder is the active frontend work area:
+
+- Main routes: `#/brsel/matrix` and `#/brsel/browse`.
+- Browse UI: `src/pages/br/brbrowse.jsx`.
+- Selection summary/export buttons: `src/comp/RSelSummary.jsx`.
+- Global data, filters, counts, login, and backend helpers: `src/comp/RDataCtx.jsx`.
+- Filter widgets: `src/comp/FltMList.jsx`, `src/comp/AgeDualPanel.jsx`.
+
+Brain Browse implementation notes:
+
+- `dtaBrains` rows currently include GUID as `[brint, guid, dx, race, sex, age, pmi, mod, has_seq, genotyped, dropped]` after client loading.
+- `Show GUIDs (x)` is hidden by default and inserts `GUID` after `BrNum` when enabled. The count is donors in the current displayed brain set with non-empty GUIDs.
+- `Show sample counts by brain region` switches from total assay-count columns to per-region count cells.
+- `Keep sample counts for` controls which assay count chips/columns are visible; it does not change the donor set.
+- `Filter to subjects that have` changes the donor set. In by-region mode, selected assays must occur in at least one same region.
+- Export uses `getBrowseTable()` and must mirror the visible table state, including GUID visibility and assay count visibility.
+- Sticky columns are `#`, `BrNum`, and `Dx`; when GUID is visible, `Dx` remains sticky after the inserted GUID column.
+- Recent performance work caches selected-brain signatures and table-filtered rows with `brSetVersion`, but full unfiltered by-region tables are still large. Prefer testing with a narrowing filter such as `WGS samples` when validating UI behavior.
+
+Latest pushed `devel` baseline for this handoff is `f5a150c Optimize brain browse table toggles`.
+
+## Current Backend Focus
+
+- Browser API calls should use same-origin `/api` paths. Vite rewrites `/api/*` to local middleware; nginx proxies `/bdportal/api/*`, `/dev/bdportal/api/*`, and `/devel/bdportal/api/*` to `127.0.0.1:4095`.
+- Auth endpoints are `/auth` and `/authck`. Local dummy auth is enabled only on non-production-like hosts with `testUser`, `testPass`, and `JWTSHH`; production forwards to the WebAuth proxy after checking `useracc`.
+- Useful DB smoke endpoints are `/ruthere`, `/pgplrinit`, and `/pgdb/dslist/rnaseq`.
+- Staged download routes `/rstaging/:fpath` and `/stdata/:fpath` check file readability and return distinct `404`, `403`, or `500` errors.
+- `DDL_BASEURL` can configure public `/cdbFileStore` links; do not hard-code `srv16` or direct middleware ports into frontend bundles.
+
 ## Working Notes
 
 - The app uses hash routes such as `#/brsel/matrix`, `#/brsel/browse`, and `#/rna/exp`.
@@ -85,3 +116,4 @@ curl http://localhost:8080/api/pgplrinit
 - Use the in-app Browser plugin for page loads, DOM snapshots, screenshots, visible-state checks, and verifying that Vite error overlays are gone.
 - In this app, the Browser plugin's Playwright wrapper can fail on form input with a virtual clipboard/input error. If `locator.fill()` or `locator.type()` hits that path, do not spend time fighting it; verify the dialog opens in-browser and smoke-test the backing endpoint directly.
 - For reliable form-entry regression tests, add a project-local Playwright test runner instead of relying on the in-app Browser wrapper.
+- The full by-region Browse table can be huge, so use `Filter to subjects that have: WGS samples` for most Browser checks unless intentionally testing worst-case rendering.
