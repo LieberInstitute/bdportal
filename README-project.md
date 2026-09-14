@@ -86,11 +86,11 @@ The app's bundled browser metadata is `public/data/multi_dta.json.gz`. It contai
 `dnam-pull4webapp.pl` is the current generator for this file. It splits DNAm datasets into separate 450k/WGBS data types and includes current subject-level metadata used by frontend views. Run it from the repo root against the LAN database host, then validate and compress the JSON:
 
 ```bash
-./dnam-pull4webapp.pl -o public/data/multi_dta.json glin
-node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("public/data/multi_dta.json","utf8")); if(!Array.isArray(j.brains)||!j.brains.every(r=>Array.isArray(r)&&r.length>=11)) throw new Error("invalid brains shape"); console.log(j.dtypes.join(", "), j.brains.length)'
-gzip -c public/data/multi_dta.json > public/data/multi_dta.json.gz
-rm public/data/multi_dta.json
+./dnam-pull4webapp.pl -o public/data/multi_dta.json   # server defaults to localhost (srv16)
+gzip -9 -f public/data/multi_dta.json                  # -> public/data/multi_dta.json.gz
 ```
+
+The script writes to a temporary file, validates it with `JSON::PP`, renames it into place and prints a stderr summary. Subjects without race/sex are excluded with a warning. See `docs/data-refresh.md` for the JSON shape and all data rules.
 
 The `brains` rows include subject identifiers, demographic fields, sequencing flags, genotype status, and drop status. Check the generator and `loadData()` together when changing the metadata shape so bundled data and frontend parsing stay compatible.
 

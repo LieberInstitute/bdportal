@@ -7,31 +7,43 @@ use Sys::Hostname;
 
 
 my $usage = q/Usage:
-  dnam-pull4webapp.pl [server]
+  dnam-pull4webapp.pl [-o out.json] [server]
 
    Fetches: regions, datasets[], dx, brains, samples[]
    and prepares a json file with all the parsed data,
    with dx, region, brain and datasets ids reindexed
 
    This is the version that splits DNAm datasets into WGBS and 450K
+
+   server  : PostgreSQL host (default: localhost); credentials are
+             taken from ~\/.pgpass (rse database)
+   -o file : write JSON to file (written to file.tmp first, validated,
+             then renamed); without -o the JSON goes to stdout
+   Warnings and a summary are printed to stderr.
 /;
 
 
 umask 0002;
-getopts('o:') || die($usage."\n");
+getopts('o:h') || die($usage."\n");
+die($usage."\n") if $Getopt::Std::opt_h;
 my $dbh; # global DB handle object
 
-my $srv=shift(@ARGV);
-if (!$srv) {
-  my ($host)=split(/\./, hostname());
-  $srv = $host eq 'linwks34' ? 'localhost' : 'gdebsrv';
-}
+my $srv=shift(@ARGV) || 'localhost';
 dbLogin($srv);
 
 my $outfile=$Getopt::Std::opt_o;
+my $tmpfile;
 if ($outfile) {
-  open(OUTF, '>'.$outfile) || die("Error creating output file $outfile\n");
+  $tmpfile=$outfile.'.tmp';
+  open(OUTF, '>'.$tmpfile) || die("Error creating output file $tmpfile\n");
   select(OUTF);
+}
+
+my %warned; # warning counters, summarized at the end
+sub warnmsg {
+  my ($key, $msg)=@_;
+  $warned{$key}++;
+  print STDERR "WARNING: $msg\n";
 }
 
 ##this should match the subjRace type definition in postgresql:
@@ -74,8 +86,15 @@ my $wqds="with ds as (select id, case when dtype='dnam' then 'dnam_'||info else 
        "name, case when public is true then 1 else 0 end as public,".
        "COALESCE(refs, '') as refs, dtype as origtype from datasets)\n";
 
-my $rd=dbQuery("$wqds select distinct dtype, origtype from ds order by 2");
+## datasets whose derived dtype cannot be determined (e.g. dnam without info) would be silently
+## left out of every query below, so report them explicitly
+my $rnull=dbQuery("$wqds select name from ds where dtype is null order by id");
+foreach my $nd (@$rnull) {
+  warnmsg('ds_notype', "dataset '$$nd[0]' has no usable dtype (dnam datasets need datasets.info set to 450k or WGBS); skipped");
+}
+my $rd=dbQuery("$wqds select distinct dtype, origtype from ds where dtype is not null order by 2, 1");
 my @xdts=map { $$_[0] } @$rd; # list of dataset types in order they are parsed from the last column of the datasets file
+die("Error: no dataset types found in the datasets table!\n") unless @xdts;
 
 ## create temporary view for the two dnam types
 my @dnamt=grep(/^dnam/i, @xdts);
@@ -87,10 +106,10 @@ foreach my $vm (@dnamt) {
 
 ###### ---- datasets json output is 2 objects:
 ##    "dtypes" : [ "rnaseq" , "dnam", ... ],  list of dataset types
-print "{\"dtypes\": [",' "'.join('", "', @xdts).'" ],'."\n";
-print " \"mod\": [",' "'.join('", "', @mods).'" ],'."\n";
-print " \"sex\": [",' "'.join('", "', @sexes).'" ],'."\n";
-print " \"race\": [", ' "'.join('", "', @races).'" ],'."\n";
+print "{\"dtypes\": [ ".join(', ', map { jsonstr($_) } @xdts)." ],\n";
+print " \"mod\": [ ".join(', ', map { jsonstr($_) } @mods)." ],\n";
+print " \"sex\": [ ".join(', ', map { jsonstr($_) } @sexes)." ],\n";
+print " \"race\": [ ".join(', ', map { jsonstr($_) } @races)." ],\n";
 ##     "datasets" : [  // array of dataset info arrays
 #           [ // array of rnaseq dataset array entries
 #              [ 1, "rnaseq_ds_name", public_flag(0/1), dbid, smp_count, refs ],
@@ -185,6 +204,7 @@ foreach my $rid (@rord) {
   }
 }
 print "\n],\n";
+my $nregs=$i;
 
 ## ----- dx, similar to reg, but with sequenced subject counts per datatype -------
 ## build @dx array :  $dx[dbId] = [ ord#, dx, name, dbId, brcount_dt1, brcount_dt2, ..]
@@ -236,6 +256,19 @@ print "\n],\n";
 
 ## ----- get the brains - brint hashed but with a new ord# as well
 ## NOTE: dropped subjects are also pulled but they should be always excluded from all counts!
+## Subjects without basic demographics (NULL race or sex) are placeholder records
+## (e.g. genotyped brains never registered in LIMS) and are excluded here; the
+## sample queries below skip any sample pointing to such a subject.
+my $rskip=dbQuery(q{select brnum, dropped, xdata,
+   (select count(*) from samples sm where sm.subj_id=s.id) as nsmp
+   from subjects s where race is null or sex is null order by brnum});
+foreach my $sk (@$rskip) {
+  my ($brnum, $dropped, $xdata, $nsmp)=@$sk;
+  my $note=$dropped ? 'dropped' : 'NOT dropped';
+  $note.=", $nsmp sample(s)" if $nsmp;
+  $note.=", xdata=$xdata" if defined($xdata) && length($xdata);
+  warnmsg('subj_nodemo', "subject $brnum has no race/sex ($note); excluded from brains");
+}
 my ($sth, $r)=dbExec(q{with rbrs as (SELECT distinct brint from exp_rnaseq x, samples s, subjects p
        where x.dropped is not true and x.s_id = s.id and p.id=s.subj_id),
     dbrs as (SELECT distinct brint from exp_dnam x, samples s, subjects p
@@ -246,52 +279,69 @@ my ($sth, $r)=dbExec(q{with rbrs as (SELECT distinct brint from exp_rnaseq x, sa
     from rbrs r
       full join dbrs d on d.brint=r.brint
       full join wbrs w on w.brint=r.brint)
- select brint, nda_guid, dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age, coalesce(pmi,0) as pmi,
+ select brint, coalesce(nda_guid, '') as guid, dx_id, race, sex, TRUNC(age::NUMERIC, 2) as age, coalesce(pmi,0) as pmi,
   case when mod SIMILAR TO '(n|N)ot? %' or mod is NULL  then 'n/a' else mod end as mod,
   case when exists(select from xs where s.brint=xs.brint) then 1 else 0 end as has_seq,
   case when genotyped is true then 1 else 0 end as genotyped,
-  case when dropped is true then 1 else 0 end as dropped from subjects s });
+  case when dropped is true then 1 else 0 end as dropped from subjects s
+  where s.race is not null and s.sex is not null
+  order by s.brint });
 
 ## JSON out: array of [ord#, brint, guid, dx#, race#, sex#, age, pmi, mod, has_seq, genotyped, dropped]
 ##            spec is   0     0       1    0     0     0     0    0    0     0          0          0
 ##                      001000000000
 print '"brains": [';
 $i=0;
+my $nguid=0;
 while (my $rd=dbFetch($sth)) {
  my ($brint, $guid, $dx_id, $race, $sex, $age, $pmi, $mod, $has_seq, $has_geno, $drop)=@$rd;
+ my $dxd=$dx[$dx_id];
+ unless ($dxd) {
+   warnmsg('subj_nodx', "Br$brint has dx_id $dx_id not found in dx table; excluded from brains");
+   next;
+ }
+ ## the query already excludes NULL race/sex; these guard against values missing from the
+ ## hard-coded index tables above (e.g. a new enum value) instead of crashing
+ my $ridx=$hrace{$race};
+ my $sidx=$hsex{$sex};
+ my $imod=$hmod{$mod};
+ unless ($ridx && $sidx && $imod) {
+   my @what;
+   push(@what, "race '$race'") unless $ridx;
+   push(@what, "sex '$sex'") unless $sidx;
+   push(@what, "MoD '$mod'") unless $imod;
+   warnmsg('subj_badcat', "Br$brint has unmapped ".join(', ', @what)."; excluded from brains (update \@races/\@sexes in this script if the enum changed)");
+   next;
+ }
  print ($i ? ",\n" : "\n");
  $i++;
- my $dxd=$dx[$dx_id] || die("Error getting \$dx[$dx_id] for brint $brint loading!\n");
  $br{$brint}=$i;
- my $ridx=$hrace{$race} ||
-    die("Error: race $race has no index translation in \@races!\n");
- my $imod=$hmod{$mod} ||
-    die("Error: MoD $mod has no index translation in \@mods!\n");
- my $sidx=$hsex{$sex} ||
-    die("Error: sex $sex has no index translation in \%sexes!\n");                                             #001000000000
+ $nguid++ if length($guid);
  print ' '.jsonarr([$i, $brint, $guid, $$dxd[0], $ridx, $sidx, $age, $pmi, $imod, $has_seq, $has_geno, $drop], '001000000000');
 }
 print "\n],\n";
+my $nbrains=$i;
 
 ## -- finally, get the sample lists,
 ##      replacing region_id, brint, dataset_id with their ord#s
 print "\"sdata\":  [\n";
 ## WARNING: hard coded qry parts for: rnaseq, dnam
 ##
-my %qf=( # hard coding queries for the first 4 data types - rnaseq, dnam-450K, dnam-WGBS, wgs
- $xdts[0] => q/case when protocol='RiboZeroGold' then 3
+## protocol index expression per data type; only rnaseq has real protocols
+## (the numbering must match dtaNames.proto in src\/comp\/RDataCtx.jsx),
+## every other data type gets the dummy protocol 1 (all samples)
+my %qf=(
+ rnaseq => q/case when protocol='RiboZeroGold' then 3
   when protocol='RiboZeroHMR' then 2
   when protocol='PolyA' then 1
-  else 0 end as proto/, ## rnaseq
- #$xdts[1] => q/case when atype='450k' then 1
- # when atype='WGBS' then 2
- # else 0 end as atype/, ## dnam
-  $xdts[1] => '1 as proto', ## dnam-450K
-  $xdts[2] => '1 as proto', ## dnam-WGBS
-  $xdts[3] => '1 as proto'  ## wgs dummy protocol 1 (all samples)
+  else 0 end as proto/
 );
+foreach my $dt (@xdts) {
+  $qf{$dt}='1 as proto' unless exists $qf{$dt};
+}
 
 $idt=0;
+my @nsamples; # per data type sample counts, for the summary
 
 ## JSON out array of arrays per dataset:
 ##    [ br_ord#, sample_id, dataset_ord#, reg_ord#, proto ]
@@ -308,15 +358,27 @@ foreach my $dt (@xdts) {
    print ($idt ? ", [" : " [");
    my ($sth, $r)=dbExec($q);
    while (my $rd=dbFetch($sth)) { #@$rd = brint, sample_id, dataset_id, region_id, proto
+     my ($brint, $sid, $dsid, $rid, $proto)=@$rd;
+     my $brord=$br{$brint};
+     unless ($brord) { # subject excluded above (no demographics or unmapped category)
+       warnmsg('smp_nosubj', "$dt sample $sid belongs to excluded subject Br$brint; skipped");
+       next;
+     }
+     ## these two cannot be recovered from: the dataset/region tables above were built from
+     ## the same exp_ tables, so a miss means the database is inconsistent
+     my $dsd=$ds[$dsid];
+     die("Error: $dt sample $sid has dataset_id $dsid with no '$dt' dataset entry!\n") unless $dsd && $$dsd[0];
+     unless (defined($rid)) {
+       warnmsg('smp_noreg', "$dt sample $sid (Br$brint) has no region (samples.r_id is NULL); skipped");
+       next;
+     }
+     my $rgd=$reg[$rid];
+     die("Error: $dt sample $sid has region id $rid with no regions entry!\n") unless $rgd && $$rgd[0];
      print ($i ? ",\n" : "\n");
      $i++;
-     my @sd=@$rd;
-     $sd[0]=$br{$sd[0]}; # replace with br_ord#
-     $sd[2]=$ds[$sd[2]][0]; # replace with dataset_ord# (for this data type!)
-     $sd[3]=$reg[$sd[3]][0]; # replace with region_ord#
-     #@sd=($i, @sd); #unshift $i
-     print '  ',jsonarr(\@sd, '01000');
+     print '  ',jsonarr([$brord, $sid, $$dsd[0], $$rgd[0], $proto], '01000');
    }
+   push(@nsamples, "$dt=$i");
    print ($idt==$#xdts ? "\n ]\n" : "\n ]");
    $idt++;
 }
@@ -326,7 +388,31 @@ print "]\n}\n"; # close samples, end of JSON file!
 if ($outfile) {
  select(STDOUT);
  close(OUTF);
+ ## validate the JSON before publishing it under the requested name
+ require JSON::PP;
+ open(my $fh, '<', $tmpfile) || die("Error reopening $tmpfile\n");
+ my $jtxt=do { local $/; <$fh> };
+ close($fh);
+ my $j=eval { JSON::PP->new->decode($jtxt) };
+ if (!$j || $@) {
+   die("Error: generated JSON in $tmpfile failed to parse: $@\n");
+ }
+ foreach my $k (qw(dtypes mod sex race datasets reg dx brains sdata)) {
+   die("Error: generated JSON lacks a non-empty '$k' array ($tmpfile kept)\n")
+     unless ref($$j{$k}) eq 'ARRAY' && @{$$j{$k}};
+ }
+ die("Error: datasets/sdata arrays do not match the number of data types ($tmpfile kept)\n")
+   unless @{$$j{datasets}}==@xdts && @{$$j{sdata}}==@xdts;
+ rename($tmpfile, $outfile) || die("Error renaming $tmpfile to $outfile: $!\n");
 }
+
+print STDERR "Done. dtypes: ".join(', ', @xdts)."\n";
+print STDERR "  brains: $nbrains ($nguid with GUID), regions: $nregs, dx: ".scalar(@dxord)."\n";
+print STDERR "  samples: ".join(', ', @nsamples)."\n";
+if (%warned) {
+  print STDERR "  warnings: ".join(', ', map { "$_=$warned{$_}" } sort keys %warned)."\n";
+}
+print STDERR "  output: $outfile\n" if $outfile;
 
 $dbh->disconnect();
 
@@ -342,10 +428,31 @@ sub jsonarr {
   }
   my $r='[';
   for (0 .. $#d) {
-     $r.= $s[$_] ? '"'.$d[$_].'"' : $d[$_];
+     my $v=$d[$_];
+     $v='' unless defined($v);
+     if ($s[$_]) { $r.=jsonstr($v) }
+     else {
+       ## unquoted values must be valid JSON numbers
+       die("Error: non-numeric value '$v' in unquoted JSON slot $_ of ( ".join(', ', map { defined($_) ? $_ : 'NULL' } @d)." )\n")
+          unless $v=~m/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][-+]?\d+)?$/;
+       $r.=$v;
+     }
      $r.=',' unless $_==$#d;
   }
   return $r.']';
+}
+
+# quote a string as a JSON string literal, escaping quotes, backslashes and control chars
+sub jsonstr {
+  my $v=shift;
+  $v='' unless defined($v);
+  $v=~s/\\/\\\\/g;
+  $v=~s/"/\\"/g;
+  $v=~s/\n/\\n/g;
+  $v=~s/\r/\\r/g;
+  $v=~s/\t/\\t/g;
+  $v=~s/([\x00-\x1f])/sprintf('\\u%04x', ord($1))/ge;
+  return '"'.$v.'"';
 }
 
 sub dbErr {

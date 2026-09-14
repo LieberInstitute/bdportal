@@ -8,7 +8,7 @@ Stack:
 - Frontend: Preact 10 with Vite, Bootstrap, Reactstrap, jQuery helpers, and `fflate` for compressed JSON.
 - Middleware: Node/Express in `server/`, listening on port `4095` by default.
 - Data: PostgreSQL via `pg`, plus generated static metadata in `public/data/multi_dta.json.gz`.
-- Deployment: internal nginx path `https://db.libd.net/bdportal`.
+- Deployment: internal nginx path `https://db.libd.net/bdportal` (also `http://srv16.lieber.local/bdportal`); dev build at `/dev/bdportal`. See `docs/deployment.md`.
 - Metadata generator: `dnam-pull4webapp.pl` is the current source for `public/data/multi_dta.json.gz`; it emits the normalized browser metadata bundle used across frontend feature areas.
 
 Use Node 22+ for local development. The root and middleware packages both declare `engines.node >=22.12`, and the root includes `.nvmrc`.
@@ -91,11 +91,11 @@ Keep task-specific handoff notes in separate dated files instead of turning this
 
 - The app uses hash routes such as `#/brsel/matrix`, `#/brsel/browse`, and `#/rna/exp`.
 - The browser talks to middleware through the same-origin `/api` prefix. In local Vite development, `/api/*` is proxied and rewritten to the local middleware on port `4095`; in production, nginx proxies `/bdportal/api/*` to the middleware on `127.0.0.1:4095`.
-- The nginx proxy template for production API routes is in `nginx/bdportal-api-locations.conf`; run `nginx/install-bdportal-api-proxy.sh` on srv16 to install those locations before static app locations.
+- The nginx proxy template for API routes is in `nginx/bdportal-api-locations.conf`; run `nginx/install-bdportal-api-proxy.sh` on srv16 to install those locations before static app locations. `/bdportal` and `/devel` proxy to the production middleware (4095); `/dev/bdportal` proxies to `bdportal-server-dev.service` (4097, this checkout's `server/`). See `docs/deployment.md`.
 - Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.mjs`.
 - `GET /pgplrinit` should return `pl/r` when the DB permissions and R libraries on `glin` are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
 - Avoid broad refactors in `src/comp/RDataCtx.jsx`; it owns most global data structures, filters, counts, login state, and backend request helpers.
-- Regenerate bundled metadata with `./dnam-pull4webapp.pl -o public/data/multi_dta.json glin`, validate the JSON, then gzip it to `public/data/multi_dta.json.gz`.
+- Regenerate bundled metadata on srv16 with `./dnam-pull4webapp.pl -o public/data/multi_dta.json` (default server `localhost`; the script validates the JSON itself), then `gzip -9 -f public/data/multi_dta.json`. Details and data rules: `docs/data-refresh.md`.
 - Keep generated build output in `dist/` out of normal edits unless explicitly working on deployment output.
 
 ## Browser Testing Notes

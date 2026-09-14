@@ -6,6 +6,8 @@ For current setup, architecture, and agent orientation notes, start here:
 
 - `AGENTS.md`: quick-start facts for Codex agents.
 - `README-project.md`: detailed frontend, middleware, data-generation, and deployment orientation.
+- `docs/deployment.md`, `docs/data-refresh.md`, `docs/releases/`: srv16 deployment, metadata refresh, release notes.
+- `CLAUDE.md`: working rules for coding agents.
 
 ## Quick Commands
 
