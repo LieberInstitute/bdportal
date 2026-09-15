@@ -18,7 +18,7 @@
   display: none;
   right: 0px;
   left: 0;
-  height: 10px;
+  height: 7px;
   text-align: center;
   cursor: pointer;
   pointer-events: none;
@@ -27,18 +27,18 @@
 
 .lg-topshade {
   top: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.2), 30%, transparent);
+  background: linear-gradient(rgba(0, 0, 0, 0.10), transparent);
 }
 
 .lg-bottomshade {
   padding-bottom: 0;
   bottom: 0;
-  background: linear-gradient(transparent, 70%, rgba(0, 0, 0, 0.16));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.09));
 }
 
 .lg-scroller {
   position: relative;
-  padding: 2px 0;
+  padding: 0;
   margin: 0;
   width: auto;
   height: auto;
@@ -269,5 +269,12 @@
   white-space: nowrap;
 }
 .lg-item.lg-it-proto .lg-item-counts {
-  flex: 0 0 3.4rem;
+  flex: 0 0 2.6rem;
+}
+/* toggle lists never show bars: let the label take the room and keep the count snug */
+.lg-toggler .lg-item:not(.lg-item-h) .lg-item-th {
+  flex: 1 1 auto;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

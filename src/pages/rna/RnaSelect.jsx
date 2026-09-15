@@ -361,7 +361,7 @@ const RnaSelect = ({ style }) => {
                 <FltMList key={`reg${clearCounter}_${m.updList['reg']}`} id="reg" width="14rem" height="18rem" data={dta.reg} filter={getFilterSet} onApply={applyFilter} updateFilter />
               </Col>
               <Col className="p-0 m-0">
-                <FltMList key={`prot${clearCounter}_${m.updList['proto']}`} id="proto" type="toggle" nobars width="10.4em" data={dta.proto} filter={getFilterSet} onApply={applyFilter} updateFilter />
+                <FltMList key={`prot${clearCounter}_${m.updList['proto']}`} id="proto" type="toggle" nobars width="11.6em" data={dta.proto} filter={getFilterSet} onApply={applyFilter} updateFilter />
               </Col>
             </Row>
           </Col>
