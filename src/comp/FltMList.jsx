@@ -181,6 +181,10 @@ export function FltMList( props ) {
 
       //console.log(`FltMList ${fid} creating with filter size: ${dtFilter.size}`);
       //dom.find('.coll-glyph').html(arrowLeft)
+      if (isToggle && !isHoriz) {
+        // vertical toggle lists (e.g. Datasets) scroll too: same shade handling
+        checkScrollShader(dom.find('ul.lg-toggler'))
+      }
       if (!isToggle) {
          if (props.undo) m.btnUndo = dom.find('.btn-undo')
         // add scrolling shading
@@ -549,9 +553,13 @@ export function FltMList( props ) {
              { !noCollapse && <span className="coll-glyph" onClick={toggleCollapse}> </span> }
            </span>
         </div>
-          { isToggle ? <ul class={toggleClass} onClick={onClickList}
+          { isToggle ? <div class={isHoriz ? "lg-tlst" : "lg-lst lg-tlst"}>
+                  <ul class={toggleClass} onClick={onClickList}
                        style={ fakeToggle ? { maxHeight : props.height ? props.height  : "8.6rem"}:{}}>
                   {renderItems()} </ul>
+                  { !isHoriz && <div class="lg-topshade"> </div> }
+                  { !isHoriz && <div class="lg-bottomshade"> </div> }
+                </div>
           :
           <ul class="collapse show lg-lst" onClick={onClickList}>
            <div class="lg-scroller" style={{ maxHeight : props.height ? props.height  : "8.6rem"}}>

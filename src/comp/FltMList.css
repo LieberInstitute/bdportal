@@ -78,8 +78,13 @@
 }
 
 .lg-panel.fl-inset .lg-toggler {
-  box-shadow:         inset 0 0 4px rgba(0, 0, 0, 0.4);
   border-radius: 0;
+}
+/* wrapper around a toggle list so the scroll shades can overlay it */
+.lg-tlst {
+  position: relative;
+  padding: 0;
+  margin: 0;
 }
 
 .lg-item {
