@@ -526,7 +526,7 @@ export function FltMList( props ) {
   //   "  applied:", Object.keys(m.appliedStates), " showApply:", showApply)
 
   // ################## rendering component here:
-  const caption=id2name[props.id] || props.id
+  const caption=(typeof props.title !== 'undefined') ? props.title : (id2name[props.id] || props.id)
   const titleNoClick=( noCollapse || props.notitleclick )
   const titleClass= fid=='dset' ? "lg-title lg-dset-title" : "lg-title"
   const toggleClass = isHoriz ? "lg-toggler d-flex justify-content-around" :
