@@ -252,7 +252,8 @@ to be made available everywhere in the app
 .ckbox-label {
   display: flex;
   flex-direction: row;
-  font-size:14px;
+  font-size: var(--bd-fs-sm);
+  color: var(--bd-ink-2);
   /* border: 1px solid pink; */
   align-content: flex-start;
   height:20px;
@@ -885,6 +886,7 @@ to be made available everywhere in the app
 .subjxtbl .thl_hover {
   background-color:#ddd;
 }
+.subjxtbl { font-size: var(--bd-fs-sm); font-variant-numeric: tabular-nums; }
 .subjtbl, .subjxtbl {
   font-size:15px;
   line-height:22px;
@@ -1015,4 +1017,12 @@ to be made available everywhere in the app
 .regtbl td > span{
   font-size:95%;
   font-weight:normal;
+}
+
+/* crosstab row labels: keep one line so the row rhythm holds */
+.subjxtbl > tbody > tr > th:nth-child(2) {
+  white-space: nowrap;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

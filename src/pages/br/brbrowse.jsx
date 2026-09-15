@@ -560,16 +560,18 @@ const BrBrowse = ( ) => {
 		 <Row id="brTblContainer" className="d-flex flex-grow-1 pt-0 mt-0 mr-0 pr-0 justify-content-center flex-nowrap">
 		  {/* <Col className="d-flex mr-0 pr-0 flex-grow-1 align-self-stretch" > */}
 			  <Col className="d-flex flex-column align-items-stretch justify-content-end mb-1">
-					<Row className="d-flex flex-row justify-content-between align-items-start m-1 pt-1">
-					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
+					<Row className="br-toolbar d-flex flex-row justify-content-between align-items-center m-1 pt-1">
+					<span class="br-toolbar-count"><b>{m.brSet ? m.brSet.size : 0}</b> subjects</span>
+					<div class="d-flex flex-row align-items-center">
+					<div className="ckbox-label mr-4" data-toggle="tooltip" data-placement="left" title="Show the NDA pseudo-GUID column" >
 						 <CustomInput type="checkbox" id="ckShowGuids" onClick={() => setShowGuids(!showGuids)} checked={showGuids} />
-								 Show GUIDs ({guidCount})
+								 GUIDs <span class="br-toolbar-n">({guidCount})</span>
 					</div>
-					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
+					<div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="Split the sample counts by brain region" >
       					 <CustomInput type="checkbox" id="ckByRegion" onClick={toggleByRegion} checked={byRegion} />
-								 Show sample counts by brain region
+								 Counts by brain region
   		  		  </div>
-
+					</div>
 					</Row>
 					{/* <Row className="m-1 pt-1 h-100"> */}
 						<BrTable key={`${m.tblkey}-${byRegion ? 'region' : 'total'}`}
@@ -578,14 +580,14 @@ const BrBrowse = ( ) => {
 			</Col>
 			<Col className="d-flex flex-column align-items-start">
 			  <Row id="rowFltCtl" className="pl-2 pr-0 pt-1 mt-2 mb-0 d-flex justify-content-start align-items-start"
-				           style="padding-bottom:8px;border-bottom: 1px solid #ddd;">
+				           >
 					<Col className="d-flex flex-column text-align-center justify-content-center align-items-center col-auto">
 					   <span class="br-xck-caption align-self-start"><br />Keep sample counts for:</span>
 							{ xtcols.map( (xn, xt)=>
 							<div key={`ckXt${xt}`} class="ml-1 row d-flex align-self-center flex-row xt-ckbox">
 						    <div className="ckbox-label" data-toggle="tooltip" data-placement="left" title="" >
 								<span class='ckbox-br-xt'>
-								   <span style={ { height:'18px', marginLeft:'-30px', marginRight: '4px', backgroundColor: xtcolors[xt] }}>&nbsp;#&nbsp;</span>
+								   <span class="xt-swatch" style={ { backgroundColor: xtcolors[xt] }}> </span>
 									 {xn}
 								</span>
 							   <CustomInput type="checkbox" id={`ckXt${xt}`} onClick={ () => toggleXType(xt)} checked={m.showXType[xt]} />
@@ -594,7 +596,7 @@ const BrBrowse = ( ) => {
 							) }
 					</Col>
 					<Col className="d-flex flex-column text-align-center justify-content-center align-items-start"
-					                style="border-left:3px solid #ccc;" >
+					                style="border-left:1px solid var(--bd-line);" >
           { byRegion ? <span class="br-xck-caption"><b> Filter to subjects that have <br /> in the same region:</b></span>
 					   : <span class="br-xck-caption"><br /><b>Filter to subjects that have:</b> </span>
 					}

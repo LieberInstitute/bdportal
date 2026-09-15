@@ -127,3 +127,96 @@
   height: calc(100vh - 122px);
 }
 */
+
+
+/* ---- Browse page restyle (tokens from app.css) ---- */
+.br-toolbar {
+  font-size: var(--bd-fs-sm);
+  color: var(--bd-ink-2);
+}
+.br-toolbar-count {
+  color: var(--bd-ink-3);
+  padding-left: 4px;
+}
+.br-toolbar-count b {
+  color: var(--bd-accent-dark);
+  font-size: var(--bd-fs);
+}
+.br-toolbar-n {
+  color: var(--bd-ink-3);
+}
+
+.brtbl {
+  font-size: var(--bd-fs-sm);
+  font-variant-numeric: tabular-nums;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--bd-line);
+  border-radius: var(--bd-radius);
+  overflow: hidden;
+  background-color: var(--bd-surface);
+}
+.brtbl td, .brtbl th {
+  padding: 2px 10px;
+  border-bottom: 1px solid var(--bd-line);
+}
+.brtbl thead td, .brtbl thead th {
+  background-color: var(--bd-surface-2);
+  color: var(--bd-ink-2);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--bd-line-2);
+}
+.brtbl tbody tr:nth-child(even) td { background-color: var(--bd-surface); }
+.brtbl tbody tr:nth-child(odd) td { background-color: var(--bd-surface-2); }
+.brtbl tbody tr:hover td { background-color: var(--bd-accent-soft); }
+.brtbl tbody tr:last-child td { border-bottom: none; }
+.brtbl tr td:nth-child(3)>span, .brtbl tr th:nth-child(3)>span {
+  border-right: 1px solid var(--bd-line) !important;
+}
+
+/* per data type sample counts inside a row */
+.brtbl tbody td .xtc, .bregxt tbody td .rxtc {
+  border-radius: 3px;
+  font-weight: 600;
+  min-width: 1.4rem;
+  padding: 1px 4px;
+}
+.bregxt tbody td .rxtc0, .brtbl tbody td .xtc0 {
+  color: var(--bd-ink-4);
+  background-color: transparent;
+}
+
+/* right panel: data type chips */
+.xt-ckbox {
+  display: block;
+}
+.ckbox-br-xt {
+  width: auto;
+  min-width: 7rem;
+  text-align: start;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--bd-fs-sm);
+}
+.xt-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  flex: none;
+}
+.br-xck-caption {
+  font-size: var(--bd-fs-sm);
+  color: var(--bd-ink-3);
+  padding-bottom: 4px;
+}
+.br-xck-caption b { font-weight: 600; color: var(--bd-ink-2); }
+#rowFltCtl {
+  background-color: var(--bd-surface);
+  border: 1px solid var(--bd-line);
+  border-radius: var(--bd-radius);
+  padding: 6px 10px 8px 4px;
+  box-shadow: var(--bd-shadow);
+}

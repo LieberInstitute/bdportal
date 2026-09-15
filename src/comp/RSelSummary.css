@@ -2,12 +2,12 @@
     display:inline-block;
     margin:4px 4px;
     text-align:center;
-    font-size:1rem;
-    font-weight:bold;
-    color: #ed1848;
-    /* border: 1px solid #ed184860; */
-    background-color:#fafafa;
-    padding: 2px;
+    font-size: var(--bd-fs-lg);
+    font-weight: 600;
+    color: var(--bd-accent-dark);
+    background-color: var(--bd-accent-soft);
+    border-radius: var(--bd-radius-sm);
+    padding: 2px 8px;
     line-height:120%;
     min-width:4rem;
  }
