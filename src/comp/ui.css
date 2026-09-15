@@ -534,12 +534,9 @@ to be made available everywhere in the app
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* fl-inset used to be a flat, borderless variant; it now shares the card look
+   of every other panel so all list controls match */
 .lg-panel.fl-inset {
-  /*border: 1px solid #ccc;
-  background-color: #fff;*/
-  border:none;
-  border-top: 1px solid #fafafa;
-  background: none;
 }
 
 .lg-panel.lg-sq {
@@ -572,11 +569,7 @@ to be made available everywhere in the app
 }
 
 .lg-panel.fl-inset .lg-title {
-  /* background-image: linear-gradient(to right, #e2e2e4, #f2f2f4);
-  background-color: #f2f2f4;*/
-  background-color: transparent;
-  border:none;
-  /* border-left: 1px solid #ffffff; */
+  /* same header band as the other panels */
 }
 
 

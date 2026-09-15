@@ -61,11 +61,7 @@
 .lg-toggler {
   position:relative;
   background-color: var(--bd-surface);
-  /*
-  display:flex;
-  justify-content: space-around !important;
-  */
-  padding:2px;
+  padding: 0;
   margin:0;
   /* overflow-wrap: normal; */
   /* border-top: 1px solid green; */
@@ -186,7 +182,7 @@
   display: inline-flex;
   justify-content: center;
   padding: 1px 10px;
-  margin: 2px;
+  margin: 3px 2px;
 }
 /* horizontal toggles (Sex) keep label and count inline, no bar column;
    vertical toggle lists (Datasets) keep the regular count column */
