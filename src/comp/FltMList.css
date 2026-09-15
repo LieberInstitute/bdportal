@@ -176,7 +176,7 @@
   mask-image: url('lock-solid.svg');
 }
 
-.lg-toggler .lg-item.lg-item-h {
+.lg-toggler .lg-item.lg-item-h, .lg-toggler .lg-item.lg-item-h.lg-sel {
   min-width: 4rem;
   display: inline-flex;
   justify-content: center;
@@ -200,7 +200,8 @@
 }
 
 .lg-toggler .lg-item.lg-sel {
-  margin: 2px 2px;
+  /* same box as an unselected item: selecting must not shift neighbours */
+  margin: 0 3px;
   color: white;
   background-color: var(--bd-accent);
   border-radius: var(--bd-radius-sm);
