@@ -93,7 +93,8 @@ export function FltMList( props ) {
     userApply: false, //if since creation the user clicked the Apply button
     btnApply: null,
     btnUndo: null,
-    lHeight: 0 //calculated list height
+    lHeight: 0, //calculated list height
+    shadeRO: null //ResizeObserver keeping the scroll shades in sync
     //fltSet: null //internal copy of the filter set
   });
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -208,7 +209,7 @@ export function FltMList( props ) {
     // }
     // --- enable tooltips:
     setupTooltips(refDom.current)
-    return ()=>clearTooltips(refDom.current)
+    return ()=>{ clearTooltips(refDom.current); if (m.shadeRO) { m.shadeRO.disconnect(); m.shadeRO=null } }
   }, []); 
 
 
@@ -391,13 +392,18 @@ export function FltMList( props ) {
   }
 
   function checkScrollShader(jscroller) {
-    m.lHeight=jscroller.get(0).scrollHeight
-    const lh=Math.round(jscroller.height())
-    //console.log(` scroller for ${fid}: `, m.lHeight, ' vs' , lh)
+    const el=jscroller.get(0)
+    if (!el) return
+    m.lHeight=el.scrollHeight
     jscroller.off('scroll')
-    scrollShader(jscroller, m.lHeight, lh);
-    if (lh<m.lHeight)
-      jscroller.on('scroll', (e) => scrollShader($(e.target), m.lHeight, lh)  );
+    scrollShader(jscroller);
+    jscroller.on('scroll', (e) => scrollShader($(e.target)) );
+    // the list height can change after mount (collapse, parent-driven max-height,
+    // font loading), so re-evaluate the shades whenever the scroller is resized
+    if (!m.shadeRO && typeof ResizeObserver!=='undefined') {
+      m.shadeRO=new ResizeObserver( () => scrollShader(jscroller) )
+      m.shadeRO.observe(el)
+    }
   }
 
   function unCollapse() {
@@ -449,25 +455,18 @@ export function FltMList( props ) {
                  else unCollapse()
   }
 
-  function scrollShader(t, lh, vh) {
-    const y = t.scrollTop();
+  // show the top/bottom shades only when the list actually scrolls and there is
+  // hidden content in that direction (live measurements, 1px tolerance)
+  function scrollShader(t) {
+    const el=t.get(0)
+    if (!el) return
     const l = t.closest('.lg-panel').find('.lg-lst');
-    if (y>1) {
-      //p.addClass('lg-b-shadow');
-      l.find('.lg-topshade').show();
-    }
-    else {
-      //p.removeClass('lg-b-shadow');
-      l.find('.lg-topshade').hide();
-    }
-   //console.log('y+vh=', y+vh, ' vs ', lh)
-    if (y+vh>=lh) {
-      //t.removeClass('lg-in-shadow');
-      l.find('.lg-bottomshade').hide();
-    } else {
-      //t.addClass('lg-in-shadow');
-      l.find('.lg-bottomshade').show();
-    }
+    const canScroll = el.scrollHeight - el.clientHeight > 1
+    const y = el.scrollTop
+    if (canScroll && y>1) l.find('.lg-topshade').show();
+    else l.find('.lg-topshade').hide();
+    if (canScroll && y + el.clientHeight < el.scrollHeight - 1) l.find('.lg-bottomshade').show();
+    else l.find('.lg-bottomshade').hide();
   }
 
   function itemClass(oid) {
