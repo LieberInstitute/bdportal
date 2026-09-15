@@ -424,6 +424,9 @@ function jqFillMatrix(xt, rn, rtooltips) { //takes values from mxVals!
      $.map(xt, (xt) => {
         return '<th class="rt"><div class="txRotate"><span>'+xt+'</span></div></th>';
      }).join()+'</tr>');
+  // data types with no samples at all (placeholders for future data) get a muted column
+  const xtEmpty=xt.map( (x,j) => !rn.some( (r,i) => getMxVal(j,i+1)>0 ) );
+  th.find('th.rt').each( (j, e) => { if (xtEmpty[j]) $(e).addClass('xt-empty').attr('title', 'No '+xt[j]+' data yet'); });
      //populate rows:
  let tb= $('#rxMatrix > tbody');
  tb.empty();
@@ -434,7 +437,7 @@ function jqFillMatrix(xt, rn, rtooltips) { //takes values from mxVals!
             $.map(xt, (x,j) => {
               let v=getMxVal(j,i+1);//mxVals[j][i+1];
               if (v===0) v='';
-              return '<td>'+v+'</td>';
+              return (xtEmpty[j] ? '<td class="xt-empty">' : '<td>')+v+'</td>';
             }).join() + "</tr>\n";
       }).join());
       // now iterate through all cells to record their original color values
@@ -448,9 +451,10 @@ function jqFillMatrix(xt, rn, rtooltips) { //takes values from mxVals!
 
  function shadeCell(t, v) {
   if (v>0) {
-    let psh=v/(mxMaxVal*4.1);
-    let bc=gu.shadeRGBColor('rgb(240,240,240)', -psh);
-    let fg=(gu.getRGBLuminance(bc)<120)? '#fff':'#000';
+    // single-hue sequential fill: light accent tint towards the dark accent
+    let psh=Math.pow(v/mxMaxVal, 0.6); // gamma spreads the many small counts apart
+    let bc=gu.blendRGBColors('rgb(253,243,246)', 'rgb(196,32,80)', psh*0.85);
+    let fg=(gu.getRGBLuminance(bc)<150)? '#fff':'#3a2a2f';
     t.prop('obg', bc);
     t.css('background-color', bc);
     t.prop('ofg',fg);

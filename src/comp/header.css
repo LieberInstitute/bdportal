@@ -11,7 +11,33 @@
 	flex: 0 0 3rem;
 	min-width:68rem !important;
 	z-index: 100;
+	background-color: var(--bd-surface) !important;
+	border-bottom: 1px solid var(--bd-line);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.05);
  }
+
+ /* middleware/database status: a dot plus the short build hash, details in the tooltip */
+ .srv-status {
+	position: relative;
+	bottom: -24px;
+	margin-left: 0.8rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	color: var(--bd-ink-4);
+	cursor: default;
+ }
+ .srv-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: var(--bd-ink-4);
+ }
+ .srv-status.ok .srv-dot { background-color: #3aa76d; }
+ .srv-status.bad .srv-dot { background-color: var(--bd-accent); }
+ .srv-status.pending .srv-dot { background-color: #e0b04a; }
 
  .navimgbands {
   height: 1.6rem;
@@ -31,15 +57,16 @@
 	}
 
  .navdbtsel {
-   background-color: #eae8e8 !important;
-   box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.2);
+   background-color: var(--bd-surface-2) !important;
+   border: 1px solid var(--bd-line) !important;
+   border-radius: var(--bd-radius);
+   box-shadow: none;
    min-width: 12rem !important;
-   /* border-bottom: 4px solid #eae8e8; */
-   /* vertical-align: middle !important; */
-   color: #ef3868;
-   font-size:110%;
+   color: var(--bd-accent-dark) !important;
+   font-size: var(--bd-fs-lg);
+   font-weight: 600;
    text-align: center;
-   padding: 4px;
+   padding: 4px 10px;
  }
 
  .navdbtsel:hover {
@@ -60,17 +87,18 @@
 	 color: #ccc;
  }
  .navtab {
-	 padding: 4px 6px;
-	 margin:0 0.3rem;
+	 padding: 4px 8px 5px;
+	 margin:0 0.2rem;
 	 line-height:100%;
 	 display:inline-block;
-	 border-radius: 4px 4px 0 0;
-	 background-color:#f0f0f0;
+	 border-radius: 0;
+	 background-color: transparent;
+	 border-bottom: 3px solid transparent;
 	 white-space: nowrap;
 	 position:relative;
-	 bottom:-26px;
-	 /* border: 1px solid red;  */
-	 color: #888;
+	 bottom:-24px;
+	 color: var(--bd-ink-3);
+	 font-size: var(--bd-fs);
 	 z-index:auto;
   /* prevent text selection/cursor */
   -webkit-touch-callout: none; /* iOS Safari */
@@ -97,12 +125,10 @@
   }
 
  .navtab.selected {
-	 color: #d24;
-	 border-left:1px solid #fdd;
-	 border-right:1px solid #fdd;
-	 border-top:1px solid #fdd;
-	 font-weight:bold;
-	 background-color:#eee;
+	 color: var(--bd-accent-dark);
+	 border-bottom: 3px solid var(--bd-accent);
+	 font-weight:600;
+	 background-color: transparent;
   }
 
   .navtab.selected:hover {
@@ -111,10 +137,15 @@
   }
 
  .navtab a {
-	 color: #f68;
+	 color: var(--bd-ink-2);
+	 text-decoration: none;
+ }
+ .navtab a:hover {
+	 color: var(--bd-accent-dark);
+	 text-decoration: none;
  }
  .navtab.selected a {
-   color: #d24;
+   color: var(--bd-accent-dark);
  }
 
  .navtab.selected:hover a {
@@ -164,10 +195,14 @@
  }
 
  .navlogin {
-	 padding-right: 1rem;
-	 padding-left: 0.2rem;
+	 margin: 0 0.8rem 0 0.6rem;
+	 padding: 2px 10px;
 	 display:inline-block;
-	 color: #ed1848;
+	 color: var(--bd-accent-dark);
+	 border: 1px solid var(--bd-line-2);
+	 border-radius: 999px;
+	 font-size: var(--bd-fs-sm);
+	 font-weight: 600;
  }
 
  .navlogin:hover {
@@ -178,11 +213,11 @@
 
  .navtitle {
    white-space: nowrap;
-   color: #ed6888;
+   color: var(--bd-accent-dark);
    padding: 4px 6px;
-   /* font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; */
-   font-size:120%;
-   font-weight:bold;
+   font-size: var(--bd-fs-lg);
+   font-weight: 600;
+   letter-spacing: 0.02em;
 	 cursor:pointer;
    display:inline-block;
  }

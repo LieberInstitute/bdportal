@@ -1,12 +1,36 @@
+:root {
+	/* design tokens: keep every color/spacing choice in the app tied to these */
+	--bd-accent: #ed1848;
+	--bd-accent-dark: #c81848;
+	--bd-accent-soft: #fbe9ee;
+	--bd-accent-tint: #f7d5dd;
+	--bd-ink: #333;
+	--bd-ink-2: #555;
+	--bd-ink-3: #888;
+	--bd-ink-4: #b5b5b5;
+	--bd-bg: #f3f3f4;
+	--bd-surface: #fff;
+	--bd-surface-2: #f7f7f8;
+	--bd-line: #e2e2e5;
+	--bd-line-2: #cfcfd4;
+	--bd-radius: 6px;
+	--bd-radius-sm: 4px;
+	--bd-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.06);
+	--bd-fs-sm: 0.8125rem;   /* 13px */
+	--bd-fs: 0.9375rem;      /* 15px */
+	--bd-fs-lg: 1.0625rem;   /* 17px */
+}
+
 html, body {
 	height: 100%;
 	width: 100%;
 	padding: 0;
 	margin: 0;
-	background-color: #ededed !important;
+	background-color: var(--bd-bg) !important;
 	font-family: 'Helvetica Neue', arial, sans-serif;
 	font-weight: 400;
-	color: #444;
+	color: var(--bd-ink);
+	font-variant-numeric: tabular-nums;
 }
 
 * {
@@ -24,15 +48,16 @@ html, body {
 	display: inline-flex;
 	height:100%;
 	flex-direction: column;
-	background-color: #ddd;
+	background-color: var(--bd-bg);
 	font-size:16px;
 	/* border:2px solid magenta; */
 }
 
 .content {
-  border: 1px solid #fdd;
-  border-bottom: none;
-  background-color: #ededed;
+  border: none;
+  background-color: var(--bd-bg);
+  max-width: 1560px;
+  margin: 0 auto;
 }
 
 .form-control:focus, button:focus, input:focus, select:focus {

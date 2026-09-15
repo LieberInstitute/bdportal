@@ -109,10 +109,14 @@ function ServerStatus( ) {
   })
 
 }, [])
+  const ok = status==='online' && pgstatus==='pl/r'
+  const pending = status==='checking status..' || pgstatus==='...'
+  const cls = ok ? 'srv-status ok' : (pending ? 'srv-status pending' : 'srv-status bad')
+  const tip = `middleware: ${status}, database: ${pgstatus}, build ${COMMIT_HASH} (${COMMIT_DATE})`
   return (
-  <div style={{ position: "absolute", "font-size": "70%", color:"red", top:"4px" }}>
-   {status} [{pgstatus}] <span class="allow-select" style="color:#a88;position:relative;font-size:11px;top:0px;">{COMMIT_HASH}-{COMMIT_DATE}</span>
-  </div>)
+  <span class={cls} title={tip}><span class="srv-dot"> </span>
+    <span class="srv-build allow-select">{COMMIT_HASH}</span>
+  </span>)
 }
 
 
@@ -246,7 +250,6 @@ export function Header({ page, tab, menuClick }) {
       </UncontrolledDropdown>
 
       <div class="navtab-box flex-nowrap">
-         <ServerStatus />
         {tabs.length > 0 && tabs.map((t) => (
           <NavItem className={t[0] === tab ? "navtab selected" : "navtab"} key={t[0]} id={t[0]}>
             {/* <Link activeClassName="active" href={`/${t[0]}`}>{t[1]}</Link> */}
@@ -256,14 +259,15 @@ export function Header({ page, tab, menuClick }) {
             </div>
           </NavItem>
         ))}
+        <ServerStatus />
       </div>
 
       <NavItem className="ml-auto nav-right">
         <button class="app-btn-help" style="margin-right:24px;" onClick={showReadMe}>&nbsp;Guide&nbsp;</button>
 
-        <img alt="bands" src={imgBands} className="navimgbands" />
+        
         <span className="navtitle" onClick={showReadMe}>LIBData Portal</span>
-        <img alt="bands_r" src={imgBandsR} className="navimgbands" />
+        
         {/* <span className="navlogin">Login</span> */}
          <Login />
         <img alt="brainlogo" src={imgBrCirc} style={{ height: "2rem", paddingRight: "0.5rem" }} />

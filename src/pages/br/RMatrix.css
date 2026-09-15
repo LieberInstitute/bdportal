@@ -76,10 +76,10 @@
    }
 
    #rxMatrix th {
-     font-size: 0.93rem;
-     font-weight: bold;
-     color: #999;
-     letter-spacing: 0.05em;
+     font-size: var(--bd-fs-sm);
+     font-weight: 600;
+     color: var(--bd-ink-3);
+     letter-spacing: 0.04em;
      padding: 0 4px;
      /* padding-right:0.2em; */
      text-align: right;
@@ -196,14 +196,26 @@
 
 
    #rxMatrix td {
-     background-color: white;
-     color:brown;
+     background-color: var(--bd-surface);
+     color: var(--bd-ink-3);
      min-width: 2.9rem;
      height: 1.7rem;
      padding-top: 2px;
      text-align: center;
-     border: 1px solid #eee;
+     font-size: var(--bd-fs-sm);
+     font-variant-numeric: tabular-nums;
+     border: 1px solid var(--bd-line);
      cursor: pointer;
+   }
+   /* data types without any data yet */
+   #rxMatrix th.xt-empty div.txRotate > span {
+     color: var(--bd-ink-4);
+     font-weight: 500;
+   }
+   #rxMatrix td.xt-empty {
+     background-image: repeating-linear-gradient(135deg, transparent 0 6px, #f4f4f5 6px 8px);
+     border-color: #ececee;
+     cursor: default;
    }
 
    #rxMatrix .cr {
@@ -216,7 +228,7 @@
     width:28rem;
     text-align: center;
     padding:6px;
-    font-size:80%;
-    color:#845;
+    font-size: var(--bd-fs-sm);
+    color: var(--bd-ink-3);
     /* visibility:hidden; */
   }

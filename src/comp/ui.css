@@ -408,35 +408,26 @@ to be made available everywhere in the app
 }
 
 .age-t-dtoggle {
-   background-color: #f2f2f2 !important;
+   background-color: transparent !important;
    min-width: 4.6rem !important;
-   /* border-bottom: 4px solid #eae8e8; */
-   /* vertical-align: middle !important; */
-   border:none;
-   /*border-top:1px solid #ededed;
-   border-left:1px solid #ededed;
-   border-top:1px solid #fbfbfb;
-   border-left:1px solid #fbfbfb;*/
-   border-radius:4px 0 0 0;
-   color: #877;
-   font-weight: bold;
-   height:24px;
-   line-height:135%;
-   font-size:95%;
-   text-align:left;
-   text-align: center;
-   padding: 0 4px;
-   margin-bottom:0;
-   border-right: 1px solid #d8d8d8;
-   border-bottom: 1px solid #d8d8d8;
+   border: none;
+   border-radius: var(--bd-radius) 0 0 0;
+   color: var(--bd-ink-2);
+   font-weight: 600;
+   height: 1.8rem;
+   line-height: 1.8rem;
+   font-size: var(--bd-fs);
+   text-align: left;
+   padding: 0 8px;
+   margin-bottom: 0;
+}
+.age-t-dtoggle::after {
+   color: var(--bd-ink-3);
 }
 
 
 .age-t-dtoggle:hover {
-  /* border-top:1px solid #fbfbfb;
-  border-left:1px solid #fbfbfb;
-  box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.2);*/
-  color: #444;
+  color: var(--bd-accent-dark);
 }
 .age-t-ddlst {
   box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.2);
@@ -516,10 +507,10 @@ to be made available everywhere in the app
   overflow: hidden;
   padding:0;
   margin:6px;
-  border-radius:4px;
-  border: 1px solid #fafafa;
-  border-right: 1px solid #c8c8c8;
-  border-bottom: 1px solid #c8c8c8;
+  border-radius: var(--bd-radius);
+  border: 1px solid var(--bd-line);
+  background-color: var(--bd-surface);
+  box-shadow: var(--bd-shadow);
   /* prevent text selection/cursor */
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -530,11 +521,8 @@ to be made available everywhere in the app
 }
 
 .lg-panel:not(.lg-collapsed) {
-  /* box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);*/
-  border-bottom: 1px solid #d8d8d8;
-  border-right: 1px solid #d8d8d8;
-  border-bottom-right-radius:2px;
-  border-bottom-left-radius:2px;
+  border-bottom-right-radius: var(--bd-radius);
+  border-bottom-left-radius: var(--bd-radius);
 }
 
 /* fl-shad = "floating with shadow" look */
@@ -558,19 +546,21 @@ to be made available everywhere in the app
 }
 
 .lg-panel .lg-title {
-cursor: default;
-position:relative;
-display: inline-flex;
-width:100%;
-
-justify-content: space-between !important;
-color: #877;
-font-size: 1rem;
-font-weight: bold;
-padding:0 4px;
-text-align:left;
-/* background-color: #f6f6f6; */
-border-bottom:1px solid #ececec;
+  cursor: default;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  height: 1.8rem;
+  justify-content: space-between !important;
+  color: var(--bd-ink-2);
+  font-size: var(--bd-fs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0 8px;
+  text-align: left;
+  background-color: var(--bd-surface-2);
+  border-bottom: 1px solid var(--bd-line);
 }
 
 .lg-panel.fl-shad .lg-title {
@@ -783,14 +773,10 @@ border-bottom:1px solid #ececec;
   /* margin: 0 8px 1px 2px;
   padding: 0 2px 1px 2px;*/
   /*color: #bd0019;*/
-  color: #ed1848;
-  background-color: #ffffff;
-  border:1px solid #ddd;
-  /*box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.2);*/
-  /* border:1px solid #fac7cb;  */
-  border-bottom: 1px solid #b8b8b8;
-  border-right: 1px solid #b8b8b8;
-  border-radius: 2px;
+  color: #fff;
+  background-color: var(--bd-accent);
+  border: 1px solid var(--bd-accent-dark);
+  border-radius: var(--bd-radius-sm);
 }
 /* for emphasising in info text */
 .info-tx-apply {
@@ -804,13 +790,12 @@ border-bottom:1px solid #ececec;
 .lg-apply {
   display: none;
   cursor: pointer;
-  box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 .lg-apply:hover {
-  background-color: #ffffff;
-  color: #ad1848;
-  /* box-shadow: 2px 2px 1px grey; */
+  background-color: var(--bd-accent-dark);
+  color: #fff;
 }
 
 

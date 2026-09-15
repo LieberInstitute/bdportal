@@ -183,6 +183,27 @@ const flt_onlySeq=getFilterCond('with_seq')
 const flt_onlyGeno=getFilterCond('with_gt')
 const brloaded=getBrListFilter().size
 
+// size the Diagnosis list so the filter column ends where the region matrix ends
+const [dxHeight, setDxHeight]=useState('8.6em')
+useEffect( ()=>{
+	const fit=()=>{
+		const tbl=document.getElementById('rxMatrix')
+		const race=document.getElementById('race')
+		const dxsc=document.querySelector('#dx .lg-scroller')
+		if (!tbl || !race || !dxsc) return
+		const gap=tbl.getBoundingClientRect().bottom - race.getBoundingClientRect().bottom
+		if (Math.abs(gap)<2) return
+		const h=Math.max(90, Math.round(dxsc.getBoundingClientRect().height + gap))
+		setDxHeight(`${h}px`)
+	}
+	fit()
+	const ro = (typeof ResizeObserver!=='undefined') ? new ResizeObserver(fit) : null
+	const tbl=document.getElementById('rxMatrix')
+	if (ro && tbl) ro.observe(tbl)
+	window.addEventListener('resize', fit)
+	return ()=>{ if (ro) ro.disconnect(); window.removeEventListener('resize', fit) }
+})
+
 //console.log(" -- page render with flt_onlySeq=", flt_onlySeq);
 return(<div class="col-12 d-flex flex-nowrap flex-column">
 <MxSelProvider>
@@ -227,7 +248,7 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
   <Col xs="3" className="colDemo" >
      <Col className="d-flex flex-column col-vscroll"  >
         <Row className="d-flex justify-content-start">
-           <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="8.6em" data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+           <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height={dxHeight} data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
          </Row>
          <Row className="d-flex justify-content-start">
            <FltMList key={`sx${clearCounter}_${m.updList['sex']}`} id="sex" type="htoggle" width="15em" data={dta.sex} filter={getFilterSet} onApply={applyFilter} updateFilter />

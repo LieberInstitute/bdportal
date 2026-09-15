@@ -38,15 +38,15 @@
 
 .lg-scroller {
   position: relative;
-  /* margin: 0px auto; */
-  padding: 0;
+  padding: 2px 0;
   margin: 0;
   width: auto;
   height: auto;
   min-width: 10rem;
-  /* max-height: 8.6rem; */
-  background-color:#ffffff;
+  background-color: var(--bd-surface);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd-line-2) transparent;
 }
 
 .lg-lst {
@@ -60,7 +60,7 @@
 
 .lg-toggler {
   position:relative;
-  background-color: #f6f6f6;
+  background-color: var(--bd-surface);
   /*
   display:flex;
   justify-content: space-around !important;
@@ -70,7 +70,7 @@
   /* overflow-wrap: normal; */
   /* border-top: 1px solid green; */
   overflow-y: auto;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 var(--bd-radius) var(--bd-radius);
 }
 
 .lg-panel.fl-shad .lg-toggler {
@@ -83,14 +83,16 @@
 }
 
 .lg-item {
-font-size: 95%;
-line-height:1.1rem;
-display:flex;
-cursor: pointer;
-padding: 0 6px 1px;
-border: 0;
-margin: 2px 2px;
-border-radius: 4px;
+  font-size: var(--bd-fs-sm);
+  line-height: 1.25rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0 4px 0 8px;
+  border: 0;
+  margin: 0 3px;
+  border-radius: var(--bd-radius-sm);
+  color: var(--bd-ink);
 }
 
 .lg-shrink .lg-toggler .lg-item {
@@ -136,7 +138,7 @@ border-radius: 4px;
 }
 */
 .lg-item:hover {
-  background-color: #fff0f0;
+  background-color: var(--bd-surface-2);
 }
 
 .lg-toggler .lg-item:hover {
@@ -145,13 +147,13 @@ border-radius: 4px;
 
 .lg-item.lg-sel {
   font-weight:normal;
-  /* background-color: #fff0f0; */
-  background-color: #faeaea;
+  background-color: var(--bd-accent-soft);
+  color: var(--bd-accent-dark);
 }
 
 .lg-item.lg-sel.lg-sel-ch {
   font-weight:normal;
-  background-color: #faeaea;
+  background-color: var(--bd-accent-soft);
 }
 
 .lg-item-th { /* left-side container, need click-through */
@@ -177,62 +179,90 @@ border-radius: 4px;
 
 .lg-toggler .lg-item {
   min-width: 4rem;
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  padding: 1px 10px;
+  margin: 2px;
+}
+/* horizontal toggles (Sex) keep label and count inline, no bar track */
+.lg-toggler .lg-item-counts {
+  position: static;
+  flex: none;
+  height: auto;
+  margin-left: 6px;
+}
+.lg-toggler .lg-count {
+  position: static;
+  line-height: inherit;
+}
+.lg-toggler .lg-item.lg-sel .lg-count {
+  color: #fff;
 }
 
 .lg-toggler .lg-item.lg-sel {
   margin: 2px 2px;
   color: white;
-  background-color: #ed1848;
-  border-radius: 4px;
+  background-color: var(--bd-accent);
+  border-radius: var(--bd-radius-sm);
 }
 
+/* right side of a list item: a fixed-width column holding a bar track and the count,
+   so counts line up in one column regardless of label length */
 .lg-item-counts {
- position:relative;
+  position: relative;
+  flex: 0 0 4.6rem;
+  height: 1.05rem;
+  margin-left: 6px;
 }
 
 .lg-count {
-  position:relative;
-  /* z-index: 100; */
-  float:none;
-  margin-top: 2px;
-  font-size: 85%;
-  font-weight: bold;
-  padding: 0 2px !important;
-  /* border: 1px solid #bbb; */
+  position: absolute;
+  right: 4px;
+  top: 0;
+  z-index: 1;
+  float: none;
+  margin: 0;
+  line-height: 1.05rem;
+  font-size: var(--bd-fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0 !important;
   background: none;
-  color: inherit;
-  /* background-color: #ed1848; */
+  color: var(--bd-ink-2);
 }
 
 .lg-count-0 {
-  color: #ccc !important;
+  color: var(--bd-ink-4) !important;
 }
 
 .lg-item-bar, .lg-item-bar-v {
-  position:absolute;
-  z-index:0;
-  right: -2px;
-  bottom: 0.01rem;
-  height: 1rem;
+  position: absolute;
+  z-index: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
 }
 
 .lg-item-bar {
-  width: 4rem;
+  width: 100%;
+  background-color: var(--bd-surface-2);
 }
 
 .lg-item-bar-v {
-  float:right;
-  /* background-color: #e4e4e4; */
-  background-color: #eeecec;
-  margin:0 auto;
+  float: right;
+  margin: 0 auto;
+  background-color: #e6e3e4;
 }
 
+.lg-sel .lg-item-bar {
+  background-color: transparent;
+}
 .lg-sel .lg-item-bar .lg-item-bar-v {
-    display:none;
+  background-color: var(--bd-accent-tint);
 }
 
 .lg-applied {
-  font-weight:bold !important;
-  color:#c81848;
+  font-weight:600 !important;
+  color: var(--bd-accent-dark);
 }
