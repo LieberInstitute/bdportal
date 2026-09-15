@@ -75,8 +75,10 @@ if (hostname=="gryzen" || hostname=="glin" || hostname=="gdebsrv") {
 
 const genotypes=`${d_filedir}/genotypes/maf01.n2630.rsann.bcf`
 
-const auth_url = `${auth_srv}/auth`;
-db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_srv}`)
+// AUTH_URL overrides the full endpoint (e.g. http://127.0.0.1:4017/ to reach node_auth on
+// loopback without the TLS wrapper on 6443); otherwise "/auth" is appended to AUTH_SRV
+const auth_url = process.env.AUTH_URL || `${auth_srv}/auth`;
+db.clog(`db ${dbuser}@${dbserver} (${r_filedir}), mail url: ${mail_url}, auth: ${auth_url}`)
 
 const jwt_shh =  process.env.JWTSHH
 const localAuthEnabled = process.env.DEV_AUTH !== '0' &&
@@ -234,11 +236,12 @@ app.post('/auth', async (req, res) => {
     //updateLog(db, username, 'AUTH')
   } catch (err) {
     const status = err.response && err.response.status ? err.response.status : 500;
-    const outStatus = status === 401 || status === 403 ? status : 502;
+    // node_auth answers 403 (or 401) for a bad username/password; anything else is a service failure
+    const badLogin = status === 401 || status === 403;
     console.log(`auth FAIL in middleware for ${username}:`, err.message);
-    res.status(outStatus).json({
-      code: outStatus === 401 ? 'AUTH_FAILED' : 'AUTH_SERVICE_ERROR',
-      message: outStatus === 401 ? 'Invalid username or password.' : 'Login service is not available right now.'
+    res.status(badLogin ? 401 : 502).json({
+      code: badLogin ? 'AUTH_FAILED' : 'AUTH_SERVICE_ERROR',
+      message: badLogin ? 'Invalid username or password.' : 'Login service is not available right now.'
     });
     //updateLog(db, username, 'AUTHFAIL')
   }
