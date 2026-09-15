@@ -176,21 +176,22 @@
   mask-image: url('lock-solid.svg');
 }
 
-.lg-toggler .lg-item {
+.lg-toggler .lg-item.lg-item-h {
   min-width: 4rem;
   display: inline-flex;
   justify-content: center;
   padding: 1px 10px;
   margin: 2px;
 }
-/* horizontal toggles (Sex) keep label and count inline, no bar track */
-.lg-toggler .lg-item-counts {
+/* horizontal toggles (Sex) keep label and count inline, no bar column;
+   vertical toggle lists (Datasets) keep the regular count column */
+.lg-item-h .lg-item-counts {
   position: static;
   flex: none;
   height: auto;
   margin-left: 6px;
 }
-.lg-toggler .lg-count {
+.lg-item-h .lg-count {
   position: static;
   line-height: inherit;
 }
@@ -261,4 +262,12 @@
 .lg-applied {
   font-weight:600 !important;
   color: var(--bd-accent-dark);
+}
+
+/* labels never wrap; narrow panels (Protocol) get a slimmer count column */
+.lg-item-th {
+  white-space: nowrap;
+}
+.lg-item.lg-it-proto .lg-item-counts {
+  flex: 0 0 3.4rem;
 }
