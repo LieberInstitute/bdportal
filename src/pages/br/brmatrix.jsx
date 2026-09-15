@@ -227,14 +227,14 @@ return(<div class="col-12 d-flex flex-nowrap flex-column">
   <Col xs="3" className="colDemo" >
      <Col className="d-flex flex-column col-vscroll"  >
         <Row className="d-flex justify-content-start">
-           <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="6.9em" data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
+           <FltMList key={`dx${clearCounter}_${m.updList['dx']}`} id="dx" width="15em" height="8.6em" data={dta.dx} filter={getFilterSet} onApply={applyFilter} updateFilter />
          </Row>
          <Row className="d-flex justify-content-start">
            <FltMList key={`sx${clearCounter}_${m.updList['sex']}`} id="sex" type="htoggle" width="15em" data={dta.sex} filter={getFilterSet} onApply={applyFilter} updateFilter />
          </Row>
          <AgeDualPanel key={`age${clearCounter}_${m.updList['age']}`} width="15em" onAgeSelection={onAgeSelection} />
          <Row className="d-flex justify-content-start" style="margin-top:2px;">
-           <FltMList key={`race${clearCounter}_${m.updList['race']}`} id="race" width="15em" height="5.5rem" data={dta.race} filter={getFilterSet} onApply={applyFilter} updateFilter />
+           <FltMList key={`race${clearCounter}_${m.updList['race']}`} id="race" width="15em" height="none" data={dta.race} filter={getFilterSet} onApply={applyFilter} updateFilter />
          </Row>
      </Col>
   </Col>
