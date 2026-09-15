@@ -138,7 +138,7 @@
 }
 */
 .lg-item:hover {
-  background-color: var(--bd-surface-2);
+  background-color: #fff0f0;
 }
 
 .lg-toggler .lg-item:hover {
@@ -147,13 +147,12 @@
 
 .lg-item.lg-sel {
   font-weight:normal;
-  background-color: var(--bd-accent-soft);
-  color: var(--bd-accent-dark);
+  background-color: #faeaea;
 }
 
 .lg-item.lg-sel.lg-sel-ch {
   font-weight:normal;
-  background-color: var(--bd-accent-soft);
+  background-color: #faeaea;
 }
 
 .lg-item-th { /* left-side container, need click-through */
@@ -224,11 +223,11 @@
   margin: 0;
   line-height: 1.05rem;
   font-size: var(--bd-fs-sm);
-  font-weight: 600;
+  font-weight: bold;
   font-variant-numeric: tabular-nums;
   padding: 0 !important;
   background: none;
-  color: var(--bd-ink-2);
+  color: inherit;
 }
 
 .lg-count-0 {
@@ -246,20 +245,17 @@
 
 .lg-item-bar {
   width: 100%;
-  background-color: var(--bd-surface-2);
+  background-color: transparent; /* no track: the grey bar alone is the "bar chart" */
 }
 
 .lg-item-bar-v {
   float: right;
   margin: 0 auto;
-  background-color: #e6e3e4;
+  background-color: #eeecec;
 }
 
-.lg-sel .lg-item-bar {
-  background-color: transparent;
-}
 .lg-sel .lg-item-bar .lg-item-bar-v {
-  background-color: var(--bd-accent-tint);
+  display: none;
 }
 
 .lg-applied {
