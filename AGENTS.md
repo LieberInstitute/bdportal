@@ -57,7 +57,7 @@ curl http://localhost:8080/api/pgplrinit
 - `server/.env` is private local middleware configuration copied from srv16. It contains database and JWT secrets and must not be committed.
 - This checkout excludes `server/.env` through `.git/info/exclude`.
 - The backend also relies on the user's `~/.pgpass` and LAN access to the Postgres infrastructure.
-- For this local checkout, `server/.env` was copied from srv16, then adjusted to use `DB_SRV=glin` and the local `gpertea` Postgres user through `~/.pgpass`.
+- This checkout runs on srv16: `server/.env` uses `DB_SRV=localhost` and the read role `wquser` (rse roles/server: `rse-db` skill).
 
 ## Important Directories
 
@@ -93,7 +93,7 @@ Keep task-specific handoff notes in separate dated files instead of turning this
 - The browser talks to middleware through the same-origin `/api` prefix. In local Vite development, `/api/*` is proxied and rewritten to the local middleware on port `4095`; in production, nginx proxies `/bdportal/api/*` to the middleware on `127.0.0.1:4095`.
 - The nginx proxy template for API routes is in `nginx/bdportal-api-locations.conf`; run `nginx/install-bdportal-api-proxy.sh` on srv16 to install those locations before static app locations. `/bdportal` and `/devel` proxy to the production middleware (4095); `/dev/bdportal` proxies to `bdportal-server-dev.service` (4097, this checkout's `server/`). See `docs/deployment.md`.
 - Many backend paths and service hosts are LAN-specific and selected from the machine hostname in `server/server.js` and `vite.config.mjs`.
-- `GET /pgplrinit` should return `pl/r` when the DB permissions and R libraries on `glin` are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
+- `GET /pgplrinit` should return `pl/r` when the DB permissions and PL/R R libraries on the srv16 Postgres server are healthy; ordinary metadata routes such as `/pgdb/dslist/rnaseq` are also useful DB smoke tests.
 - Avoid broad refactors in `src/comp/RDataCtx.jsx`; it owns most global data structures, filters, counts, login state, and backend request helpers.
 - Regenerate bundled metadata on srv16 with `./dnam-pull4webapp.pl -o public/data/multi_dta.json` (default server `localhost`; the script validates the JSON itself), then `gzip -9 -f public/data/multi_dta.json`. Details and data rules: `docs/data-refresh.md`.
 - Keep generated build output in `dist/` out of normal edits unless explicitly working on deployment output.
