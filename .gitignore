@@ -2,3 +2,6 @@ node_modules
 /build
 /dist
 /*.log
+
+# private middleware config (DB/JWT secrets)
+server/.env

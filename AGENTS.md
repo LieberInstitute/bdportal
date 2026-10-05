@@ -55,7 +55,7 @@ curl http://localhost:8080/api/pgplrinit
 
 - Root `.env` is tracked and provides Vite/build metadata such as `VITE_MWSERVER`, `VITE_COMMIT_HASH`, and `VITE_COMMIT_DATE`. Leave `VITE_MWSERVER` empty for normal same-origin deployments.
 - `server/.env` is private local middleware configuration copied from srv16. It contains database and JWT secrets and must not be committed.
-- This checkout excludes `server/.env` through `.git/info/exclude`.
+- `server/.env` is ignored via `.gitignore`.
 - The backend also relies on the user's `~/.pgpass` and LAN access to the Postgres infrastructure.
 - This checkout runs on srv16: `server/.env` uses `DB_SRV=localhost` and the read role `wquser` (rse roles/server: `rse-db` skill).
 
